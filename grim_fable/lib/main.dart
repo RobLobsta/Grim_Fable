@@ -1,10 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'core/utils/theme.dart';
+import 'features/home/home_screen.dart';
+import 'features/character/character_repository.dart';
+import 'features/character/character_provider.dart';
+import 'features/adventure/adventure_repository.dart';
+import 'features/adventure/adventure_provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+
+  final characterRepository = CharacterRepository();
+  await characterRepository.init();
+
+  final adventureRepository = AdventureRepository();
+  await adventureRepository.init();
+
   runApp(
-    const ProviderScope(
-      child: GrimFableApp(),
+    ProviderScope(
+      overrides: [
+        characterRepositoryProvider.overrideWithValue(characterRepository),
+        adventureRepositoryProvider.overrideWithValue(adventureRepository),
+      ],
+      child: const GrimFableApp(),
     ),
   );
 }
@@ -17,82 +37,8 @@ class GrimFableApp extends StatelessWidget {
     return MaterialApp(
       title: 'Grim Fable',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1A237E), // Dark Blue
-          brightness: Brightness.dark,
-          primary: const Color(0xFF1A237E),
-          secondary: const Color(0xFFC0C0C0), // Silver
-          surface: const Color(0xFF121212),
-        ),
-        scaffoldBackgroundColor: const Color(0xFF0D1117), // Very dark blue/black
-        textTheme: const TextTheme(
-          displayLarge: TextStyle(
-            color: Color(0xFFE0E0E0), // Light silver
-            fontFamily: 'Serif',
-            fontWeight: FontWeight.bold,
-          ),
-          bodyLarge: TextStyle(
-            color: Color(0xFFC0C0C0), // Silver
-            fontSize: 18,
-            fontFamily: 'Serif',
-          ),
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF1A237E),
-          foregroundColor: Color(0xFFC0C0C0),
-        ),
-      ),
+      theme: GrimFableTheme.darkTheme,
       home: const HomeScreen(),
-    );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Grim Fable'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.book_sharp,
-              size: 100,
-              color: Color(0xFFC0C0C0),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Welcome to Grim Fable',
-              style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 32),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Your dark adventure awaits...',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            const SizedBox(height: 40),
-            ElevatedButton(
-              onPressed: () {
-                // To be implemented in Feature 1.1
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1A237E),
-                foregroundColor: const Color(0xFFC0C0C0),
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              ),
-              child: const Text('Begin Journey'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
