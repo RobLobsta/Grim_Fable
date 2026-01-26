@@ -29,8 +29,8 @@ void main() {
     );
 
     // Verify that our welcome message is displayed.
-    expect(find.text('Welcome to Grim Fable'), findsOneWidget);
+    expect(find.text('Behold, Thy Fate'), findsOneWidget);
     expect(find.text('Your dark adventure awaits...'), findsOneWidget);
-    expect(find.text('Begin Journey'), findsOneWidget);
+    expect(find.text('BEGIN JOURNEY'), findsOneWidget);
   });
 }

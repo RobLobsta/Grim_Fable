@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:grim_fable/features/adventure/adventure_screen.dart';
 import 'package:grim_fable/features/adventure/adventure_provider.dart';
 import 'package:grim_fable/features/adventure/adventure_repository.dart';
@@ -34,6 +35,19 @@ void main() {
     when(mockAdventureRepo.getLatestAdventure(character.id)).thenReturn(initialAdventure);
     when(mockAdventureRepo.saveAdventure(any)).thenAnswer((_) async {});
 
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const Scaffold(body: Text('Home')),
+        ),
+        GoRoute(
+          path: '/adventure',
+          builder: (context, state) => const AdventureScreen(),
+        ),
+      ],
+    );
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -41,11 +55,15 @@ void main() {
           adventureRepositoryProvider.overrideWithValue(mockAdventureRepo),
           aiServiceProvider.overrideWithValue(FakeAIService()),
         ],
-        child: const MaterialApp(
-          home: AdventureScreen(),
+        child: MaterialApp.router(
+          routerConfig: router,
         ),
       ),
     );
+
+    router.push('/adventure');
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     // Initial state might be null if provider hasn't loaded
     // Need to trigger the loading in the provider if necessary,
@@ -60,27 +78,30 @@ void main() {
 
     // Submit an action
     await tester.enterText(find.byType(TextField), 'I look around.');
-    await tester.tap(find.byIcon(Icons.send));
+    await tester.tap(find.byIcon(Icons.send_rounded));
     await tester.pump(); // Start loading
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
     await tester.pump(const Duration(seconds: 3)); // Wait for MockAIService
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
-    expect(find.text('> I look around.'), findsOneWidget);
+    expect(find.text('I LOOK AROUND.'), findsOneWidget);
     expect(find.textContaining('mist swirls'), findsOneWidget);
 
     // Test Complete Adventure
     await tester.tap(find.byIcon(Icons.done_all));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('Complete Adventure'), findsOneWidget);
     await tester.tap(find.text('Complete'));
     await tester.pump(); // Start completing
 
     await tester.pump(const Duration(seconds: 3)); // Wait for AI
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     // Should have popped back to home (but since we are only testing the screen in isolation in this test,
     // we just check if it called the right methods)

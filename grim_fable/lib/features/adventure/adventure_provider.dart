@@ -8,6 +8,13 @@ import '../../core/services/ai_service.dart';
 
 final adventureRepositoryProvider = Provider((ref) => AdventureRepository());
 
+final characterAdventuresProvider = Provider.autoDispose<List<Adventure>>((ref) {
+  final repository = ref.watch(adventureRepositoryProvider);
+  final characterId = ref.watch(activeCharacterProvider.select((c) => c?.id));
+  if (characterId == null) return [];
+  return repository.getAdventuresForCharacter(characterId);
+});
+
 final activeAdventureProvider = StateNotifierProvider<AdventureNotifier, Adventure?>((ref) {
   final repository = ref.watch(adventureRepositoryProvider);
   final aiService = ref.watch(aiServiceProvider);
@@ -51,6 +58,13 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
     );
 
     await _saveAdventure(updatedAdventure);
+
+    // Update last played time on character
+    if (_activeCharacter != null) {
+      await _characterNotifier.updateCharacter(
+        _activeCharacter!.copyWith(lastPlayedAt: DateTime.now()),
+      );
+    }
   }
 
   Future<void> continueLatestAdventure() async {
@@ -62,6 +76,10 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
     } else {
       await startNewAdventure();
     }
+  }
+
+  void loadAdventure(Adventure adventure) {
+    state = adventure;
   }
 
   Future<void> submitAction(String action) async {

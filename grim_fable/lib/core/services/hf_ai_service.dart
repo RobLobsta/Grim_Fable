@@ -44,12 +44,15 @@ class HuggingFaceAIService implements AIService {
         if (response.data is List && response.data.isNotEmpty) {
           return response.data[0]['generated_text'] ?? "No response generated.";
         }
-        return response.data.toString();
+        throw Exception("Invalid response format from AI service");
       } else {
-        return "Error: ${response.statusCode} - ${response.statusMessage}";
+        throw Exception("AI Service Error: ${response.statusCode} - ${response.statusMessage}");
       }
     } catch (e) {
-      return "Exception: $e";
+      if (e is DioException) {
+        throw Exception("Network Error: ${e.message}");
+      }
+      rethrow;
     }
   }
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'core/utils/theme.dart';
-import 'features/home/home_screen.dart';
+import 'core/utils/router.dart';
 import 'features/character/character_repository.dart';
 import 'features/character/character_provider.dart';
 import 'features/adventure/adventure_repository.dart';
@@ -29,16 +29,18 @@ void main() async {
   );
 }
 
-class GrimFableApp extends StatelessWidget {
+class GrimFableApp extends ConsumerWidget {
   const GrimFableApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(routerProvider);
+
+    return MaterialApp.router(
       title: 'Grim Fable',
       debugShowCheckedModeBanner: false,
       theme: GrimFableTheme.darkTheme,
-      home: const HomeScreen(),
+      routerConfig: router,
     );
   }
 }

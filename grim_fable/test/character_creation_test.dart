@@ -1,31 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:grim_fable/features/character/character_creation_screen.dart';
 import 'package:grim_fable/core/services/ai_provider.dart';
 import 'package:grim_fable/core/services/fake_ai_service.dart';
 
 void main() {
   testWidgets('Character Creation Screen Test', (WidgetTester tester) async {
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const Scaffold(body: Text('Home')),
+        ),
+        GoRoute(
+          path: '/create',
+          builder: (context, state) => const CharacterCreationScreen(),
+        ),
+      ],
+    );
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           aiServiceProvider.overrideWithValue(FakeAIService()),
         ],
-        child: const MaterialApp(
-          home: CharacterCreationScreen(),
+        child: MaterialApp.router(
+          routerConfig: router,
         ),
       ),
     );
 
-    expect(find.text('Create Character'), findsOneWidget);
-    expect(find.text('Character Name'), findsOneWidget);
+    router.push('/create');
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('FORGE CHARACTER'), findsOneWidget);
+    expect(find.text('NAME'), findsOneWidget);
 
     // Enter name
     await tester.enterText(find.byType(TextFormField).first, 'Test Hero');
 
     // Tap AI Generate
-    await tester.tap(find.text('AI Generate'));
+    await tester.tap(find.text('AI DIVINATION'));
     await tester.pump(); // Start generating
 
     // Since MockAIService has a 2-second delay, we need to pump with duration
