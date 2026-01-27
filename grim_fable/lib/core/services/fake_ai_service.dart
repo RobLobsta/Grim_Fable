@@ -21,7 +21,22 @@ class FakeAIService implements AIService {
 
   @override
   Future<String> generateBackstoryUpdate(String currentBackstory, String adventureSummary) async {
+    return generateBackstoryAppend(currentBackstory, adventureSummary, 1);
+  }
+
+  @override
+  Future<String> generateBackstoryAppend(String currentBackstory, String adventureSummary, int paragraphs) async {
     await Future.delayed(const Duration(seconds: 2));
-    return "$currentBackstory\n\nHaving recently survived the horrors of the Whispering Woods, they carry new scars and the knowledge of a betrayal that nearly cost them their soul.";
+    return "After the events of this journey, they learned that the shadows are not just outside, but within. They found a new purpose in the darkness.";
+  }
+
+  @override
+  Future<List<String>> generateAdventureSuggestions(String characterName, String backstory, List<String> pastAdventureSummaries) async {
+    await Future.delayed(const Duration(seconds: 2));
+    return [
+      "Investigate the strange lights appearing in the ruins of the Old Watchtower.",
+      "Seek out the hermit who claims to have a map to the Sunken City.",
+      "Defend the village from the spectral riders that appear at every full moon."
+    ];
   }
 }

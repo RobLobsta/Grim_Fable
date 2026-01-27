@@ -76,20 +76,36 @@ void main() {
 
     expect(find.text('FORGE CHARACTER'), findsOneWidget);
     await tester.enterText(find.byType(TextFormField).first, 'Sir Test');
+
+    // Need to generate backstory now as it's required
+    await tester.tap(find.text('AI DIVINATION'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 3));
+
     await tester.ensureVisible(find.text('FORGE LEGEND'));
     await tester.tap(find.text('FORGE LEGEND'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
     // Should be back on Home Screen with character
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 2));
     expect(find.textContaining('SIR TEST'), findsOneWidget);
 
     // 2. Start New Adventure
     await tester.ensureVisible(find.text('NEW ADVENTURE'));
     await tester.tap(find.text('NEW ADVENTURE'));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(seconds: 1));
+
+    // Should be on New Adventure Screen (suggestions)
+    expect(find.text('DIVINE DESTINY'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 3)); // Wait for suggestions
+
+    // Tap a suggestion
+    await tester.tap(find.textContaining('Investigate').first);
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
     // It calls AI service for first prompt which takes ~2s in FakeAIService
     await tester.pump(const Duration(seconds: 5));
     // After AI finishes, loading screen should be gone and navigation complete

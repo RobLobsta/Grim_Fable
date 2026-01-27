@@ -16,6 +16,22 @@ final characterAdventuresProvider = Provider.autoDispose<List<Adventure>>((ref) 
   return repository.getAdventuresForCharacter(characterId);
 });
 
+final hasActiveAdventureProvider = Provider.autoDispose<bool>((ref) {
+  // Watch active adventure to react to state changes in the notifier
+  final activeAdv = ref.watch(activeAdventureProvider);
+  if (activeAdv != null) {
+    return activeAdv.isActive;
+  }
+
+  // Fallback to checking the repository for the active character
+  final repository = ref.watch(adventureRepositoryProvider);
+  final characterId = ref.watch(activeCharacterProvider.select((c) => c?.id));
+  if (characterId == null) return false;
+
+  final latest = repository.getLatestAdventure(characterId);
+  return latest != null && latest.isActive;
+});
+
 final activeAdventureProvider = StateNotifierProvider<AdventureNotifier, Adventure?>((ref) {
   final repository = ref.watch(adventureRepositoryProvider);
   final aiService = ref.watch(aiServiceProvider);
@@ -42,14 +58,14 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
     this._characterNotifier,
   ) : super(null);
 
-  Future<void> startNewAdventure() async {
+  Future<void> startNewAdventure({String? customPrompt}) async {
     if (_activeCharacter == null) return;
 
     final adventure = Adventure.create(characterId: _activeCharacter!.id);
     state = adventure;
 
     // Generate first prompt
-    final firstPromptFull = await _generateFirstPrompt();
+    final firstPromptFull = await _generateFirstPrompt(customPrompt: customPrompt);
     final parsed = _parseResponse(firstPromptFull);
     final firstSegment = StorySegment(
       playerInput: "Starting the journey...",
@@ -95,7 +111,7 @@ You are a creative storyteller for Grim Fable.
 Character: ${_activeCharacter!.name}
 Backstory: ${_activeCharacter!.backstory}
 
-Keep your responses short, exactly 1 paragraph (1-5 sentences).
+Keep your responses short, exactly 1 paragraph (3-5 sentences).
 Maintain a dark fantasy, gritty, and realistic tone.
 """;
 
@@ -153,7 +169,7 @@ Character: ${_activeCharacter!.name}
 Backstory: ${_activeCharacter!.backstory}
 
 Continue the story naturally from the last point.
-Keep your responses short, exactly 1 paragraph (1-5 sentences).
+Keep your responses short, exactly 1 paragraph (3-5 sentences).
 Maintain a dark fantasy, gritty, and realistic tone.
 """;
 
@@ -210,10 +226,18 @@ Maintain a dark fantasy, gritty, and realistic tone.
     if (state == null || _activeCharacter == null) return;
 
     final summary = state!.storyHistory.map((s) => s.aiResponse).join(" ");
-    final newBackstory = await _aiService.generateBackstoryUpdate(
+
+    // 1 paragraph per 50 AI responses (Min 1, Max 3)
+    int aiResponseCount = state!.storyHistory.length;
+    int paragraphs = (aiResponseCount / 50).ceil().clamp(1, 3);
+
+    final backstoryAppend = await _aiService.generateBackstoryAppend(
       _activeCharacter!.backstory,
       summary,
+      paragraphs,
     );
+
+    final newBackstory = "${_activeCharacter!.backstory}\n\n$backstoryAppend";
 
     await _characterNotifier.updateCharacter(
       _activeCharacter!.copyWith(
@@ -231,16 +255,18 @@ Maintain a dark fantasy, gritty, and realistic tone.
     state = adventure;
   }
 
-  Future<String> _generateFirstPrompt() async {
+  Future<String> _generateFirstPrompt({String? customPrompt}) async {
     if (_activeCharacter == null) return "";
 
     final systemMessage = """
 You are a creative storyteller for a dark fantasy adventure called Grim Fable.
 Character: ${_activeCharacter!.name}
 Backstory: ${_activeCharacter!.backstory}
+
+Your response must be exactly 1 paragraph (3-5 sentences).
 """;
 
-    const prompt = "Set the scene for a new adventure. Describe the location and the immediate situation in exactly 2 paragraphs. Maintain a gritty and realistic dark fantasy tone.";
+    final prompt = customPrompt ?? "Set the scene for a new adventure. Describe the location and the immediate situation. Maintain a gritty and realistic dark fantasy tone.";
 
     final temperature = _ref.read(temperatureProvider);
     final recommendedEnabled = _ref.read(recommendedResponsesProvider);

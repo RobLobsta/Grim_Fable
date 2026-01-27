@@ -23,7 +23,7 @@ class AdventureHistoryScreen extends ConsumerWidget {
             end: Alignment.bottomCenter,
             colors: [
               const Color(0xFF0D1117),
-              const Color(0xFF1A237E).withOpacity(0.05),
+              Theme.of(context).colorScheme.primary.withOpacity(0.1),
             ],
           ),
         ),

@@ -5,6 +5,7 @@ import '../character/character_provider.dart';
 import '../adventure/adventure_provider.dart';
 import '../../core/services/settings_service.dart';
 import '../../shared/widgets/ai_settings_dialog.dart';
+import '../../shared/widgets/app_settings_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -215,13 +216,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.palette_outlined, color: Color(0xFFC0C0C0)),
-                onPressed: () => _showApiKeyDialog(context),
+                icon: const Icon(Icons.settings_outlined, color: Color(0xFFC0C0C0)),
+                onPressed: () => AppSettingsDialog.show(context),
                 tooltip: 'App Settings',
               ),
               IconButton(
                 icon: const Icon(Icons.vpn_key_outlined, color: Color(0xFFC0C0C0)),
-                onPressed: () => _showApiKeyDialog(context),
+                onPressed: () => AiSettingsDialog.show(context),
                 tooltip: 'AI Settings',
               ),
               if (activeCharacter != null)
@@ -235,10 +236,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> _showApiKeyDialog(BuildContext context) async {
-    return AiSettingsDialog.show(context);
   }
 
   Widget _buildHeroIcon() {
@@ -299,21 +296,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const SizedBox(height: 24),
         _buildBackstoryCard(context, activeCharacter.backstory),
         const SizedBox(height: 60),
-        ElevatedButton(
-          onPressed: _continueAdventure,
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size(260, 60),
+        if (ref.watch(hasActiveAdventureProvider))
+          ElevatedButton(
+            onPressed: _continueAdventure,
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(260, 60),
+            ),
+            child: const Text('CONTINUE ADVENTURE'),
+          )
+        else
+          ElevatedButton(
+            onPressed: () => context.push('/new-adventure'),
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(260, 60),
+            ),
+            child: const Text('NEW ADVENTURE'),
           ),
-          child: const Text('CONTINUE ADVENTURE'),
-        ),
-        const SizedBox(height: 20),
-        OutlinedButton(
-          onPressed: _startNewAdventure,
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size(260, 60),
-          ),
-          child: const Text('NEW ADVENTURE'),
-        ),
         const SizedBox(height: 24),
         TextButton.icon(
           onPressed: () => context.push('/history'),
@@ -337,21 +335,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: const Color(0xFFC0C0C0), // Silver/Light background for parchment look
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.5), width: 1),
+        border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.6),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       constraints: const BoxConstraints(maxHeight: 250),
       child: Column(
         children: [
-          Icon(Icons.format_quote, color: Theme.of(context).colorScheme.primary, size: 32),
+          const Icon(Icons.format_quote, color: Colors.black54, size: 32),
           Expanded(
             child: SingleChildScrollView(
               child: Text(
@@ -359,7 +357,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontStyle: FontStyle.italic,
                       fontSize: 16,
-                      color: Theme.of(context).colorScheme.secondary.withOpacity(0.8),
+                      color: Colors.black, // Black text for better contrast on silver
                     ),
                 textAlign: TextAlign.center,
               ),

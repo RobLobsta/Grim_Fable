@@ -14,7 +14,7 @@ class PlayerActionWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: Row(
         children: [
-          const Icon(Icons.chevron_right, color: Color(0xFF1A237E), size: 20),
+          Icon(Icons.chevron_right, color: Theme.of(context).colorScheme.tertiary, size: 20),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
