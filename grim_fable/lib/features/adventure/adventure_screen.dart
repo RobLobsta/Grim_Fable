@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import '../../shared/widgets/player_action_widget.dart';
+import '../../shared/widgets/story_segment_widget.dart';
 import 'adventure_provider.dart';
 
 class AdventureScreen extends ConsumerStatefulWidget {
@@ -112,51 +113,6 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
     }
   }
 
-  Widget _buildPlayerAction(String input) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: Row(
-        children: [
-          const Icon(Icons.chevron_right, color: Color(0xFF1A237E), size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              input.toUpperCase(),
-              style: const TextStyle(
-                color: Color(0xFFE0E0E0),
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Serif',
-                fontSize: 14,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAIResponse(BuildContext context, String response) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF1A237E).withOpacity(0.2)),
-      ),
-      child: MarkdownBody(
-        data: response,
-        styleSheet: MarkdownStyleSheet(
-          p: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                height: 1.8,
-                fontSize: 17,
-                color: const Color(0xFFC0C0C0),
-              ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final adventure = ref.watch(activeAdventureProvider);
@@ -216,8 +172,8 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (index > 0) // Don't show the initial "Starting journey" input
-                        _buildPlayerAction(segment.playerInput),
-                      _buildAIResponse(context, segment.aiResponse),
+                        PlayerActionWidget(input: segment.playerInput),
+                      StorySegmentWidget(response: segment.aiResponse),
                       const SizedBox(height: 32),
                     ],
                   ),

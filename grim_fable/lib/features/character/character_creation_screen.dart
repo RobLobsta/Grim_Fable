@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/character.dart';
 import '../../core/services/ai_provider.dart';
+import '../../shared/widgets/section_header.dart';
 import 'character_provider.dart';
 
 class CharacterCreationScreen extends ConsumerStatefulWidget {
@@ -97,7 +98,7 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildSectionHeader(context, 'IDENTITY', Icons.badge_outlined),
+                const SectionHeader(title: 'IDENTITY', icon: Icons.badge_outlined),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _nameController,
@@ -119,7 +120,7 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildSectionHeader(context, 'BACKSTORY', Icons.history_edu),
+                    const SectionHeader(title: 'BACKSTORY', icon: Icons.history_edu),
                     if (_isGenerating)
                       const SizedBox(
                         width: 20,
@@ -162,20 +163,4 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, color: const Color(0xFF1A237E), size: 24),
-        const SizedBox(width: 12),
-        Text(
-          title,
-          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                fontSize: 18,
-                letterSpacing: 2,
-                color: const Color(0xFFC0C0C0),
-              ),
-        ),
-      ],
-    );
-  }
 }

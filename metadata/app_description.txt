@@ -1,0 +1,13 @@
+Grim Fable: Dark Fantasy Text Adventure
+
+Forge your soul and embark on a journey through a world where every choice is written in blood and shadow. Grim Fable is an AI-powered interactive storytelling experience that blends the depth of classic role-playing games with the infinite possibilities of modern large language models.
+
+Features:
+- Forge Your Legend: Create a character with a unique identity and an AI-generated backstory that evolves as you play.
+- Dynamic Chronicles: Experience endless adventures where the AI responds to your every action, weaving a gritty, dark fantasy narrative tailored to you.
+- Persistent Progression: Your character's history is not just a log; it becomes part of their permanent backstory, influencing future journeys.
+- Gritty Atmosphere: Immerse yourself in a dark fantasy world with a clean, thematic UI designed for readability and immersion.
+
+Will you become a legend sung of by bards, or just another ghost in the Grim Fable?
+
+Download now and begin thy journey.
