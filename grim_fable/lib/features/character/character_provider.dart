@@ -36,10 +36,22 @@ class CharacterNotifier extends StateNotifier<List<Character>> {
   }
 }
 
-final activeCharacterProvider = StateProvider<Character?>((ref) {
+final selectedCharacterIdProvider = StateProvider<String?>((ref) => null);
+
+final activeCharacterProvider = Provider<Character?>((ref) {
   final characters = ref.watch(charactersProvider);
   if (characters.isEmpty) return null;
-  // Sort by last played and return the first
+
+  final selectedId = ref.watch(selectedCharacterIdProvider);
+  if (selectedId != null) {
+    try {
+      return characters.firstWhere((c) => c.id == selectedId);
+    } catch (_) {
+      // If selected character no longer exists, fall back to default
+    }
+  }
+
+  // Default: Sort by last played and return the first
   final sorted = [...characters];
   sorted.sort((a, b) => b.lastPlayedAt.compareTo(a.lastPlayedAt));
   return sorted.first;

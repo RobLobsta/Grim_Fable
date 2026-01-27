@@ -11,6 +11,7 @@ import 'package:grim_fable/core/models/character.dart';
 import 'package:grim_fable/core/models/adventure.dart';
 import 'package:grim_fable/core/services/ai_provider.dart';
 import 'package:grim_fable/core/services/fake_ai_service.dart';
+import 'package:grim_fable/core/services/settings_service.dart';
 import 'package:mockito/mockito.dart';
 import 'mocks.mocks.dart';
 
@@ -18,6 +19,14 @@ void main() {
   testWidgets('Adventure Screen Flow Test', (WidgetTester tester) async {
     final mockCharacterRepo = MockCharacterRepository();
     final mockAdventureRepo = MockAdventureRepository();
+    final mockSettingsService = MockSettingsService();
+
+    when(mockSettingsService.getUiPreset()).thenReturn('Default');
+    when(mockSettingsService.getRecommendedResponsesEnabled()).thenReturn(true);
+    when(mockSettingsService.getHfApiKey()).thenReturn('');
+    when(mockSettingsService.getTemperature()).thenReturn(0.8);
+    when(mockSettingsService.getMaxTokens()).thenReturn(150);
+
     final character = Character.create(name: 'Test Hero', backstory: 'A brave soul.');
     final adventure = Adventure.create(characterId: character.id);
 
@@ -54,6 +63,7 @@ void main() {
         overrides: [
           characterRepositoryProvider.overrideWithValue(mockCharacterRepo),
           adventureRepositoryProvider.overrideWithValue(mockAdventureRepo),
+          settingsServiceProvider.overrideWithValue(mockSettingsService),
           aiServiceProvider.overrideWithValue(FakeAIService()),
         ],
         child: MaterialApp.router(
@@ -75,16 +85,19 @@ void main() {
     await container.read(activeAdventureProvider.notifier).continueLatestAdventure();
     await tester.pump();
 
-    expect(find.text('Welcome to the dark woods.'), findsOneWidget);
+    // Need to pump enough to finish typewriter
+    await tester.pump(const Duration(seconds: 5));
+    expect(find.textContaining('Welcome to the dark woods.'), findsOneWidget);
 
     // Submit an action
     await tester.enterText(find.byType(TextField), 'I look around.');
     await tester.tap(find.byIcon(Icons.send_rounded));
     await tester.pump(); // Start loading
 
-    // Wait for AI service without strict indicator check
+    // Wait for AI service
     await tester.pump(const Duration(seconds: 3));
-    await tester.pumpAndSettle();
+    await tester.pump(); // Handle state update after AI
+    await tester.pump(const Duration(seconds: 5)); // Wait for typewriter
 
     expect(find.byType(PlayerActionWidget), findsAtLeastNWidgets(1));
     expect(find.textContaining('mist swirls'), findsOneWidget);

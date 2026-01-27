@@ -49,10 +49,12 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
     state = adventure;
 
     // Generate first prompt
-    final firstPrompt = await _generateFirstPrompt();
+    final firstPromptFull = await _generateFirstPrompt();
+    final parsed = _parseResponse(firstPromptFull);
     final firstSegment = StorySegment(
       playerInput: "Starting the journey...",
-      aiResponse: firstPrompt,
+      aiResponse: parsed.text,
+      recommendedChoices: parsed.choices,
       timestamp: DateTime.now(),
     );
 
@@ -93,7 +95,7 @@ You are a creative storyteller for Grim Fable.
 Character: ${_activeCharacter!.name}
 Backstory: ${_activeCharacter!.backstory}
 
-Keep your responses short, typically 1-5 sentences and no more than 2 paragraphs.
+Keep your responses short, exactly 1 paragraph (1-5 sentences).
 Maintain a dark fantasy, gritty, and realistic tone.
 """;
 
@@ -104,18 +106,26 @@ Maintain a dark fantasy, gritty, and realistic tone.
 
     final temperature = _ref.read(temperatureProvider);
     final maxTokens = _ref.read(maxTokensProvider);
+    final recommendedEnabled = _ref.read(recommendedResponsesProvider);
 
-    final response = await _aiService.generateResponse(
+    final finalSystemMessage = recommendedEnabled
+        ? "$systemMessage\nAt the end of your response, provide 2-3 recommended player actions in the following format: [CHOICES] Action 1 | Action 2 | Action 3"
+        : systemMessage;
+
+    final fullResponse = await _aiService.generateResponse(
       action,
-      systemMessage: systemMessage,
+      systemMessage: finalSystemMessage,
       history: history,
       temperature: temperature,
       maxTokens: maxTokens,
     );
 
+    final parsed = _parseResponse(fullResponse);
+
     final newSegment = StorySegment(
       playerInput: action,
-      aiResponse: response,
+      aiResponse: parsed.text,
+      recommendedChoices: parsed.choices,
       timestamp: DateTime.now(),
     );
 
@@ -143,7 +153,7 @@ Character: ${_activeCharacter!.name}
 Backstory: ${_activeCharacter!.backstory}
 
 Continue the story naturally from the last point.
-Keep your responses short, typically 1-5 sentences and no more than 2 paragraphs.
+Keep your responses short, exactly 1 paragraph (1-5 sentences).
 Maintain a dark fantasy, gritty, and realistic tone.
 """;
 
@@ -154,19 +164,27 @@ Maintain a dark fantasy, gritty, and realistic tone.
 
     final temperature = _ref.read(temperatureProvider);
     final maxTokens = _ref.read(maxTokensProvider);
+    final recommendedEnabled = _ref.read(recommendedResponsesProvider);
 
-    final response = await _aiService.generateResponse(
+    final finalSystemMessage = recommendedEnabled
+        ? "$systemMessage\nAt the end of your response, provide 2-3 recommended player actions in the following format: [CHOICES] Action 1 | Action 2 | Action 3"
+        : systemMessage;
+
+    final fullResponse = await _aiService.generateResponse(
       "Continue",
-      systemMessage: systemMessage,
+      systemMessage: finalSystemMessage,
       history: history,
       temperature: temperature,
       maxTokens: maxTokens,
     );
 
+    final parsed = _parseResponse(fullResponse);
+
     final lastSegment = state!.storyHistory.last;
     final updatedSegment = StorySegment(
       playerInput: lastSegment.playerInput,
-      aiResponse: "${lastSegment.aiResponse}\n\n$response",
+      aiResponse: "${lastSegment.aiResponse}\n\n${parsed.text}",
+      recommendedChoices: parsed.choices,
       timestamp: DateTime.now(),
     );
 
@@ -222,17 +240,42 @@ Character: ${_activeCharacter!.name}
 Backstory: ${_activeCharacter!.backstory}
 """;
 
-    const prompt = "Set the scene for a new adventure. Describe the location and the immediate situation in 2-3 paragraphs. Maintain a gritty and realistic dark fantasy tone.";
+    const prompt = "Set the scene for a new adventure. Describe the location and the immediate situation in exactly 2 paragraphs. Maintain a gritty and realistic dark fantasy tone.";
 
     final temperature = _ref.read(temperatureProvider);
+    final recommendedEnabled = _ref.read(recommendedResponsesProvider);
 
-    return _aiService.generateResponse(
+    final finalSystemMessage = recommendedEnabled
+        ? "$systemMessage\nAt the end of your response, provide 2-3 recommended player actions in the following format: [CHOICES] Action 1 | Action 2 | Action 3"
+        : systemMessage;
+
+    final response = await _aiService.generateResponse(
       prompt,
-      systemMessage: systemMessage,
+      systemMessage: finalSystemMessage,
       temperature: temperature,
-      maxTokens: 500, // First prompt can be slightly longer
+      maxTokens: 1000, // First prompt can be slightly longer
     );
+
+    return response;
   }
+
+  _ParsedResponse _parseResponse(String response) {
+    if (response.contains("[CHOICES]")) {
+      final parts = response.split("[CHOICES]");
+      final text = parts[0].trim();
+      final choicesPart = parts[1].trim();
+      final choices = choicesPart.split("|").map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      return _ParsedResponse(text, choices);
+    }
+    return _ParsedResponse(response, null);
+  }
+}
+
+class _ParsedResponse {
+  final String text;
+  final List<String>? choices;
+
+  _ParsedResponse(this.text, this.choices);
 }
 
 extension ListTakeLast<T> on List<T> {

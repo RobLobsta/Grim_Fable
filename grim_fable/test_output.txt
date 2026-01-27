@@ -1,0 +1,289 @@
+00:00 +0: loading /app/grim_fable/test/widget_test.dart                                                                                                                                                00:01 +0: loading /app/grim_fable/test/widget_test.dart                                                                                                                                                00:02 +0: loading /app/grim_fable/test/widget_test.dart                                                                                                                                                00:02 +0: Welcome screen smoke test                                                                                                                                                                    00:03 +0: Welcome screen smoke test                                                                                                                                                                    00:03 +0: Welcome screen smoke test
+AutomatedTestWidgetsFlutterBinding - DEBUG MODE
+[root]
+└View(state: _ViewState#9ba6a)
+ └RawView
+  └_RawViewInternal-[_DeprecatedRawViewKey TestFlutterView#bbfb5](renderObject: _ReusableRenderView#a198d)
+   └_ViewScope
+    └_PipelineOwnerScope
+     └_MediaQueryFromView(state: _MediaQueryFromViewState#4ca81)
+      └MediaQuery(MediaQueryData(size: Size(800.0, 600.0), devicePixelRatio: 3.0, textScaler: SystemTextScaler (no scaling), platformBrightness: Brightness.light, padding: EdgeInsets.zero, viewPadding: EdgeInsets.zero, viewInsets: EdgeInsets.zero, systemGestureInsets: EdgeInsets.zero, alwaysUse24HourFormat: false, accessibleNavigation: false, highContrast: false, onOffSwitchLabels: false, disableAnimations: false, invertColors: false, boldText: false, navigationMode: traditional, gestureSettings: DeviceGestureSettings(touchSlop: null), displayFeatures: [], supportsShowingSystemContextMenu: false))
+       └FocusTraversalGroup(policy: ReadingOrderTraversalPolicy#b46f8, state: _FocusTraversalGroupState#1da4a)
+        └Focus(debugLabel: "FocusTraversalGroup", focusNode: _FocusTraversalGroupNode#7e7e6(FocusTraversalGroup), state: _FocusState#4891f)
+         └_FocusInheritedScope
+          └_FocusScopeWithExternalFocusNode(debugLabel: "View Scope", focusNode: FocusScopeNode#52d2a(View Scope), dependencies: [_FocusInheritedScope], state: _FocusScopeState#64d92)
+           └_FocusInheritedScope
+            └ProviderScope(state: ProviderScopeState#4df23)
+             └UncontrolledProviderScope
+              └GrimFableApp(dependencies: [UncontrolledProviderScope], state: _ConsumerState#915cc)
+               └ErrorWidget-[#f9efe](message: HiveError: Box not found. Did you forget to call Hive.openBox()?\nSee also: https://docs.flutter.dev/testing/errors, renderObject: RenderErrorBox#65f0f)
+
+
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following HiveError was thrown building GrimFableApp(dirty, dependencies:
+[UncontrolledProviderScope], state: _ConsumerState#915cc):
+Box not found. Did you forget to call Hive.openBox()?
+
+The relevant error-causing widget was:
+  GrimFableApp GrimFableApp:file:///app/grim_fable/test/widget_test.dart:27:22
+
+When the exception was thrown, this was the stack:
+#1      _ProviderStateSubscription.read (package:riverpod/src/framework/provider_base.dart:181:28)
+#2      ConsumerStatefulElement.watch (package:flutter_riverpod/src/consumer.dart:568:8)
+#3      GrimFableApp.build (package:grim_fable/main.dart:43:26)
+#4      _ConsumerState.build (package:flutter_riverpod/src/consumer.dart:476:19)
+#5      StatefulElement.build (package:flutter/src/widgets/framework.dart:5934:27)
+#6      ConsumerStatefulElement.build (package:flutter_riverpod/src/consumer.dart:539:20)
+#7      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5820:15)
+#8      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#9      Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#10     ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5802:5)
+#11     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5976:11)
+#12     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5796:5)
+...     Normal element mounting (7 frames)
+#19     _UncontrolledProviderScopeElement.mount (package:flutter_riverpod/src/framework.dart:315:11)
+...     Normal element mounting (9 frames)
+#28     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4590:20)
+#29     Element.updateChild (package:flutter/src/widgets/framework.dart:4053:20)
+#30     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#31     Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#32     ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#33     _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#34     Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#35     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#36     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#37     Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#38     StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#39     Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#40     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#41     Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#42     ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#43     _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#44     Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#45     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#46     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#47     Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#48     StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#49     Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#50     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#51     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#52     Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#53     StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#54     Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#55     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#56     Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#57     ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#58     Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#59     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#60     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#61     Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#62     StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#63     Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#64     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#65     Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#66     ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#67     Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#68     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#69     Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#70     ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#71     Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#72     _RawViewElement._updateChild (package:flutter/src/widgets/view.dart:481:16)
+#73     _RawViewElement.update (package:flutter/src/widgets/view.dart:568:5)
+#74     Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#75     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#76     Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#77     StatelessElement.update (package:flutter/src/widgets/framework.dart:5898:5)
+#78     Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#79     ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#80     StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#81     Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#82     StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#83     Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#84     RootElement._rebuild (package:flutter/src/widgets/binding.dart:1782:16)
+#85     RootElement.update (package:flutter/src/widgets/binding.dart:1760:5)
+#86     RootElement.performRebuild (package:flutter/src/widgets/binding.dart:1774:7)
+#87     Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#88     BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#89     BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#90     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#91     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:1506:19)
+#92     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#93     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1434:15)
+#94     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1347:9)
+#95     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1335:9)
+#98     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#99     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1324:27)
+#100    WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:598:22)
+#103    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#104    WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#105    main.<anonymous closure> (file:///app/grim_fable/test/widget_test.dart:21:18)
+#106    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+#107    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+#109    HiveImpl._getBoxInternal (package:hive/src/hive_impl.dart:186:7)
+#110    HiveImpl.box (package:hive/src/hive_impl.dart:197:33)
+#111    SettingsService.getUiPreset (package:grim_fable/core/services/settings_service.dart:74:22)
+#112    new SettingsNotifier (package:grim_fable/core/services/settings_service.dart:99:78)
+#113    uiPresetProvider.<anonymous closure> (package:grim_fable/core/services/settings_service.dart:23:10)
+#114    ProviderContainer.listen (package:riverpod/src/framework/container.dart:280:21)
+#115    ConsumerStatefulElement.watch.<anonymous closure> (package:flutter_riverpod/src/consumer.dart:564:25)
+#116    _LinkedHashMapMixin.putIfAbsent (dart:_compact_hash:675:23)
+#117    ConsumerStatefulElement.watch (package:flutter_riverpod/src/consumer.dart:557:26)
+#118    GrimFableApp.build (package:grim_fable/main.dart:43:26)
+#119    _ConsumerState.build (package:flutter_riverpod/src/consumer.dart:476:19)
+#120    StatefulElement.build (package:flutter/src/widgets/framework.dart:5934:27)
+#121    ConsumerStatefulElement.build (package:flutter_riverpod/src/consumer.dart:539:20)
+#122    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5820:15)
+#123    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#124    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#125    ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5802:5)
+#126    StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5976:11)
+#127    ComponentElement.mount (package:flutter/src/widgets/framework.dart:5796:5)
+...     Normal element mounting (7 frames)
+#134    _UncontrolledProviderScopeElement.mount (package:flutter_riverpod/src/framework.dart:315:11)
+...     Normal element mounting (9 frames)
+#143    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4590:20)
+#144    Element.updateChild (package:flutter/src/widgets/framework.dart:4053:20)
+#145    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#146    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#147    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#148    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#149    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#150    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#151    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#152    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#153    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#154    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#155    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#156    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#157    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#158    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#159    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#160    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#161    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#162    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#163    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#164    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#165    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#166    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#167    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#168    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#169    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#170    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#171    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#172    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#173    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#174    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#175    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#176    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#177    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#178    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#179    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#180    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#181    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#182    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#183    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#184    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#185    ProxyElement.update (package:flutter/src/widgets/framework.dart:6152:5)
+#186    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#187    _RawViewElement._updateChild (package:flutter/src/widgets/view.dart:481:16)
+#188    _RawViewElement.update (package:flutter/src/widgets/view.dart:568:5)
+#189    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#190    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#191    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#192    StatelessElement.update (package:flutter/src/widgets/framework.dart:5898:5)
+#193    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#194    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5844:16)
+#195    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5985:11)
+#196    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#197    StatefulElement.update (package:flutter/src/widgets/framework.dart:6010:5)
+#198    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#199    RootElement._rebuild (package:flutter/src/widgets/binding.dart:1782:16)
+#200    RootElement.update (package:flutter/src/widgets/binding.dart:1760:5)
+#201    RootElement.performRebuild (package:flutter/src/widgets/binding.dart:1774:7)
+#202    Element.rebuild (package:flutter/src/widgets/framework.dart:5532:7)
+#203    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#204    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#205    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#206    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:1506:19)
+#207    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#208    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1434:15)
+#209    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1347:9)
+#210    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1335:9)
+#213    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#214    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1324:27)
+#215    WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:598:22)
+#218    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#219    WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#220    main.<anonymous closure> (file:///app/grim_fable/test/widget_test.dart:21:18)
+#221    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+#223    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:189:25)
+#224    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:19)
+#226    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1048:5)
+#229    TestWidgetsFlutterBinding._runTest (package:flutter_test/src/binding.dart:1033:10)
+#230    AutomatedTestWidgetsFlutterBinding.runTest.<anonymous closure> (package:flutter_test/src/binding.dart:1564:24)
+#231    FakeAsync.run.<anonymous closure>.<anonymous closure> (package:fake_async/fake_async.dart:182:47)
+#236    withClock (package:clock/src/default.dart:52:10)
+#237    FakeAsync.run.<anonymous closure> (package:fake_async/fake_async.dart:182:15)
+#242    FakeAsync.run (package:fake_async/fake_async.dart:181:52)
+#243    AutomatedTestWidgetsFlutterBinding.runTest (package:flutter_test/src/binding.dart:1561:15)
+#244    testWidgets.<anonymous closure> (package:flutter_test/src/widget_tester.dart:184:24)
+#245    Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:242:19)
+#247    Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:241:9)
+#252    Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:240:13)
+#253    Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:282:17)
+#258    Invoker._waitForOutstandingCallbacks (package:test_api/src/backend/invoker.dart:278:5)
+#259    Invoker._onRun.<anonymous closure>.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/invoker.dart:418:17)
+#261    Invoker._onRun.<anonymous closure>.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/invoker.dart:416:11)
+#266    Invoker._onRun.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/invoker.dart:407:9)
+#267    Invoker._guardIfGuarded (package:test_api/src/backend/invoker.dart:450:15)
+#268    Invoker._onRun.<anonymous closure> (package:test_api/src/backend/invoker.dart:406:7)
+#275    Invoker._onRun (package:test_api/src/backend/invoker.dart:405:11)
+#276    LiveTestController.run (package:test_api/src/backend/live_test_controller.dart:153:11)
+#277    RemoteListener._runLiveTest.<anonymous closure> (package:test_api/src/backend/remote_listener.dart:275:16)
+#282    RemoteListener._runLiveTest (package:test_api/src/backend/remote_listener.dart:274:5)
+#283    RemoteListener._serializeTest.<anonymous closure> (package:test_api/src/backend/remote_listener.dart:221:7)
+#301    _GuaranteeSink.add (package:stream_channel/src/guarantee_channel.dart:125:12)
+#302    new _MultiChannel.<anonymous closure> (package:stream_channel/src/multi_channel.dart:159:31)
+#304    CastStreamSubscription._onData (dart:_internal/async_cast.dart:95:11)
+#330    new _WebSocketImpl._fromSocket.<anonymous closure> (dart:_http/websocket_impl.dart:1252:27)
+#336    _WebSocketProtocolTransformer._messageFrameEnd (dart:_http/websocket_impl.dart:348:23)
+#337    _WebSocketProtocolTransformer.add (dart:_http/websocket_impl.dart:238:46)
+#345    _Socket._onData (dart:io-patch/socket_patch.dart:2880:41)
+#352    new _RawSocket.<anonymous closure> (dart:io-patch/socket_patch.dart:2315:31)
+#353    _NativeSocket.issueReadEvent.issue (dart:io-patch/socket_patch.dart:1655:14)
+(elided 108 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TypeWidgetFinder:<Found 0 widgets with type "MaterialApp": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///app/grim_fable/test/widget_test.dart:38:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1059:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///app/grim_fable/test/widget_test.dart line 38
+The test description was:
+  Welcome screen smoke test
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (2) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:03 +0 -1: Welcome screen smoke test [E]
+  Test failed. See exception logs above.
+  The test description was: Welcome screen smoke test
+
+
+To run this test again: /opt/flutter/bin/cache/dart-sdk/bin/dart test /app/grim_fable/test/widget_test.dart -p vm --plain-name 'Welcome screen smoke test'
+00:03 +0 -1: Some tests failed.

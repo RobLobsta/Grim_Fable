@@ -1,23 +1,48 @@
 import 'package:flutter/material.dart';
 
 class GrimFableTheme {
-  static const primaryColor = Color(0xFF1A237E);
-  static const secondaryColor = Color(0xFFC0C0C0);
-  static const backgroundColor = Color(0xFF0D1117);
-  static const surfaceColor = Color(0xFF161B22);
-  static const accentColor = Color(0xFF5C6BC0);
+  static ThemeData getTheme(String preset) {
+    Color primaryColor;
+    Color backgroundColor;
+    Color accentColor;
+    Color textColor = const Color(0xFFC0C0C0);
 
-  static ThemeData get darkTheme {
+    switch (preset) {
+      case 'Abyssal':
+        primaryColor = const Color(0xFF004D40);
+        backgroundColor = const Color(0xFF001A1A);
+        accentColor = const Color(0xFF00BFA5);
+        break;
+      case 'Blood':
+        primaryColor = const Color(0xFF4A0000);
+        backgroundColor = const Color(0xFF1A0000);
+        accentColor = const Color(0xFFFF5252);
+        break;
+      case 'Emerald':
+        primaryColor = const Color(0xFF003300);
+        backgroundColor = const Color(0xFF001A00);
+        accentColor = const Color(0xFFD4AF37); // Gold accent for Emerald
+        break;
+      default:
+        primaryColor = const Color(0xFF1A237E);
+        backgroundColor = const Color(0xFF0D1117);
+        accentColor = const Color(0xFF5C6BC0);
+    }
+
+    const secondaryColor = Color(0xFFC0C0C0);
+    const surfaceColor = Color(0xFF161B22);
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: ColorScheme.dark(
         primary: primaryColor,
         secondary: secondaryColor,
         surface: surfaceColor,
         background: backgroundColor,
         onPrimary: secondaryColor,
         onSecondary: primaryColor,
+        tertiary: accentColor,
       ),
       scaffoldBackgroundColor: backgroundColor,
       cardTheme: CardThemeData(
@@ -28,25 +53,25 @@ class GrimFableTheme {
           side: BorderSide(color: primaryColor.withOpacity(0.5), width: 1),
         ),
       ),
-      textTheme: const TextTheme(
-        displayLarge: TextStyle(
+      textTheme: TextTheme(
+        displayLarge: const TextStyle(
           color: Color(0xFFE0E0E0),
           fontFamily: 'Serif',
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
         ),
-        displayMedium: TextStyle(
+        displayMedium: const TextStyle(
           color: Color(0xFFE0E0E0),
           fontFamily: 'Serif',
           fontWeight: FontWeight.bold,
         ),
         bodyLarge: TextStyle(
-          color: secondaryColor,
+          color: textColor,
           fontSize: 18,
           fontFamily: 'Serif',
           height: 1.6,
         ),
-        bodyMedium: TextStyle(
+        bodyMedium: const TextStyle(
           color: Color(0xFFB0BEC5),
           fontSize: 16,
           fontFamily: 'Serif',
@@ -70,7 +95,7 @@ class GrimFableTheme {
         fillColor: Colors.white.withOpacity(0.03),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryColor),
+          borderSide: BorderSide(color: primaryColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

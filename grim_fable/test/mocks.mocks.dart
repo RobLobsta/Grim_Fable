@@ -8,6 +8,7 @@ import 'dart:async' as _i3;
 import 'package:grim_fable/core/models/adventure.dart' as _i6;
 import 'package:grim_fable/core/models/character.dart' as _i4;
 import 'package:grim_fable/core/services/ai_service.dart' as _i7;
+import 'package:grim_fable/core/services/settings_service.dart' as _i9;
 import 'package:grim_fable/features/adventure/adventure_repository.dart' as _i5;
 import 'package:grim_fable/features/character/character_repository.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
@@ -236,4 +237,131 @@ class MockAIService extends _i1.Mock implements _i7.AIService {
           ),
         )),
       ) as _i3.Future<String>);
+}
+
+/// A class which mocks [SettingsService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockSettingsService extends _i1.Mock implements _i9.SettingsService {
+  MockSettingsService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.Future<void> init() => (super.noSuchMethod(
+        Invocation.method(
+          #init,
+          [],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  String getHfApiKey() => (super.noSuchMethod(
+        Invocation.method(
+          #getHfApiKey,
+          [],
+        ),
+        returnValue: _i8.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getHfApiKey,
+            [],
+          ),
+        ),
+      ) as String);
+
+  @override
+  _i3.Future<void> setHfApiKey(String? key) => (super.noSuchMethod(
+        Invocation.method(
+          #setHfApiKey,
+          [key],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  double getTemperature() => (super.noSuchMethod(
+        Invocation.method(
+          #getTemperature,
+          [],
+        ),
+        returnValue: 0.0,
+      ) as double);
+
+  @override
+  _i3.Future<void> setTemperature(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setTemperature,
+          [value],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  int getMaxTokens() => (super.noSuchMethod(
+        Invocation.method(
+          #getMaxTokens,
+          [],
+        ),
+        returnValue: 0,
+      ) as int);
+
+  @override
+  _i3.Future<void> setMaxTokens(int? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setMaxTokens,
+          [value],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  String getUiPreset() => (super.noSuchMethod(
+        Invocation.method(
+          #getUiPreset,
+          [],
+        ),
+        returnValue: _i8.dummyValue<String>(
+          this,
+          Invocation.method(
+            #getUiPreset,
+            [],
+          ),
+        ),
+      ) as String);
+
+  @override
+  _i3.Future<void> setUiPreset(String? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setUiPreset,
+          [value],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  bool getRecommendedResponsesEnabled() => (super.noSuchMethod(
+        Invocation.method(
+          #getRecommendedResponsesEnabled,
+          [],
+        ),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  _i3.Future<void> setRecommendedResponsesEnabled(bool? value) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #setRecommendedResponsesEnabled,
+          [value],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 }

@@ -20,19 +20,22 @@ class StorySegmentAdapter extends TypeAdapter<StorySegment> {
       playerInput: fields[0] as String,
       aiResponse: fields[1] as String,
       timestamp: fields[2] as DateTime,
+      recommendedChoices: (fields[3] as List?)?.cast<String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, StorySegment obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.playerInput)
       ..writeByte(1)
       ..write(obj.aiResponse)
       ..writeByte(2)
-      ..write(obj.timestamp);
+      ..write(obj.timestamp)
+      ..writeByte(3)
+      ..write(obj.recommendedChoices);
   }
 
   @override

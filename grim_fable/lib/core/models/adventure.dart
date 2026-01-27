@@ -14,10 +14,14 @@ class StorySegment {
   @HiveField(2)
   final DateTime timestamp;
 
+  @HiveField(3)
+  final List<String>? recommendedChoices;
+
   StorySegment({
     required this.playerInput,
     required this.aiResponse,
     required this.timestamp,
+    this.recommendedChoices,
   });
 }
 

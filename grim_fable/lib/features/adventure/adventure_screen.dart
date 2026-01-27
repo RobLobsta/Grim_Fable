@@ -20,6 +20,23 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
   bool _isLoading = false;
   String? _errorMessage;
   String? _lastFailedAction;
+  final Map<int, String> _animatedTexts = {};
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize animated texts with existing history so they don't re-type on load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final adventure = ref.read(activeAdventureProvider);
+      if (adventure != null) {
+        setState(() {
+          for (int i = 0; i < adventure.storyHistory.length; i++) {
+            _animatedTexts[i] = adventure.storyHistory[i].aiResponse;
+          }
+        });
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -187,11 +204,33 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
               itemBuilder: (context, index) {
                 if (index < adventure.storyHistory.length) {
                   final segment = adventure.storyHistory[index];
+                  final shouldAnimate = index == adventure.storyHistory.length - 1 && _animatedTexts[index] != segment.aiResponse;
+                  if (shouldAnimate) {
+                    _animatedTexts[index] = segment.aiResponse;
+                  }
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       if (index > 0) PlayerActionWidget(input: segment.playerInput),
-                      StorySegmentWidget(response: segment.aiResponse),
+                      StorySegmentWidget(
+                        response: segment.aiResponse,
+                        animate: shouldAnimate,
+                      ),
+                      if (index == adventure.storyHistory.length - 1 && segment.recommendedChoices != null && segment.recommendedChoices!.isNotEmpty && adventure.isActive) ...[
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: segment.recommendedChoices!.map((choice) => ActionChip(
+                            label: Text(
+                              choice.toUpperCase(),
+                              style: const TextStyle(fontSize: 10, letterSpacing: 1, fontWeight: FontWeight.bold),
+                            ),
+                            backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                            onPressed: _isLoading ? null : () => _submitAction(retryAction: choice),
+                          )).toList(),
+                        ),
+                      ],
                       const SizedBox(height: 32),
                     ],
                   );
@@ -269,7 +308,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
               decoration: BoxDecoration(
-                color: const Color(0xFF161B22),
+                color: Theme.of(context).colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.5),
@@ -278,7 +317,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                   ),
                 ],
                 border: Border(
-                  top: BorderSide(color: const Color(0xFF1A237E).withOpacity(0.3), width: 1),
+                  top: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.3), width: 1),
                 ),
               ),
               child: SafeArea(
@@ -300,8 +339,8 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                             ),
                           ),
                           style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFFC0C0C0),
-                            backgroundColor: const Color(0xFF1A237E).withOpacity(0.3),
+                            foregroundColor: Theme.of(context).colorScheme.secondary,
+                            backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(20),
@@ -317,7 +356,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                             decoration: InputDecoration(
                               hintText: "WHAT IS THY WILL?",
                               hintStyle: TextStyle(
-                                color: const Color(0xFFC0C0C0).withOpacity(0.3),
+                                color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
                                 letterSpacing: 2,
                                 fontSize: 12,
                               ),
@@ -338,14 +377,14 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                         ),
                         const SizedBox(width: 12),
                         Container(
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF1A237E),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
                             shape: BoxShape.circle,
                           ),
                           child: IconButton(
                             icon: const Icon(Icons.send_rounded),
                             onPressed: _isLoading ? null : _submitAction,
-                            color: const Color(0xFFC0C0C0),
+                            color: Theme.of(context).colorScheme.secondary,
                           ),
                         ),
                       ],
