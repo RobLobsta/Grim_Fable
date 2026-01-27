@@ -24,9 +24,9 @@ class GrimFableTheme {
         accentColor = const Color(0xFFD4AF37); // Gold accent for Emerald
         break;
       default:
-        primaryColor = const Color(0xFF1A237E);
+        primaryColor = const Color(0xFF283593);
         backgroundColor = const Color(0xFF0D1117);
-        accentColor = const Color(0xFF5C6BC0);
+        accentColor = const Color(0xFF7986CB);
     }
 
     const secondaryColor = Color(0xFFC0C0C0);

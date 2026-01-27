@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/character/character_creation_screen.dart';
 import '../../features/adventure/adventure_screen.dart';
+import '../../features/adventure/new_adventure_screen.dart';
 import '../../features/adventure/adventure_history_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -21,6 +22,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/adventure',
         builder: (context, state) => const AdventureScreen(),
+      ),
+      GoRoute(
+        path: '/new-adventure',
+        builder: (context, state) => const NewAdventureScreen(),
       ),
       GoRoute(
         path: '/history',

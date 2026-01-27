@@ -71,13 +71,20 @@ class HuggingFaceAIService implements AIService {
   @override
   Future<String> generateBackstory(String characterName) async {
     const systemMessage = "You are a creative storyteller for a dark fantasy adventure called Grim Fable.";
-    final prompt = "Generate a dark, compelling, and realistic backstory (exactly 2 paragraphs) for a character named $characterName. The tone should be dark fantasy, gritty, mysterious, and evoke a sense of tragedy or ancient secrets.";
+    final prompt = "Generate a dark, compelling, and realistic backstory (exactly 1 paragraph) for a character named $characterName. The tone should be dark fantasy, gritty, mysterious, and evoke a sense of tragedy or ancient secrets.";
 
     return generateResponse(prompt, systemMessage: systemMessage, maxTokens: 1000);
   }
 
   @override
   Future<String> generateBackstoryUpdate(String currentBackstory, String adventureSummary) async {
+    // Repurpose to default to 1 paragraph append for backward compatibility if needed,
+    // but preferred way is generateBackstoryAppend.
+    return generateBackstoryAppend(currentBackstory, adventureSummary, 1);
+  }
+
+  @override
+  Future<String> generateBackstoryAppend(String currentBackstory, String adventureSummary, int paragraphs) async {
     const systemMessage = "You are a creative storyteller for Grim Fable.";
     final prompt = """
 Current Character Backstory:
@@ -86,11 +93,35 @@ $currentBackstory
 Recent Adventure Summary:
 $adventureSummary
 
-Update the character's backstory to include the essence of this recent adventure.
+Based on the recent adventure, write exactly $paragraphs paragraph(s) of new backstory to be appended to the character's history.
 Maintain a dark fantasy, gritty tone and keep it realistic.
-The updated backstory should be exactly 2 paragraphs in total.
+Return ONLY the new paragraph(s).
 """;
 
     return generateResponse(prompt, systemMessage: systemMessage, maxTokens: 1000);
+  }
+
+  @override
+  Future<List<String>> generateAdventureSuggestions(String characterName, String backstory, List<String> pastAdventureSummaries) async {
+    const systemMessage = "You are a creative storyteller for Grim Fable.";
+
+    String historyContext = "";
+    if (pastAdventureSummaries.isNotEmpty) {
+      historyContext = "\nPast Adventures:\n${pastAdventureSummaries.join("\n")}";
+    }
+
+    final prompt = """
+Character: $characterName
+Backstory: $backstory
+$historyContext
+
+Based on the character's backstory and past adventures, generate 3 unique, one-line starting prompts for a new dark fantasy adventure.
+Each suggestion should be a concise, compelling hook (1 sentence).
+Format your response exactly as follows:
+Suggestion 1 | Suggestion 2 | Suggestion 3
+""";
+
+    final response = await generateResponse(prompt, systemMessage: systemMessage, maxTokens: 500);
+    return response.split("|").map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
   }
 }
