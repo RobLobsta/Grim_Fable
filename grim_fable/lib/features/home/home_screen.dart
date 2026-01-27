@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../character/character_provider.dart';
 import '../adventure/adventure_provider.dart';
 import '../../core/services/settings_service.dart';
+import '../../shared/widgets/ai_settings_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -174,54 +175,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _showApiKeyDialog(BuildContext context) async {
-    final controller = TextEditingController(text: ref.read(hfApiKeyProvider));
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('AI DIVINATION SETTINGS'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Enter thy Hugging Face API Key to unlock the fates.',
-              style: TextStyle(fontFamily: 'Serif', fontSize: 14, color: Colors.white70),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                labelText: 'API KEY',
-                hintText: 'hf_...',
-                border: OutlineInputBorder(),
-              ),
-              obscureText: true,
-              style: const TextStyle(fontFamily: 'Serif'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('CANCEL'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await ref.read(hfApiKeyProvider.notifier).setApiKey(controller.text.trim());
-              if (context.mounted) {
-                Navigator.of(context).pop();
-                scaffoldMessenger.showSnackBar(
-                  const SnackBar(content: Text('The fates have been updated.')),
-                );
-              }
-            },
-            child: const Text('SAVE'),
-          ),
-        ],
-      ),
-    );
+    return AiSettingsDialog.show(context);
   }
 
   Widget _buildHeroIcon() {

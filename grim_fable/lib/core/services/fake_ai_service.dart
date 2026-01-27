@@ -6,6 +6,8 @@ class FakeAIService implements AIService {
     String prompt, {
     String? systemMessage,
     List<Map<String, String>>? history,
+    double? temperature,
+    int? maxTokens,
   }) async {
     await Future.delayed(const Duration(seconds: 2));
     return "The mist swirls around your feet as you stand before the ancient iron gates. A chill wind carries the scent of damp earth and decay. You feel as if a thousand unseen eyes are watching you from the shadows of the twisted trees.";

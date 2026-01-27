@@ -79,8 +79,10 @@ void main() {
     await tester.ensureVisible(find.text('NEW ADVENTURE'));
     await tester.tap(find.text('NEW ADVENTURE'));
     await tester.pump();
-    // It calls AI service for first prompt
-    await tester.pump(const Duration(seconds: 3));
+    await tester.pump(const Duration(milliseconds: 500));
+    // It calls AI service for first prompt which takes ~2s in FakeAIService
+    await tester.pump(const Duration(seconds: 5));
+    // After AI finishes, loading screen should be gone and navigation complete
     await tester.pumpAndSettle();
 
     // Should be on Adventure Screen

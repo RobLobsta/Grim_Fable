@@ -19,6 +19,8 @@ class HuggingFaceAIService implements AIService {
     String prompt, {
     String? systemMessage,
     List<Map<String, String>>? history,
+    double? temperature,
+    int? maxTokens,
   }) async {
     if (_apiKey.isEmpty) {
       return "AI Service Error: API Key is missing. Please provide a Hugging Face API key.";
@@ -36,8 +38,8 @@ class HuggingFaceAIService implements AIService {
         data: {
           'model': _modelId,
           'messages': messages,
-          'max_tokens': 300,
-          'temperature': 0.7,
+          'max_tokens': maxTokens ?? 150,
+          'temperature': temperature ?? 0.8,
           'top_p': 0.9,
           'stream': false,
         },
@@ -69,9 +71,9 @@ class HuggingFaceAIService implements AIService {
   @override
   Future<String> generateBackstory(String characterName) async {
     const systemMessage = "You are a creative storyteller for a dark fantasy adventure called Grim Fable.";
-    final prompt = "Generate a dark, compelling backstory (2 paragraphs) for a character named $characterName. The tone should be gritty, mysterious, and evoke a sense of tragedy or ancient secrets.";
+    final prompt = "Generate a dark, compelling, and realistic backstory (3-4 paragraphs) for a character named $characterName. The tone should be dark fantasy, gritty, mysterious, and evoke a sense of tragedy or ancient secrets.";
 
-    return generateResponse(prompt, systemMessage: systemMessage);
+    return generateResponse(prompt, systemMessage: systemMessage, maxTokens: 500);
   }
 
   @override
@@ -85,9 +87,10 @@ Recent Adventure Summary:
 $adventureSummary
 
 Update the character's backstory to include the essence of this recent adventure.
-Keep it concise (2-3 paragraphs) and maintain the dark fantasy tone.
+Maintain a dark fantasy, gritty tone and keep it realistic.
+The updated backstory should be around 3-4 paragraphs in total.
 """;
 
-    return generateResponse(prompt, systemMessage: systemMessage);
+    return generateResponse(prompt, systemMessage: systemMessage, maxTokens: 500);
   }
 }
