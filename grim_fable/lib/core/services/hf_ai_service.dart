@@ -8,29 +8,38 @@ class HuggingFaceAIService implements AIService {
 
   HuggingFaceAIService({
     required Dio dio,
-    String modelId = 'mistralai/Mistral-7B-Instruct-v0.2',
+    String modelId = 'meta-llama/Llama-3.1-8B-Instruct',
     String apiKey = '',
   })  : _dio = dio,
         _modelId = modelId,
         _apiKey = apiKey;
 
   @override
-  Future<String> generateResponse(String prompt) async {
+  Future<String> generateResponse(
+    String prompt, {
+    String? systemMessage,
+    List<Map<String, String>>? history,
+  }) async {
     if (_apiKey.isEmpty) {
       return "AI Service Error: API Key is missing. Please provide a Hugging Face API key.";
     }
 
     try {
+      final messages = [
+        if (systemMessage != null) {'role': 'system', 'content': systemMessage},
+        if (history != null) ...history,
+        {'role': 'user', 'content': prompt},
+      ];
+
       final response = await _dio.post(
-        'https://api-inference.huggingface.co/models/$_modelId',
+        'https://router.huggingface.co/v1/chat/completions',
         data: {
-          'inputs': prompt,
-          'parameters': {
-            'max_new_tokens': 300,
-            'temperature': 0.7,
-            'top_p': 0.9,
-            'return_full_text': false,
-          },
+          'model': _modelId,
+          'messages': messages,
+          'max_tokens': 300,
+          'temperature': 0.7,
+          'top_p': 0.9,
+          'stream': false,
         },
         options: Options(
           headers: {
@@ -41,8 +50,8 @@ class HuggingFaceAIService implements AIService {
       );
 
       if (response.statusCode == 200) {
-        if (response.data is List && response.data.isNotEmpty) {
-          return response.data[0]['generated_text'] ?? "No response generated.";
+        if (response.data != null && response.data['choices'] != null && response.data['choices'].isNotEmpty) {
+          return response.data['choices'][0]['message']['content'] ?? "No response generated.";
         }
         throw Exception("Invalid response format from AI service");
       } else {
@@ -50,7 +59,8 @@ class HuggingFaceAIService implements AIService {
       }
     } catch (e) {
       if (e is DioException) {
-        throw Exception("Network Error: ${e.message}");
+        final errorMessage = e.response?.data?['error']?['message'] ?? e.message;
+        throw Exception("Network Error: $errorMessage");
       }
       rethrow;
     }
@@ -58,19 +68,16 @@ class HuggingFaceAIService implements AIService {
 
   @override
   Future<String> generateBackstory(String characterName) async {
-    final prompt = """
-<s>[INST] You are a creative storyteller for a dark fantasy adventure called Grim Fable.
-Generate a dark, compelling backstory (2 paragraphs) for a character named $characterName.
-The tone should be gritty, mysterious, and evoke a sense of tragedy or ancient secrets.
-[/INST]
-""";
-    return generateResponse(prompt);
+    const systemMessage = "You are a creative storyteller for a dark fantasy adventure called Grim Fable.";
+    final prompt = "Generate a dark, compelling backstory (2 paragraphs) for a character named $characterName. The tone should be gritty, mysterious, and evoke a sense of tragedy or ancient secrets.";
+
+    return generateResponse(prompt, systemMessage: systemMessage);
   }
 
   @override
   Future<String> generateBackstoryUpdate(String currentBackstory, String adventureSummary) async {
+    const systemMessage = "You are a creative storyteller for Grim Fable.";
     final prompt = """
-<s>[INST] You are a creative storyteller for Grim Fable.
 Current Character Backstory:
 $currentBackstory
 
@@ -79,8 +86,8 @@ $adventureSummary
 
 Update the character's backstory to include the essence of this recent adventure.
 Keep it concise (2-3 paragraphs) and maintain the dark fantasy tone.
-[/INST]
 """;
-    return generateResponse(prompt);
+
+    return generateResponse(prompt, systemMessage: systemMessage);
   }
 }

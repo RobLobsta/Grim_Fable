@@ -163,16 +163,29 @@ class MockAIService extends _i1.Mock implements _i7.AIService {
   }
 
   @override
-  _i3.Future<String> generateResponse(String? prompt) => (super.noSuchMethod(
+  _i3.Future<String> generateResponse(
+    String? prompt, {
+    String? systemMessage,
+    List<Map<String, String>>? history,
+  }) =>
+      (super.noSuchMethod(
         Invocation.method(
           #generateResponse,
           [prompt],
+          {
+            #systemMessage: systemMessage,
+            #history: history,
+          },
         ),
         returnValue: _i3.Future<String>.value(_i8.dummyValue<String>(
           this,
           Invocation.method(
             #generateResponse,
             [prompt],
+            {
+              #systemMessage: systemMessage,
+              #history: history,
+            },
           ),
         )),
       ) as _i3.Future<String>);
@@ -189,6 +202,31 @@ class MockAIService extends _i1.Mock implements _i7.AIService {
           Invocation.method(
             #generateBackstory,
             [characterName],
+          ),
+        )),
+      ) as _i3.Future<String>);
+
+  @override
+  _i3.Future<String> generateBackstoryUpdate(
+    String? currentBackstory,
+    String? adventureSummary,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #generateBackstoryUpdate,
+          [
+            currentBackstory,
+            adventureSummary,
+          ],
+        ),
+        returnValue: _i3.Future<String>.value(_i8.dummyValue<String>(
+          this,
+          Invocation.method(
+            #generateBackstoryUpdate,
+            [
+              currentBackstory,
+              adventureSummary,
+            ],
           ),
         )),
       ) as _i3.Future<String>);
