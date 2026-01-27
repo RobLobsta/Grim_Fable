@@ -5,6 +5,7 @@ import '../../shared/widgets/player_action_widget.dart';
 import '../../shared/widgets/story_segment_widget.dart';
 import 'adventure_provider.dart';
 import '../../core/services/settings_service.dart';
+import '../../shared/widgets/ai_settings_dialog.dart';
 
 class AdventureScreen extends ConsumerStatefulWidget {
   const AdventureScreen({super.key});
@@ -85,54 +86,36 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
   }
 
   Future<void> _showApiKeyDialog(BuildContext context) async {
-    final controller = TextEditingController(text: ref.read(hfApiKeyProvider));
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    return AiSettingsDialog.show(context);
+  }
 
-    return showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('AI DIVINATION SETTINGS'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Enter thy Hugging Face API Key to unlock the fates.',
-              style: TextStyle(fontFamily: 'Serif', fontSize: 14, color: Colors.white70),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                labelText: 'API KEY',
-                hintText: 'hf_...',
-                border: OutlineInputBorder(),
-              ),
-              obscureText: true,
-              style: const TextStyle(fontFamily: 'Serif'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('CANCEL'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await ref.read(hfApiKeyProvider.notifier).setApiKey(controller.text.trim());
-              if (context.mounted) {
-                Navigator.of(context).pop();
-                scaffoldMessenger.showSnackBar(
-                  const SnackBar(content: Text('The fates have been updated.')),
-                );
-              }
-            },
-            child: const Text('SAVE'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _handleContinue() async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+      _lastFailedAction = null;
+    });
+
+    try {
+      await ref.read(activeAdventureProvider.notifier).continueAdventure();
+      _scrollToBottom();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _lastFailedAction = "Continue";
+        });
+        _scrollToBottom();
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _submitAction({String? retryAction}) async {
@@ -299,44 +282,73 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                 ),
               ),
               child: SafeArea(
-                child: Row(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        decoration: InputDecoration(
-                          hintText: "WHAT IS THY WILL?",
-                          hintStyle: TextStyle(
-                            color: const Color(0xFFC0C0C0).withOpacity(0.3),
-                            letterSpacing: 2,
-                            fontSize: 12,
+                    if (!_isLoading)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: TextButton.icon(
+                          onPressed: _handleContinue,
+                          icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                          label: const Text(
+                            "CONTINUE",
+                            style: TextStyle(
+                              letterSpacing: 2,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide: BorderSide.none,
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFFC0C0C0),
+                            backgroundColor: const Color(0xFF1A237E).withOpacity(0.3),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                           ),
-                          filled: true,
-                          fillColor: Colors.black.withOpacity(0.3),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                         ),
-                        style: const TextStyle(fontFamily: 'Serif', fontSize: 16),
-                        onSubmitted: (_) => _submitAction(),
-                        enabled: !_isLoading,
-                        maxLines: null,
-                        textInputAction: TextInputAction.send,
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF1A237E),
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.send_rounded),
-                        onPressed: _isLoading ? null : _submitAction,
-                        color: const Color(0xFFC0C0C0),
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _controller,
+                            decoration: InputDecoration(
+                              hintText: "WHAT IS THY WILL?",
+                              hintStyle: TextStyle(
+                                color: const Color(0xFFC0C0C0).withOpacity(0.3),
+                                letterSpacing: 2,
+                                fontSize: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.black.withOpacity(0.3),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            ),
+                            style: const TextStyle(fontFamily: 'Serif', fontSize: 16),
+                            onSubmitted: (_) => _submitAction(),
+                            enabled: !_isLoading,
+                            maxLines: null,
+                            textInputAction: TextInputAction.send,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Container(
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF1A237E),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.send_rounded),
+                            onPressed: _isLoading ? null : _submitAction,
+                            color: const Color(0xFFC0C0C0),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

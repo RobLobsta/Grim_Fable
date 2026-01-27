@@ -167,6 +167,8 @@ class MockAIService extends _i1.Mock implements _i7.AIService {
     String? prompt, {
     String? systemMessage,
     List<Map<String, String>>? history,
+    double? temperature,
+    int? maxTokens,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -175,6 +177,8 @@ class MockAIService extends _i1.Mock implements _i7.AIService {
           {
             #systemMessage: systemMessage,
             #history: history,
+            #temperature: temperature,
+            #maxTokens: maxTokens,
           },
         ),
         returnValue: _i3.Future<String>.value(_i8.dummyValue<String>(
@@ -185,6 +189,8 @@ class MockAIService extends _i1.Mock implements _i7.AIService {
             {
               #systemMessage: systemMessage,
               #history: history,
+              #temperature: temperature,
+              #maxTokens: maxTokens,
             },
           ),
         )),

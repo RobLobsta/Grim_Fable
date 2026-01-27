@@ -5,6 +5,7 @@ import '../../core/models/character.dart';
 import '../character/character_provider.dart';
 import '../../core/services/ai_provider.dart';
 import '../../core/services/ai_service.dart';
+import '../../core/services/settings_service.dart';
 
 final adventureRepositoryProvider = Provider((ref) => AdventureRepository());
 
@@ -23,16 +24,18 @@ final activeAdventureProvider = StateNotifierProvider<AdventureNotifier, Adventu
   final activeCharacter = ref.read(activeCharacterProvider);
   final characterNotifier = ref.read(charactersProvider.notifier);
 
-  return AdventureNotifier(repository, aiService, activeCharacter, characterNotifier);
+  return AdventureNotifier(ref, repository, aiService, activeCharacter, characterNotifier);
 });
 
 class AdventureNotifier extends StateNotifier<Adventure?> {
+  final Ref _ref;
   final AdventureRepository _repository;
   final AIService _aiService;
   final Character? _activeCharacter;
   final CharacterNotifier _characterNotifier;
 
   AdventureNotifier(
+    this._ref,
     this._repository,
     this._aiService,
     this._activeCharacter,
@@ -89,6 +92,9 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
 You are a creative storyteller for Grim Fable.
 Character: ${_activeCharacter!.name}
 Backstory: ${_activeCharacter!.backstory}
+
+Keep your responses short, typically 1-5 sentences and no more than 2 paragraphs.
+Maintain a dark fantasy, gritty, and realistic tone.
 """;
 
     final history = state!.storyHistory.takeLast(5).expand((s) => [
@@ -96,10 +102,15 @@ Backstory: ${_activeCharacter!.backstory}
       {'role': 'assistant', 'content': s.aiResponse},
     ]).toList();
 
+    final temperature = _ref.read(temperatureProvider);
+    final maxTokens = _ref.read(maxTokensProvider);
+
     final response = await _aiService.generateResponse(
       action,
       systemMessage: systemMessage,
       history: history,
+      temperature: temperature,
+      maxTokens: maxTokens,
     );
 
     final newSegment = StorySegment(
@@ -110,6 +121,60 @@ Backstory: ${_activeCharacter!.backstory}
 
     final updatedAdventure = state!.copyWith(
       storyHistory: [...state!.storyHistory, newSegment],
+      lastPlayedAt: DateTime.now(),
+    );
+
+    await _saveAdventure(updatedAdventure);
+
+    // Update last played time on character
+    if (_activeCharacter != null) {
+      await _characterNotifier.updateCharacter(
+        _activeCharacter!.copyWith(lastPlayedAt: DateTime.now()),
+      );
+    }
+  }
+
+  Future<void> continueAdventure() async {
+    if (state == null || _activeCharacter == null || state!.storyHistory.isEmpty) return;
+
+    final systemMessage = """
+You are a creative storyteller for Grim Fable.
+Character: ${_activeCharacter!.name}
+Backstory: ${_activeCharacter!.backstory}
+
+Continue the story naturally from the last point.
+Keep your responses short, typically 1-5 sentences and no more than 2 paragraphs.
+Maintain a dark fantasy, gritty, and realistic tone.
+""";
+
+    final history = state!.storyHistory.takeLast(5).expand((s) => [
+      {'role': 'user', 'content': s.playerInput},
+      {'role': 'assistant', 'content': s.aiResponse},
+    ]).toList();
+
+    final temperature = _ref.read(temperatureProvider);
+    final maxTokens = _ref.read(maxTokensProvider);
+
+    final response = await _aiService.generateResponse(
+      "Continue",
+      systemMessage: systemMessage,
+      history: history,
+      temperature: temperature,
+      maxTokens: maxTokens,
+    );
+
+    final lastSegment = state!.storyHistory.last;
+    final updatedSegment = StorySegment(
+      playerInput: lastSegment.playerInput,
+      aiResponse: "${lastSegment.aiResponse}\n\n$response",
+      timestamp: DateTime.now(),
+    );
+
+    final updatedHistory = List<StorySegment>.from(state!.storyHistory);
+    updatedHistory[updatedHistory.length - 1] = updatedSegment;
+
+    final updatedAdventure = state!.copyWith(
+      storyHistory: updatedHistory,
       lastPlayedAt: DateTime.now(),
     );
 
@@ -157,9 +222,16 @@ Character: ${_activeCharacter!.name}
 Backstory: ${_activeCharacter!.backstory}
 """;
 
-    const prompt = "Set the scene for a new adventure. Describe the location and the immediate situation in 2-3 paragraphs. The tone should be dark fantasy.";
+    const prompt = "Set the scene for a new adventure. Describe the location and the immediate situation in 2-3 paragraphs. Maintain a gritty and realistic dark fantasy tone.";
 
-    return _aiService.generateResponse(prompt, systemMessage: systemMessage);
+    final temperature = _ref.read(temperatureProvider);
+
+    return _aiService.generateResponse(
+      prompt,
+      systemMessage: systemMessage,
+      temperature: temperature,
+      maxTokens: 500, // First prompt can be slightly longer
+    );
   }
 }
 
