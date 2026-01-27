@@ -18,11 +18,23 @@ final maxTokensProvider = StateNotifierProvider<SettingsNotifier<int>, int>((ref
   return SettingsNotifier(service, service.getMaxTokens, service.setMaxTokens);
 });
 
+final uiPresetProvider = StateNotifierProvider<SettingsNotifier<String>, String>((ref) {
+  final service = ref.watch(settingsServiceProvider);
+  return SettingsNotifier(service, service.getUiPreset, service.setUiPreset);
+});
+
+final recommendedResponsesProvider = StateNotifierProvider<SettingsNotifier<bool>, bool>((ref) {
+  final service = ref.watch(settingsServiceProvider);
+  return SettingsNotifier(service, service.getRecommendedResponsesEnabled, service.setRecommendedResponsesEnabled);
+});
+
 class SettingsService {
   static const String _settingsBoxName = 'settings';
   static const String _hfApiKey = 'hf_api_key';
   static const String _temperature = 'temperature';
   static const String _maxTokens = 'max_tokens';
+  static const String _uiPreset = 'ui_preset';
+  static const String _recommendedResponses = 'recommended_responses';
 
   Future<void> init() async {
     await Hive.openBox(_settingsBoxName);
@@ -56,6 +68,26 @@ class SettingsService {
   Future<void> setMaxTokens(int value) async {
     final box = Hive.box(_settingsBoxName);
     await box.put(_maxTokens, value);
+  }
+
+  String getUiPreset() {
+    final box = Hive.box(_settingsBoxName);
+    return box.get(_uiPreset, defaultValue: 'Default') as String;
+  }
+
+  Future<void> setUiPreset(String value) async {
+    final box = Hive.box(_settingsBoxName);
+    await box.put(_uiPreset, value);
+  }
+
+  bool getRecommendedResponsesEnabled() {
+    final box = Hive.box(_settingsBoxName);
+    return box.get(_recommendedResponses, defaultValue: true) as bool;
+  }
+
+  Future<void> setRecommendedResponsesEnabled(bool value) async {
+    final box = Hive.box(_settingsBoxName);
+    await box.put(_recommendedResponses, value);
   }
 }
 

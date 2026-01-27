@@ -15,6 +15,19 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isStarting = false;
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   Future<void> _startNewAdventure() async {
     setState(() {
@@ -96,6 +109,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
 
+    final allCharacters = ref.watch(charactersProvider);
+    final sortedCharacters = [...allCharacters];
+    sortedCharacters.sort((a, b) => b.lastPlayedAt.compareTo(a.lastPlayedAt));
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -103,8 +120,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             center: Alignment.center,
             radius: 1.5,
             colors: [
-              const Color(0xFF1A237E).withOpacity(0.1),
-              const Color(0xFF0D1117),
+              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              Theme.of(context).colorScheme.background,
             ],
           ),
         ),
@@ -113,24 +130,65 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               _buildAppBar(context, activeCharacter),
               Expanded(
-                child: Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildHeroIcon(),
-                        const SizedBox(height: 40),
-                        if (activeCharacter == null) ...[
-                          _buildWelcomeSection(context),
-                        ] else ...[
-                          _buildCharacterSection(context, activeCharacter),
-                        ],
-                      ],
+                child: activeCharacter == null
+                    ? Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildHeroIcon(),
+                              const SizedBox(height: 40),
+                              _buildWelcomeSection(context),
+                            ],
+                          ),
+                        ),
+                      )
+                    : PageView.builder(
+                        controller: _pageController,
+                        itemCount: sortedCharacters.length,
+                        onPageChanged: (index) {
+                          ref.read(selectedCharacterIdProvider.notifier).state = sortedCharacters[index].id;
+                        },
+                        itemBuilder: (context, index) {
+                          final character = sortedCharacters[index];
+                          return Center(
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  _buildHeroIcon(),
+                                  const SizedBox(height: 40),
+                                  _buildCharacterSection(context, character),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+              if (activeCharacter != null && sortedCharacters.length > 1)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 24.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      sortedCharacters.length,
+                      (index) => Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: activeCharacter.id == sortedCharacters[index].id
+                              ? Theme.of(context).colorScheme.secondary
+                              : Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -156,6 +214,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           Row(
             children: [
+              IconButton(
+                icon: const Icon(Icons.palette_outlined, color: Color(0xFFC0C0C0)),
+                onPressed: () => _showApiKeyDialog(context),
+                tooltip: 'App Settings',
+              ),
               IconButton(
                 icon: const Icon(Icons.vpn_key_outlined, color: Color(0xFFC0C0C0)),
                 onPressed: () => _showApiKeyDialog(context),
@@ -183,19 +246,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFF1A237E).withOpacity(0.5), width: 2),
+        border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.5), width: 2),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF1A237E).withOpacity(0.2),
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
             blurRadius: 30,
             spreadRadius: 10,
           ),
         ],
       ),
-      child: const Icon(
+      child: Icon(
         Icons.auto_stories_outlined,
         size: 80,
-        color: Color(0xFFC0C0C0),
+        color: Theme.of(context).colorScheme.secondary,
       ),
     );
   }
@@ -274,9 +337,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF161B22),
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF1A237E).withOpacity(0.5), width: 1),
+        border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.5), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.4),
@@ -288,7 +351,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       constraints: const BoxConstraints(maxHeight: 250),
       child: Column(
         children: [
-          const Icon(Icons.format_quote, color: Color(0xFF1A237E), size: 32),
+          Icon(Icons.format_quote, color: Theme.of(context).colorScheme.primary, size: 32),
           Expanded(
             child: SingleChildScrollView(
               child: Text(
@@ -296,7 +359,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       fontStyle: FontStyle.italic,
                       fontSize: 16,
-                      color: const Color(0xFFB0BEC5),
+                      color: Theme.of(context).colorScheme.secondary.withOpacity(0.8),
                     ),
                 textAlign: TextAlign.center,
               ),

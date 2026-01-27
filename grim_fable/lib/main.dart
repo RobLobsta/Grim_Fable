@@ -40,11 +40,12 @@ class GrimFableApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final uiPreset = ref.watch(uiPresetProvider);
 
     return MaterialApp.router(
       title: 'Grim Fable',
       debugShowCheckedModeBanner: false,
-      theme: GrimFableTheme.darkTheme,
+      theme: GrimFableTheme.getTheme(uiPreset),
       routerConfig: router,
     );
   }

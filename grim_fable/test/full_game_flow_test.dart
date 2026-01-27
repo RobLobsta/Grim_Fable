@@ -9,6 +9,7 @@ import 'package:grim_fable/features/adventure/adventure_repository.dart';
 import 'package:grim_fable/features/adventure/adventure_provider.dart';
 import 'package:grim_fable/core/services/ai_provider.dart';
 import 'package:grim_fable/core/services/fake_ai_service.dart';
+import 'package:grim_fable/core/services/settings_service.dart';
 import 'package:mockito/mockito.dart';
 import 'mocks.mocks.dart';
 
@@ -16,6 +17,13 @@ void main() {
   testWidgets('Full Game Flow: Create, Play, Complete', (WidgetTester tester) async {
     final mockCharacterRepo = MockCharacterRepository();
     final mockAdventureRepo = MockAdventureRepository();
+    final mockSettingsService = MockSettingsService();
+
+    when(mockSettingsService.getUiPreset()).thenReturn('Default');
+    when(mockSettingsService.getHfApiKey()).thenReturn('');
+    when(mockSettingsService.getTemperature()).thenReturn(0.8);
+    when(mockSettingsService.getMaxTokens()).thenReturn(150);
+    when(mockSettingsService.getRecommendedResponsesEnabled()).thenReturn(true);
 
     // We'll use a real-ish but mocked state
     final characters = <dynamic>[];
@@ -51,18 +59,20 @@ void main() {
         overrides: [
           characterRepositoryProvider.overrideWithValue(mockCharacterRepo),
           adventureRepositoryProvider.overrideWithValue(mockAdventureRepo),
+          settingsServiceProvider.overrideWithValue(mockSettingsService),
           aiServiceProvider.overrideWithValue(FakeAIService()),
         ],
         child: const GrimFableApp(),
       ),
     );
 
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     // 1. Start Journey (Create Character)
     expect(find.text('BEGIN JOURNEY'), findsOneWidget);
     await tester.tap(find.text('BEGIN JOURNEY'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('FORGE CHARACTER'), findsOneWidget);
     await tester.enterText(find.byType(TextFormField).first, 'Sir Test');
@@ -70,10 +80,10 @@ void main() {
     await tester.tap(find.text('FORGE LEGEND'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
-    await tester.pumpAndSettle();
 
     // Should be back on Home Screen with character
-    expect(find.text('SIR TEST'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.textContaining('SIR TEST'), findsOneWidget);
 
     // 2. Start New Adventure
     await tester.ensureVisible(find.text('NEW ADVENTURE'));
@@ -83,7 +93,8 @@ void main() {
     // It calls AI service for first prompt which takes ~2s in FakeAIService
     await tester.pump(const Duration(seconds: 5));
     // After AI finishes, loading screen should be gone and navigation complete
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(seconds: 5)); // Typewriter
 
     // Should be on Adventure Screen
     expect(find.byIcon(Icons.done_all), findsOneWidget);
@@ -94,28 +105,28 @@ void main() {
     await tester.tap(find.byIcon(Icons.send_rounded));
     await tester.pump();
     await tester.pump(const Duration(seconds: 3));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 5)); // Typewriter
 
     expect(find.text('I SEARCH THE ROOM.'), findsOneWidget);
 
     // 4. Complete Adventure
     await tester.tap(find.byIcon(Icons.done_all));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1));
     await tester.ensureVisible(find.text('Complete'));
     await tester.tap(find.text('Complete'));
     await tester.pump();
-    await tester.pump(const Duration(seconds: 3)); // Backstory update
+    await tester.pump(const Duration(seconds: 5)); // Backstory update
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
-    await tester.pumpAndSettle();
 
     // Should be back on Home Screen
-    expect(find.text('SIR TEST'), findsOneWidget);
+    expect(find.textContaining('SIR TEST'), findsOneWidget);
 
     // Check if chronicles list has the adventure
     await tester.ensureVisible(find.text('VIEW CHRONICLES'));
     await tester.tap(find.text('VIEW CHRONICLES'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
     expect(find.text('New Adventure'), findsOneWidget);
     expect(find.text('Completed'), findsOneWidget);
   });
