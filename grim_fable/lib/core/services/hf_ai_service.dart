@@ -71,7 +71,7 @@ class HuggingFaceAIService implements AIService {
   @override
   Future<String> generateBackstory(String characterName) async {
     const systemMessage = "You are a creative storyteller for a dark fantasy adventure called Grim Fable.";
-    final prompt = "Generate a dark, compelling, and realistic backstory (exactly 1 paragraph) for a character named $characterName. The tone should be dark fantasy, gritty, mysterious, and evoke a sense of tragedy or ancient secrets.";
+    final prompt = "Generate a brief, concise, and realistic backstory (exactly 1 paragraph, 3-4 sentences) for a character named $characterName. The tone should be dark fantasy, gritty, mysterious, and evoke a sense of tragedy or ancient secrets.";
 
     return generateResponse(prompt, systemMessage: systemMessage, maxTokens: 1000);
   }
@@ -115,13 +115,19 @@ Character: $characterName
 Backstory: $backstory
 $historyContext
 
-Based on the character's backstory and past adventures, generate 3 unique, one-line starting prompts for a new dark fantasy adventure.
-Each suggestion should be a concise, compelling hook (1 sentence).
+Based on the character's backstory and past adventures, generate 4 unique, one-line starting prompts (possible next moves) for a new dark fantasy adventure.
+Each suggestion should be a concise, compelling hook (exactly 1 sentence).
+Do NOT include "Suggestion X" or numbers. Just the content of the suggestions.
 Format your response exactly as follows:
-Suggestion 1 | Suggestion 2 | Suggestion 3
+Content 1 | Content 2 | Content 3 | Content 4
 """;
 
     final response = await generateResponse(prompt, systemMessage: systemMessage, maxTokens: 500);
-    return response.split("|").map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+    return response
+        .split("|")
+        .map((s) => s.trim())
+        .map((s) => s.replaceFirst(RegExp(r'^(Suggestion\s+\d+[:\.\s]*|\d+[:\.\s]+)', caseSensitive: false), ''))
+        .where((s) => s.isNotEmpty)
+        .toList();
   }
 }

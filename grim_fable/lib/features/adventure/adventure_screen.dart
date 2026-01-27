@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/widgets/player_action_widget.dart';
 import '../../shared/widgets/story_segment_widget.dart';
 import 'adventure_provider.dart';
+import '../character/character_provider.dart';
 import '../../core/services/settings_service.dart';
 import '../../shared/widgets/ai_settings_dialog.dart';
+import '../../shared/widgets/inventory_dialog.dart';
 
 class AdventureScreen extends ConsumerStatefulWidget {
   const AdventureScreen({super.key});
@@ -324,30 +326,48 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (!_isLoading)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: TextButton.icon(
-                          onPressed: _handleContinue,
-                          icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                          label: const Text(
-                            "CONTINUE",
-                            style: TextStyle(
-                              letterSpacing: 2,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          if (!_isLoading)
+                            TextButton.icon(
+                              onPressed: _handleContinue,
+                              icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                              label: const Text(
+                                "CONTINUE",
+                                style: TextStyle(
+                                  letterSpacing: 2,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Theme.of(context).colorScheme.secondary,
+                                backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                            ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: IconButton(
+                              icon: const Icon(Icons.inventory_2_outlined, color: Color(0xFFC0C0C0)),
+                              onPressed: () {
+                                final character = ref.read(activeCharacterProvider);
+                                if (character != null) {
+                                  InventoryDialog.show(context, character.inventory);
+                                }
+                              },
+                              tooltip: 'Inventory',
                             ),
                           ),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Theme.of(context).colorScheme.secondary,
-                            backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                        ),
+                        ],
                       ),
+                    ),
                     Row(
                       children: [
                         Expanded(

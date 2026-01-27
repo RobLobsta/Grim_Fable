@@ -6,6 +6,7 @@ import '../adventure/adventure_provider.dart';
 import '../../core/services/settings_service.dart';
 import '../../shared/widgets/ai_settings_dialog.dart';
 import '../../shared/widgets/app_settings_dialog.dart';
+import '../../shared/widgets/inventory_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -295,6 +296,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         const SizedBox(height: 24),
         _buildBackstoryCard(context, activeCharacter.backstory),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: IconButton(
+              icon: const Icon(Icons.inventory_2_outlined, color: Color(0xFFC0C0C0), size: 32),
+              onPressed: () => InventoryDialog.show(context, activeCharacter.inventory),
+              tooltip: 'Inventory',
+            ),
+          ),
+        ),
         const SizedBox(height: 60),
         if (ref.watch(hasActiveAdventureProvider))
           ElevatedButton(

@@ -68,6 +68,13 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
 
   Future<void> _saveCharacter() async {
     if (_formKey.currentState!.validate()) {
+      if (_backstoryController.text.trim().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('A LEGEND REQUIRES A PAST')),
+        );
+        return;
+      }
+
       final character = Character.create(
         name: _nameController.text.trim(),
         backstory: _backstoryController.text.trim(),
@@ -145,21 +152,29 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                   ],
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _backstoryController,
-                  maxLines: 8,
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                    hintText: 'Use AI Divination to forge a backstory...',
-                    alignLabelWithHint: true,
+                Container(
+                  height: 200,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                    ),
                   ),
-                  style: const TextStyle(fontFamily: 'Serif', fontSize: 16, height: 1.6),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'A LEGEND REQUIRES A PAST';
-                    }
-                    return null;
-                  },
+                  child: SingleChildScrollView(
+                    child: Text(
+                      _backstoryController.text.isEmpty
+                          ? 'Use AI Divination to forge a backstory...'
+                          : _backstoryController.text,
+                      style: TextStyle(
+                        fontFamily: 'Serif',
+                        fontSize: 16,
+                        height: 1.6,
+                        color: _backstoryController.text.isEmpty ? Colors.grey : Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 60),
                 ElevatedButton(
