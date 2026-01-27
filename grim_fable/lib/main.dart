@@ -7,6 +7,7 @@ import 'features/character/character_repository.dart';
 import 'features/character/character_provider.dart';
 import 'features/adventure/adventure_repository.dart';
 import 'features/adventure/adventure_provider.dart';
+import 'core/services/settings_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,11 +19,15 @@ void main() async {
   final adventureRepository = AdventureRepository();
   await adventureRepository.init();
 
+  final settingsService = SettingsService();
+  await settingsService.init();
+
   runApp(
     ProviderScope(
       overrides: [
         characterRepositoryProvider.overrideWithValue(characterRepository),
         adventureRepositoryProvider.overrideWithValue(adventureRepository),
+        settingsServiceProvider.overrideWithValue(settingsService),
       ],
       child: const GrimFableApp(),
     ),

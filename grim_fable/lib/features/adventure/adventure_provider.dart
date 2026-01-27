@@ -83,10 +83,24 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
   }
 
   Future<void> submitAction(String action) async {
-    if (state == null) return;
+    if (state == null || _activeCharacter == null) return;
 
-    final prompt = _buildPrompt(action);
-    final response = await _aiService.generateResponse(prompt);
+    final systemMessage = """
+You are a creative storyteller for Grim Fable.
+Character: ${_activeCharacter!.name}
+Backstory: ${_activeCharacter!.backstory}
+""";
+
+    final history = state!.storyHistory.takeLast(5).expand((s) => [
+      {'role': 'user', 'content': s.playerInput},
+      {'role': 'assistant', 'content': s.aiResponse},
+    ]).toList();
+
+    final response = await _aiService.generateResponse(
+      action,
+      systemMessage: systemMessage,
+      history: history,
+    );
 
     final newSegment = StorySegment(
       playerInput: action,
@@ -135,34 +149,17 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
   }
 
   Future<String> _generateFirstPrompt() async {
-    final prompt = """
-<s>[INST] You are a creative storyteller for a dark fantasy adventure called Grim Fable.
+    if (_activeCharacter == null) return "";
+
+    final systemMessage = """
+You are a creative storyteller for a dark fantasy adventure called Grim Fable.
 Character: ${_activeCharacter!.name}
 Backstory: ${_activeCharacter!.backstory}
-
-Set the scene for a new adventure. Describe the location and the immediate situation in 2-3 paragraphs.
-The tone should be dark fantasy.
-[/INST]
 """;
-    return _aiService.generateResponse(prompt);
-  }
 
-  String _buildPrompt(String action) {
-    final history = state!.storyHistory.takeLast(5).map((s) => "Player: ${s.playerInput}\nAI: ${s.aiResponse}").join("\n");
+    const prompt = "Set the scene for a new adventure. Describe the location and the immediate situation in 2-3 paragraphs. The tone should be dark fantasy.";
 
-    return """
-<s>[INST] You are a creative storyteller for Grim Fable.
-Character: ${_activeCharacter!.name}
-Backstory: ${_activeCharacter!.backstory}
-
-Recent History:
-$history
-
-Player Action: $action
-
-Generate the next story segment (2-3 paragraphs).
-[/INST]
-""";
+    return _aiService.generateResponse(prompt, systemMessage: systemMessage);
   }
 }
 

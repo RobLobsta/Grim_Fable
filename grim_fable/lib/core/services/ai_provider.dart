@@ -3,18 +3,20 @@ import 'package:dio/dio.dart';
 import 'ai_service.dart';
 import 'hf_ai_service.dart';
 import 'fake_ai_service.dart';
+import 'settings_service.dart';
 
 final dioProvider = Provider((ref) => Dio());
 
 // Set this to true to use the real API
-const bool useRealAI = false;
-const String hfApiKey = ''; // User should provide this
+const bool useRealAI = true;
 
 final aiServiceProvider = Provider<AIService>((ref) {
-  if (useRealAI && hfApiKey.isNotEmpty) {
+  final apiKey = ref.watch(hfApiKeyProvider);
+
+  if (useRealAI && apiKey.isNotEmpty) {
     return HuggingFaceAIService(
       dio: ref.watch(dioProvider),
-      apiKey: hfApiKey,
+      apiKey: apiKey,
     );
   } else {
     return FakeAIService();

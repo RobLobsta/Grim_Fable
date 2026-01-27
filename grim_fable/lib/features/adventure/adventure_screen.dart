@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/widgets/player_action_widget.dart';
 import '../../shared/widgets/story_segment_widget.dart';
 import 'adventure_provider.dart';
+import '../../core/services/settings_service.dart';
 
 class AdventureScreen extends ConsumerStatefulWidget {
   const AdventureScreen({super.key});
@@ -16,6 +17,8 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
   bool _isLoading = false;
+  String? _errorMessage;
+  String? _lastFailedAction;
 
   @override
   void dispose() {
@@ -58,6 +61,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
     if (confirmed == true && mounted) {
       setState(() {
         _isLoading = true;
+        _errorMessage = null;
       });
       try {
         await ref.read(activeAdventureProvider.notifier).completeAdventure();
@@ -66,12 +70,9 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.toString()),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
+          setState(() {
+            _errorMessage = "Failed to complete adventure: ${e.toString()}";
+          });
         }
       } finally {
         if (mounted) {
@@ -83,13 +84,69 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
     }
   }
 
-  Future<void> _submitAction() async {
-    final text = _controller.text.trim();
+  Future<void> _showApiKeyDialog(BuildContext context) async {
+    final controller = TextEditingController(text: ref.read(hfApiKeyProvider));
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('AI DIVINATION SETTINGS'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Enter thy Hugging Face API Key to unlock the fates.',
+              style: TextStyle(fontFamily: 'Serif', fontSize: 14, color: Colors.white70),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'API KEY',
+                hintText: 'hf_...',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+              style: const TextStyle(fontFamily: 'Serif'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('CANCEL'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await ref.read(hfApiKeyProvider.notifier).setApiKey(controller.text.trim());
+              if (context.mounted) {
+                Navigator.of(context).pop();
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(content: Text('The fates have been updated.')),
+                );
+              }
+            },
+            child: const Text('SAVE'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _submitAction({String? retryAction}) async {
+    final text = retryAction ?? _controller.text.trim();
     if (text.isEmpty || _isLoading) return;
 
-    _controller.clear();
+    if (retryAction == null) {
+      _controller.clear();
+    }
+
     setState(() {
       _isLoading = true;
+      _errorMessage = null;
+      _lastFailedAction = null;
     });
 
     try {
@@ -97,12 +154,11 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
       _scrollToBottom();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        setState(() {
+          _errorMessage = e.toString();
+          _lastFailedAction = text;
+        });
+        _scrollToBottom();
       }
     } finally {
       if (mounted) {
@@ -144,40 +200,85 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
             child: ListView.builder(
               controller: _scrollController,
               padding: const EdgeInsets.all(16.0),
-              itemCount: adventure.storyHistory.length + (_isLoading ? 1 : 0),
+              itemCount: adventure.storyHistory.length + (_isLoading ? 1 : 0) + (_errorMessage != null ? 1 : 0),
               itemBuilder: (context, index) {
-                if (index == adventure.storyHistory.length) {
+                if (index < adventure.storyHistory.length) {
+                  final segment = adventure.storyHistory[index];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (index > 0) PlayerActionWidget(input: segment.playerInput),
+                      StorySegmentWidget(response: segment.aiResponse),
+                      const SizedBox(height: 32),
+                    ],
+                  );
+                }
+
+                if (_isLoading && index == adventure.storyHistory.length) {
                   return const Padding(
                     padding: EdgeInsets.symmetric(vertical: 16.0),
                     child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
                   );
                 }
 
-                final segment = adventure.storyHistory[index];
-                final isLast = index == adventure.storyHistory.length - 1;
+                if (_errorMessage != null && (index == adventure.storyHistory.length || (index == adventure.storyHistory.length + 1 && _isLoading))) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.red.withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          "THE FATES ARE CRUEL",
+                          style: TextStyle(
+                            color: Colors.red[300],
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
+                            fontSize: 12,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontFamily: 'Serif', color: Colors.white70),
+                        ),
+                        if (_lastFailedAction != null) ...[
+                          const SizedBox(height: 16),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: () => _submitAction(retryAction: _lastFailedAction),
+                                icon: const Icon(Icons.refresh),
+                                label: const Text("RETRY"),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red[900],
+                                  foregroundColor: Colors.white,
+                                ),
+                              ),
+                              OutlinedButton.icon(
+                                onPressed: () => _showApiKeyDialog(context),
+                                icon: const Icon(Icons.vpn_key),
+                                label: const Text("SET API KEY"),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  side: const BorderSide(color: Colors.white38),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }
 
-                return TweenAnimationBuilder<double>(
-                  duration: const Duration(milliseconds: 800),
-                  tween: Tween(begin: 0.0, end: 1.0),
-                  builder: (context, value, child) {
-                    return Opacity(
-                      opacity: value,
-                      child: Transform.translate(
-                        offset: Offset(0, 20 * (1 - value)),
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (index > 0) // Don't show the initial "Starting journey" input
-                        PlayerActionWidget(input: segment.playerInput),
-                      StorySegmentWidget(response: segment.aiResponse),
-                      const SizedBox(height: 32),
-                    ],
-                  ),
-                );
+                return const SizedBox.shrink();
               },
             ),
           ),
