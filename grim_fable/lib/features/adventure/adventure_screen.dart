@@ -11,7 +11,8 @@ import '../../shared/widgets/ai_settings_dialog.dart';
 import '../../shared/widgets/inventory_dialog.dart';
 
 class AdventureScreen extends ConsumerStatefulWidget {
-  const AdventureScreen({super.key});
+  final bool animateFirst;
+  const AdventureScreen({super.key, this.animateFirst = false});
 
   @override
   ConsumerState<AdventureScreen> createState() => _AdventureScreenState();
@@ -37,19 +38,18 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
       final adventure = ref.read(activeAdventureProvider);
       if (adventure != null) {
         setState(() {
-          // If it's a very new adventure (created in the last 30 seconds) and only has one segment,
-          // we want to animate that first prompt.
-          final isNewAdventure = adventure.storyHistory.length == 1 &&
-              DateTime.now().difference(adventure.createdAt).inSeconds < 30;
+          // Only animate the very first prompt if coming from the New Adventure flow.
+          // Resuming (Continue Adventure) is always instant.
+          final shouldAnimateLast = widget.animateFirst && adventure.storyHistory.length == 1;
 
           for (int i = 0; i < adventure.storyHistory.length; i++) {
-            if (isNewAdventure && i == adventure.storyHistory.length - 1) {
+            if (shouldAnimateLast && i == adventure.storyHistory.length - 1) {
               _isTyping = true;
               continue;
             }
             _animatedTexts[i] = adventure.storyHistory[i].aiResponse;
           }
-          if (!isNewAdventure) {
+          if (!shouldAnimateLast) {
             _isTyping = false;
           }
         });

@@ -92,7 +92,7 @@ class _NewAdventureScreenState extends ConsumerState<NewAdventureScreen> {
 
       await ref.read(activeAdventureProvider.notifier).startNewAdventure(customPrompt: prompt);
       if (mounted) {
-        context.pushReplacement('/adventure');
+        context.pushReplacement('/adventure', extra: true);
       }
     } catch (e) {
       if (mounted) {

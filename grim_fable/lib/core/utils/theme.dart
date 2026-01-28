@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class GrimFableTheme {
   static ThemeData getTheme(String preset) {
@@ -6,27 +7,37 @@ class GrimFableTheme {
     Color backgroundColor;
     Color accentColor;
     Color textColor = const Color(0xFFC0C0C0);
+    String bodyFont;
+    String displayFont;
 
     switch (preset) {
       case 'Abyssal':
-        primaryColor = const Color(0xFF004D40);
-        backgroundColor = const Color(0xFF001A1A);
-        accentColor = const Color(0xFF00BFA5);
+        primaryColor = const Color(0xFF4527A0);
+        backgroundColor = const Color(0xFF0D001F);
+        accentColor = const Color(0xFF9575CD);
+        bodyFont = 'Almendra';
+        displayFont = 'Almendra';
         break;
       case 'Blood':
         primaryColor = const Color(0xFF4A0000);
         backgroundColor = const Color(0xFF1A0000);
         accentColor = const Color(0xFFFF5252);
+        bodyFont = 'Crimson Pro';
+        displayFont = 'Grenze Gotisch';
         break;
       case 'Emerald':
         primaryColor = const Color(0xFF003300);
         backgroundColor = const Color(0xFF001A00);
         accentColor = const Color(0xFFD4AF37); // Gold accent for Emerald
+        bodyFont = 'Faustina';
+        displayFont = 'Cinzel';
         break;
       default:
         primaryColor = const Color(0xFF283593);
         backgroundColor = const Color(0xFF0D1117);
         accentColor = const Color(0xFF7986CB);
+        bodyFont = 'EB Garamond';
+        displayFont = 'EB Garamond';
     }
 
     const secondaryColor = Color(0xFFC0C0C0);
@@ -54,36 +65,36 @@ class GrimFableTheme {
         ),
       ),
       textTheme: TextTheme(
-        displayLarge: const TextStyle(
-          color: Color(0xFFE0E0E0),
-          fontFamily: 'Serif',
+        displayLarge: GoogleFonts.getFont(
+          displayFont,
+          color: const Color(0xFFE0E0E0),
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
         ),
-        displayMedium: const TextStyle(
-          color: Color(0xFFE0E0E0),
-          fontFamily: 'Serif',
+        displayMedium: GoogleFonts.getFont(
+          displayFont,
+          color: const Color(0xFFE0E0E0),
           fontWeight: FontWeight.bold,
         ),
-        bodyLarge: TextStyle(
+        bodyLarge: GoogleFonts.getFont(
+          bodyFont,
           color: textColor,
           fontSize: 18,
-          fontFamily: 'Serif',
           height: 1.6,
         ),
-        bodyMedium: const TextStyle(
-          color: Color(0xFFB0BEC5),
+        bodyMedium: GoogleFonts.getFont(
+          bodyFont,
+          color: const Color(0xFFB0BEC5),
           fontSize: 16,
-          fontFamily: 'Serif',
         ),
       ),
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: secondaryColor,
         elevation: 0,
         centerTitle: true,
-        titleTextStyle: TextStyle(
-          fontFamily: 'Serif',
+        titleTextStyle: GoogleFonts.getFont(
+          displayFont,
           fontSize: 24,
           fontWeight: FontWeight.bold,
           color: secondaryColor,
@@ -105,8 +116,8 @@ class GrimFableTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: secondaryColor, width: 2),
         ),
-        labelStyle: const TextStyle(color: secondaryColor, fontFamily: 'Serif'),
-        hintStyle: TextStyle(color: secondaryColor.withOpacity(0.4), fontFamily: 'Serif'),
+        labelStyle: GoogleFonts.getFont(bodyFont, color: secondaryColor),
+        hintStyle: GoogleFonts.getFont(bodyFont, color: secondaryColor.withOpacity(0.4)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -118,10 +129,10 @@ class GrimFableTheme {
             side: const BorderSide(color: secondaryColor, width: 0.5),
           ),
           elevation: 10,
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.getFont(
+            displayFont,
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Serif',
             letterSpacing: 1.5,
           ),
         ),
@@ -134,10 +145,10 @@ class GrimFableTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.getFont(
+            displayFont,
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Serif',
             letterSpacing: 1.5,
           ),
         ),

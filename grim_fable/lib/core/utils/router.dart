@@ -24,7 +24,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/adventure',
-        builder: (context, state) => const AdventureScreen(),
+        builder: (context, state) => AdventureScreen(
+          animateFirst: state.extra as bool? ?? false,
+        ),
       ),
       GoRoute(
         path: '/new-adventure',

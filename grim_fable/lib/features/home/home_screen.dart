@@ -88,7 +88,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _navigateToAdventure(BuildContext context) {
-    context.push('/adventure');
+    context.push('/adventure', extra: false);
   }
 
   @override
@@ -264,22 +264,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GestureDetector(
-            onTap: () => setState(() => _isSelectionMode = false),
-            child: const Text(
-              'GRIM FABLE',
-              style: TextStyle(
-                fontFamily: 'Serif',
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 4,
-                color: Color(0xFFC0C0C0),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _isSelectionMode = false),
+              child: const Text(
+                'GRIM FABLE',
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: TextStyle(
+                  fontFamily: 'Serif',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 4,
+                  color: Color(0xFFC0C0C0),
+                ),
               ),
             ),
           ),
+          const SizedBox(width: 8),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
                 icon: const Icon(Icons.settings_outlined, color: Color(0xFFC0C0C0)),

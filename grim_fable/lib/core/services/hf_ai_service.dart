@@ -80,15 +80,16 @@ Generate a compelling and gritty dark fantasy backstory for a character.
 Character Name: $characterName
 Occupation: $occupation
 
-The backstory should be exactly 3 paragraphs, following this structure:
-1. Origin: Their humble or tragic beginnings and how they became a $occupation.
-2. Conflict: A pivotal moment of darkness or a struggle they faced.
-3. Current State: Their current motivation and the atmosphere that surrounds them now.
+The backstory must be exactly 3-4 sentences total, covering:
+- Origin: Their beginnings and how they became a $occupation.
+- Conflict: A pivotal struggle they faced.
+- Current State: Their current motivation.
 
 Maintain a dark fantasy, vague, and atmospheric tone. Avoid naming specific locations.
+Do NOT use multiple paragraphs. Return ONLY the 3-4 sentences.
 """;
 
-    return generateResponse(prompt, systemMessage: systemMessage, maxTokens: 1000);
+    return generateResponse(prompt, systemMessage: systemMessage, maxTokens: 500);
   }
 
   @override
@@ -145,14 +146,14 @@ Return ONLY the occupation name. If it hasn't changed, return the current one.
     }
 
     final prompt = """
-Character: $characterName
+Character Name: $characterName
 Backstory: $backstory
 $historyContext
 
-Based on the character's backstory and past adventures, generate 4 unique, one-line starting prompts (possible next moves) for a new dark fantasy adventure.
-Each suggestion MUST be short and concise, exactly 1 line (less than 12 words).
-Suggestions should be based on the character's backstory and likely next actions.
-Do NOT include "Suggestion X" or numbers. Just the content of the suggestions.
+Based on $characterName's backstory and past adventures, generate 4 unique, one-line starting prompts (possible next moves) for a new dark fantasy adventure.
+Each suggestion MUST be short and concise, exactly 1 line (less than 12 words), and written in the third person starting with $characterName.
+Suggestions should be robust and directly inspired by $characterName's history.
+Do NOT include labels like "Suggestion X", bullets, or numbers.
 Format your response exactly as follows:
 Content 1 | Content 2 | Content 3 | Content 4
 """;
