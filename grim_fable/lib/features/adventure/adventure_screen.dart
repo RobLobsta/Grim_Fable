@@ -260,7 +260,12 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                           }
                         },
                       ),
-                      if (index == adventure.storyHistory.length - 1 && segment.recommendedChoices != null && segment.recommendedChoices!.isNotEmpty && adventure.isActive && !_isTyping) ...[
+                      // Only show recommended choices for the last segment when typing is finished
+                      if (index == adventure.storyHistory.length - 1 &&
+                          segment.recommendedChoices != null &&
+                          segment.recommendedChoices!.isNotEmpty &&
+                          adventure.isActive &&
+                          !_isTyping) ...[
                         const SizedBox(height: 16),
                         Wrap(
                           spacing: 8,
@@ -373,6 +378,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                       child: Row(
                         children: [
                           const Spacer(),
+                          // Only show the continue button when not loading and not typing
                           if (!_isLoading && !_isTyping)
                             Expanded(
                               flex: 2,

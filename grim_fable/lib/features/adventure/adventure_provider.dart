@@ -197,6 +197,7 @@ Maintain a dark fantasy, gritty, and realistic tone.
     final parsed = _parseResponse(fullResponse);
 
     final lastSegment = state!.storyHistory.last;
+    // Use double line break to separate the new response from the previous one
     final updatedSegment = StorySegment(
       playerInput: lastSegment.playerInput,
       aiResponse: "${lastSegment.aiResponse}\n\n${parsed.text}",
