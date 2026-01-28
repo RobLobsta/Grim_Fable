@@ -7,6 +7,7 @@ import '../../core/services/settings_service.dart';
 import '../../shared/widgets/ai_settings_dialog.dart';
 import '../../shared/widgets/app_settings_dialog.dart';
 import '../../shared/widgets/inventory_dialog.dart';
+import '../../shared/widgets/backstory_dialog.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -370,18 +371,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 24),
-        _buildBackstoryCard(context, activeCharacter.backstory),
-        Align(
-          alignment: Alignment.centerRight,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: IconButton(
+        const SizedBox(height: 48),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.description_outlined, color: Color(0xFFC0C0C0), size: 32),
+              onPressed: () => BackstoryDialog.show(context, activeCharacter.backstory),
+              tooltip: 'Backstory',
+            ),
+            const SizedBox(width: 24),
+            IconButton(
               icon: const Icon(Icons.inventory_2_outlined, color: Color(0xFFC0C0C0), size: 32),
               onPressed: () => InventoryDialog.show(context, activeCharacter.inventory),
               tooltip: 'Inventory',
             ),
-          ),
+          ],
         ),
         const SizedBox(height: 60),
         if (hasBackstory) ...[
@@ -432,42 +437,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildBackstoryCard(BuildContext context, String backstory) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: const Color(0xFFC0C0C0), // Silver/Light background for parchment look
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.6),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      constraints: const BoxConstraints(maxHeight: 250),
-      child: Column(
-        children: [
-          const Icon(Icons.format_quote, color: Colors.black54, size: 32),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Text(
-                backstory,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontStyle: FontStyle.italic,
-                      fontSize: 16,
-                      color: Colors.black, // Black text for better contrast on silver
-                    ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _navigateToCreation(BuildContext context) {
     context.push('/create-character');

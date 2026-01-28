@@ -46,6 +46,7 @@ void main() {
           playerInput: "Starting...",
           aiResponse: "Welcome to the dark woods.",
           timestamp: DateTime.now(),
+          recommendedChoices: ["Go North", "Go South", "Go East"],
         )
       ]
     );

@@ -17,10 +17,10 @@ class StorySegmentWidget extends StatefulWidget {
   });
 
   @override
-  State<StorySegmentWidget> createState() => _StorySegmentWidgetState();
+  State<StorySegmentWidget> createState() => StorySegmentWidgetState();
 }
 
-class _StorySegmentWidgetState extends State<StorySegmentWidget> {
+class StorySegmentWidgetState extends State<StorySegmentWidget> {
   late String _displayResponse;
   Timer? _timer;
   int _currentIndex = 0;
@@ -91,6 +91,20 @@ class _StorySegmentWidgetState extends State<StorySegmentWidget> {
         _timer?.cancel();
       }
     });
+  }
+
+  void skip() {
+    if (_isAnimating) {
+      _timer?.cancel();
+      if (mounted) {
+        setState(() {
+          _displayResponse = widget.response;
+          _currentIndex = widget.response.length;
+          _isAnimating = false;
+        });
+        widget.onFinishedTyping?.call();
+      }
+    }
   }
 
   @override
