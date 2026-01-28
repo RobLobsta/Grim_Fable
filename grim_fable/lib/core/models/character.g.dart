@@ -22,15 +22,16 @@ class CharacterAdapter extends TypeAdapter<Character> {
       backstory: fields[2] as String,
       createdAt: fields[3] as DateTime,
       lastPlayedAt: fields[4] as DateTime,
-      inventory: (fields[5] as List?)?.cast<String>() ?? const [],
-      cachedSuggestions: (fields[6] as List?)?.cast<String>() ?? const [],
+      inventory: (fields[5] as List?)?.cast<String>() ?? [],
+      cachedSuggestions: (fields[6] as List?)?.cast<String>() ?? [],
+      occupation: fields[7] as String? ?? '',
     );
   }
 
   @override
   void write(BinaryWriter writer, Character obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +45,9 @@ class CharacterAdapter extends TypeAdapter<Character> {
       ..writeByte(5)
       ..write(obj.inventory)
       ..writeByte(6)
-      ..write(obj.cachedSuggestions);
+      ..write(obj.cachedSuggestions)
+      ..writeByte(7)
+      ..write(obj.occupation);
   }
 
   @override

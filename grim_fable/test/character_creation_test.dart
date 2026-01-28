@@ -13,7 +13,7 @@ void main() {
     final mockAiService = MockAIService();
     final mockSettingsService = MockSettingsService();
 
-    when(mockAiService.generateBackstory(any)).thenAnswer((_) async => "Test Hero was born in a storm.");
+    when(mockAiService.generateBackstory(any, any)).thenAnswer((_) async => "Test Hero was born in a storm.");
     when(mockSettingsService.getHfApiKey()).thenReturn('fake-key');
 
     final router = GoRouter(
@@ -48,8 +48,9 @@ void main() {
     expect(find.text('FORGE CHARACTER'), findsOneWidget);
     expect(find.text('NAME'), findsOneWidget);
 
-    // Enter name
-    await tester.enterText(find.byType(TextFormField).first, 'Test Hero');
+    // Enter name and occupation
+    await tester.enterText(find.byType(TextFormField).at(0), 'Test Hero');
+    await tester.enterText(find.byType(TextFormField).at(1), 'Knight');
 
     // Tap AI Generate
     await tester.tap(find.text('AI DIVINATION'));
@@ -59,8 +60,6 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
 
     // Verify backstory is filled
-    final backstoryField = find.byType(TextFormField).last;
-    final TextFormField widget = tester.widget(backstoryField);
-    expect(widget.controller?.text, contains('Test Hero'));
+    expect(find.textContaining('was born in a storm'), findsOneWidget);
   });
 }

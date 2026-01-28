@@ -28,6 +28,7 @@ void main() {
             maxTokens: anyNamed('maxTokens')))
         .thenAnswer((_) async => "The mist swirls around your feet.");
     when(mockAiService.generateBackstoryAppend(any, any, any)).thenAnswer((_) async => "New backstory.");
+    when(mockAiService.generateOccupationEvolution(any, any)).thenAnswer((_) async => "Test Hero");
 
     when(mockSettingsService.getUiPreset()).thenReturn('Default');
     when(mockSettingsService.getRecommendedResponsesEnabled()).thenReturn(true);

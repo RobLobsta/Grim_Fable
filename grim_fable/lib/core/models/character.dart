@@ -26,6 +26,9 @@ class Character extends HiveObject {
   @HiveField(6)
   final List<String> cachedSuggestions;
 
+  @HiveField(7)
+  final String occupation;
+
   Character({
     required this.id,
     required this.name,
@@ -34,9 +37,14 @@ class Character extends HiveObject {
     required this.lastPlayedAt,
     this.inventory = const [],
     this.cachedSuggestions = const [],
+    this.occupation = '',
   });
 
-  factory Character.create({required String name, String backstory = ''}) {
+  factory Character.create({
+    required String name,
+    String backstory = '',
+    String occupation = '',
+  }) {
     final now = DateTime.now();
     return Character(
       id: const Uuid().v4(),
@@ -46,6 +54,7 @@ class Character extends HiveObject {
       lastPlayedAt: now,
       inventory: const [],
       cachedSuggestions: const [],
+      occupation: occupation,
     );
   }
 
@@ -55,6 +64,7 @@ class Character extends HiveObject {
     DateTime? lastPlayedAt,
     List<String>? inventory,
     List<String>? cachedSuggestions,
+    String? occupation,
   }) {
     return Character(
       id: id,
@@ -64,6 +74,7 @@ class Character extends HiveObject {
       lastPlayedAt: lastPlayedAt ?? this.lastPlayedAt,
       inventory: inventory ?? this.inventory,
       cachedSuggestions: cachedSuggestions ?? this.cachedSuggestions,
+      occupation: occupation ?? this.occupation,
     );
   }
 }

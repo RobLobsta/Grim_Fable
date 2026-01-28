@@ -291,12 +291,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onPressed: () => AiSettingsDialog.show(context),
                 tooltip: 'AI Settings',
               ),
-              if (_isSelectionMode)
+              if (_isSelectionMode) ...[
+                if (activeCharacter != null)
+                  IconButton(
+                    icon: const Icon(Icons.edit_outlined, color: Color(0xFFC0C0C0)),
+                    onPressed: () => context.push('/create-character', extra: activeCharacter),
+                    tooltip: 'Edit Character',
+                  ),
                 IconButton(
                   icon: const Icon(Icons.person_add_outlined, color: Color(0xFFC0C0C0)),
                   onPressed: () => _navigateToCreation(context),
                   tooltip: 'New Character',
                 ),
+              ],
             ],
           ),
         ],
@@ -377,7 +384,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             IconButton(
               icon: const Icon(Icons.description_outlined, color: Color(0xFFC0C0C0), size: 32),
-              onPressed: () => BackstoryDialog.show(context, activeCharacter.backstory),
+              onPressed: () => BackstoryDialog.show(context, activeCharacter),
               tooltip: 'Backstory',
             ),
             const SizedBox(width: 24),
@@ -418,21 +425,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             label: const Text("FORGE BACKSTORY"),
           ),
         ],
-        const SizedBox(height: 24),
-        TextButton.icon(
-          onPressed: () => context.push('/history'),
-          icon: const Icon(Icons.history_edu, color: Color(0xFFC0C0C0), size: 20),
-          label: const Text(
-            'VIEW CHRONICLES',
-            style: TextStyle(
-              color: Color(0xFFC0C0C0),
-              fontFamily: 'Serif',
-              fontSize: 14,
-              letterSpacing: 2,
-              decoration: TextDecoration.underline,
+        if (ref.watch(characterAdventuresProvider).any((a) => !a.isActive)) ...[
+          const SizedBox(height: 24),
+          TextButton.icon(
+            onPressed: () => context.push('/history'),
+            icon: const Icon(Icons.history_edu, color: Color(0xFFC0C0C0), size: 20),
+            label: const Text(
+              'VIEW CHRONICLES',
+              style: TextStyle(
+                color: Color(0xFFC0C0C0),
+                fontFamily: 'Serif',
+                fontSize: 14,
+                letterSpacing: 2,
+                decoration: TextDecoration.underline,
+              ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }

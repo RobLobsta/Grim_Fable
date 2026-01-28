@@ -72,9 +72,21 @@ class HuggingFaceAIService implements AIService {
   }
 
   @override
-  Future<String> generateBackstory(String characterName) async {
+  Future<String> generateBackstory(String characterName, String occupation) async {
     const systemMessage = "You are a creative storyteller for a dark fantasy adventure called Grim Fable.";
-    final prompt = "Generate a short, vague, and general character description (exactly 2-3 concise sentences) for a character named $characterName. Focus on their general archetype and the atmosphere surrounding them, without naming specific locations or past events. The tone should be dark fantasy and gritty.";
+    final prompt = """
+Generate a compelling and gritty dark fantasy backstory for a character.
+
+Character Name: $characterName
+Occupation: $occupation
+
+The backstory should be exactly 3 paragraphs, following this structure:
+1. Origin: Their humble or tragic beginnings and how they became a $occupation.
+2. Conflict: A pivotal moment of darkness or a struggle they faced.
+3. Current State: Their current motivation and the atmosphere that surrounds them now.
+
+Maintain a dark fantasy, vague, and atmospheric tone. Avoid naming specific locations.
+""";
 
     return generateResponse(prompt, systemMessage: systemMessage, maxTokens: 1000);
   }
@@ -102,6 +114,25 @@ Return ONLY the new paragraph(s).
 """;
 
     return generateResponse(prompt, systemMessage: systemMessage, maxTokens: 1000);
+  }
+
+  @override
+  Future<String> generateOccupationEvolution(String currentOccupation, String adventureSummary) async {
+    const systemMessage = "You are a creative storyteller for Grim Fable.";
+    final prompt = """
+Character's Current Occupation: $currentOccupation
+
+Recent Adventure Summary:
+$adventureSummary
+
+Based on the events of the adventure, decide if the character's occupation has evolved, changed, or stayed the same.
+Examples: Squire -> Knight, Thief -> Shadowblade, or stays as Thief if no major growth occurred.
+Keep the occupation short (1-3 words).
+Return ONLY the occupation name. If it hasn't changed, return the current one.
+""";
+
+    final response = await generateResponse(prompt, systemMessage: systemMessage, maxTokens: 20);
+    return response.trim().replaceAll('.', '');
   }
 
   @override
