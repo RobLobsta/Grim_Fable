@@ -125,7 +125,7 @@ Maintain a dark fantasy, gritty, and realistic tone.
     final recommendedEnabled = _ref.read(recommendedResponsesProvider);
 
     final finalSystemMessage = recommendedEnabled
-        ? "$systemMessage\nAt the end of your response, provide 2-3 recommended player actions in the following format: [CHOICES] Action 1 | Action 2 | Action 3"
+        ? "$systemMessage\nAt the end of your response, provide exactly 3 recommended player actions. Each action must be very short and concise (under 5 words) to fit in a small button. Format: [CHOICES] Action 1 | Action 2 | Action 3"
         : systemMessage;
 
     final fullResponse = await _aiService.generateResponse(
@@ -183,7 +183,7 @@ Maintain a dark fantasy, gritty, and realistic tone.
     final recommendedEnabled = _ref.read(recommendedResponsesProvider);
 
     final finalSystemMessage = recommendedEnabled
-        ? "$systemMessage\nAt the end of your response, provide 2-3 recommended player actions in the following format: [CHOICES] Action 1 | Action 2 | Action 3"
+        ? "$systemMessage\nAt the end of your response, provide exactly 3 recommended player actions. Each action must be very short and concise (under 5 words) to fit in a small button. Format: [CHOICES] Action 1 | Action 2 | Action 3"
         : systemMessage;
 
     final fullResponse = await _aiService.generateResponse(
@@ -272,7 +272,7 @@ Your response must be exactly 1 paragraph (3-5 sentences).
     final recommendedEnabled = _ref.read(recommendedResponsesProvider);
 
     final finalSystemMessage = recommendedEnabled
-        ? "$systemMessage\nAt the end of your response, provide 2-3 recommended player actions in the following format: [CHOICES] Action 1 | Action 2 | Action 3"
+        ? "$systemMessage\nAt the end of your response, provide exactly 3 recommended player actions. Each action must be very short and concise (under 5 words) to fit in a small button. Format: [CHOICES] Action 1 | Action 2 | Action 3"
         : systemMessage;
 
     final response = await _aiService.generateResponse(

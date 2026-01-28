@@ -1,6 +1,6 @@
 {
-    "name": "grim_fable",
-    "short_name": "grim_fable",
+    "name": "Grim Fable",
+    "short_name": "Grim Fable",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

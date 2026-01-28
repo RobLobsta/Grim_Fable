@@ -174,6 +174,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
   @override
   Widget build(BuildContext context) {
     final adventure = ref.watch(activeAdventureProvider);
+    final freeFormInput = ref.watch(freeFormInputProvider);
 
     // Auto scroll when adventure updates
     ref.listen(activeAdventureProvider, (_, __) => _scrollToBottom());
@@ -328,87 +329,95 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Stack(
-                        alignment: Alignment.center,
+                      child: Row(
                         children: [
+                          const Spacer(),
                           if (!_isLoading)
-                            TextButton.icon(
-                              onPressed: _handleContinue,
-                              icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                              label: const Text(
-                                "CONTINUE",
-                                style: TextStyle(
-                                  letterSpacing: 2,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                            Expanded(
+                              flex: 2,
+                              child: ElevatedButton.icon(
+                                onPressed: _handleContinue,
+                                icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                                label: const Text(
+                                  "CONTINUE",
+                                  style: TextStyle(
+                                    letterSpacing: 2,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                                  foregroundColor: Theme.of(context).colorScheme.secondary,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
                                 ),
                               ),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Theme.of(context).colorScheme.secondary,
-                                backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
+                            )
+                          else
+                            const Spacer(flex: 2),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: IconButton(
+                                icon: const Icon(Icons.inventory_2_outlined, color: Color(0xFFC0C0C0)),
+                                onPressed: () {
+                                  final character = ref.read(activeCharacterProvider);
+                                  if (character != null) {
+                                    InventoryDialog.show(context, character.inventory);
+                                  }
+                                },
+                                tooltip: 'Inventory',
                               ),
-                            ),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: IconButton(
-                              icon: const Icon(Icons.inventory_2_outlined, color: Color(0xFFC0C0C0)),
-                              onPressed: () {
-                                final character = ref.read(activeCharacterProvider);
-                                if (character != null) {
-                                  InventoryDialog.show(context, character.inventory);
-                                }
-                              },
-                              tooltip: 'Inventory',
                             ),
                           ),
                         ],
                       ),
                     ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _controller,
-                            decoration: InputDecoration(
-                              hintText: "WHAT IS THY WILL?",
-                              hintStyle: TextStyle(
-                                color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
-                                letterSpacing: 2,
-                                fontSize: 12,
+                    if (freeFormInput)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _controller,
+                              decoration: InputDecoration(
+                                hintText: "WHAT IS THY WILL?",
+                                hintStyle: TextStyle(
+                                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
+                                  letterSpacing: 2,
+                                  fontSize: 12,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                  borderSide: BorderSide.none,
+                                ),
+                                filled: true,
+                                fillColor: Colors.black.withOpacity(0.3),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                               ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide.none,
-                              ),
-                              filled: true,
-                              fillColor: Colors.black.withOpacity(0.3),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              style: const TextStyle(fontFamily: 'Serif', fontSize: 16),
+                              onSubmitted: (_) => _submitAction(),
+                              enabled: !_isLoading,
+                              maxLines: null,
+                              textInputAction: TextInputAction.send,
                             ),
-                            style: const TextStyle(fontFamily: 'Serif', fontSize: 16),
-                            onSubmitted: (_) => _submitAction(),
-                            enabled: !_isLoading,
-                            maxLines: null,
-                            textInputAction: TextInputAction.send,
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            shape: BoxShape.circle,
+                          const SizedBox(width: 12),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.send_rounded),
+                              onPressed: _isLoading ? null : _submitAction,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
                           ),
-                          child: IconButton(
-                            icon: const Icon(Icons.send_rounded),
-                            onPressed: _isLoading ? null : _submitAction,
-                            color: Theme.of(context).colorScheme.secondary,
-                          ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
                   ],
                 ),
               ),

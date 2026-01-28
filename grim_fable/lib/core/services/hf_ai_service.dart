@@ -116,17 +116,27 @@ Backstory: $backstory
 $historyContext
 
 Based on the character's backstory and past adventures, generate 4 unique, one-line starting prompts (possible next moves) for a new dark fantasy adventure.
-Each suggestion should be a concise, compelling hook (exactly 1 sentence).
+Each suggestion MUST be short and concise, exactly 1 line (less than 12 words).
+Suggestions should be based on the character's backstory and likely next actions.
 Do NOT include "Suggestion X" or numbers. Just the content of the suggestions.
 Format your response exactly as follows:
 Content 1 | Content 2 | Content 3 | Content 4
 """;
 
     final response = await generateResponse(prompt, systemMessage: systemMessage, maxTokens: 500);
-    return response
-        .split("|")
+
+    // Attempt to split by pipe first
+    List<String> parts = response.split("|");
+
+    // If no pipe found, attempt to split by newline
+    if (parts.length == 1) {
+      parts = response.split("\n");
+    }
+
+    return parts
         .map((s) => s.trim())
-        .map((s) => s.replaceFirst(RegExp(r'^(Suggestion\s+\d+[:\.\s]*|\d+[:\.\s]+)', caseSensitive: false), ''))
+        // Remove common labels like "Suggestion 1:", "1.", "- ", etc.
+        .map((s) => s.replaceFirst(RegExp(r'^(Suggestion\s+\d+[:\.\s]*|\d+[:\.\s]+|[-*]\s+)', caseSensitive: false), ''))
         .where((s) => s.isNotEmpty)
         .toList();
   }
