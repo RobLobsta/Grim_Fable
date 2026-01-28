@@ -89,6 +89,8 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
 
   @override
   Widget build(BuildContext context) {
+    final hasApiKey = ref.watch(hfApiKeyProvider).isNotEmpty;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('FORGE CHARACTER'),
@@ -142,11 +144,14 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                       )
                     else
                       TextButton.icon(
-                        onPressed: _generateBackstory,
-                        icon: const Icon(Icons.auto_awesome_outlined, size: 18),
-                        label: const Text(
-                          'AI DIVINATION',
-                          style: TextStyle(letterSpacing: 1.2, fontSize: 12),
+                        onPressed: hasApiKey ? _generateBackstory : null,
+                        icon: Icon(
+                          hasApiKey ? Icons.auto_awesome_outlined : Icons.lock_outline,
+                          size: 18,
+                        ),
+                        label: Text(
+                          hasApiKey ? 'AI DIVINATION' : 'KEY REQUIRED',
+                          style: const TextStyle(letterSpacing: 1.2, fontSize: 12),
                         ),
                       ),
                   ],

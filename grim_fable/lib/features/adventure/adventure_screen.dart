@@ -34,7 +34,20 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
       if (adventure != null) {
         setState(() {
           for (int i = 0; i < adventure.storyHistory.length; i++) {
-            _animatedTexts[i] = adventure.storyHistory[i].aiResponse;
+            // Only mark as animated if it's not the very first prompt of a new adventure
+            // or if it's already older than a few seconds.
+            // For now, let's just mark everything except the last one as animated.
+            if (i < adventure.storyHistory.length - 1) {
+              _animatedTexts[i] = adventure.storyHistory[i].aiResponse;
+            } else {
+              // If it's the last one, only mark as animated if it's not "fresh"
+              final segment = adventure.storyHistory[i];
+              if (DateTime.now().difference(segment.timestamp).inSeconds > 10) {
+                _animatedTexts[i] = segment.aiResponse;
+              } else {
+                _isTyping = true;
+              }
+            }
           }
         });
       }
@@ -221,7 +234,11 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                 if (index < adventure.storyHistory.length) {
                   final segment = adventure.storyHistory[index];
                   final isLast = index == adventure.storyHistory.length - 1;
-                  final shouldAnimate = isLast && _animatedTexts[index] != segment.aiResponse;
+                  final previousText = _animatedTexts[index] ?? "";
+                  final shouldAnimate = isLast && previousText != segment.aiResponse;
+                  final animateFromIndex = (shouldAnimate && segment.aiResponse.startsWith(previousText))
+                      ? previousText.length
+                      : 0;
 
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -230,6 +247,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                       StorySegmentWidget(
                         response: segment.aiResponse,
                         animate: shouldAnimate,
+                        animateFromIndex: animateFromIndex,
                         onFinishedTyping: () {
                           if (isLast) {
                             if (mounted) {
@@ -237,6 +255,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                                 _animatedTexts[index] = segment.aiResponse;
                                 _isTyping = false;
                               });
+                              _scrollToBottom();
                             }
                           }
                         },

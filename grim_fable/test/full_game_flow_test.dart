@@ -8,7 +8,6 @@ import 'package:grim_fable/features/character/character_provider.dart';
 import 'package:grim_fable/features/adventure/adventure_repository.dart';
 import 'package:grim_fable/features/adventure/adventure_provider.dart';
 import 'package:grim_fable/core/services/ai_provider.dart';
-import 'package:grim_fable/core/services/fake_ai_service.dart';
 import 'package:grim_fable/core/services/settings_service.dart';
 import 'package:mockito/mockito.dart';
 import 'mocks.mocks.dart';
@@ -18,9 +17,20 @@ void main() {
     final mockCharacterRepo = MockCharacterRepository();
     final mockAdventureRepo = MockAdventureRepository();
     final mockSettingsService = MockSettingsService();
+    final mockAiService = MockAIService();
+
+    when(mockAiService.generateBackstory(any)).thenAnswer((_) async => "Sir Test was born in a storm.");
+    when(mockAiService.generateAdventureSuggestions(any, any, any)).thenAnswer((_) async => ["Investigate the strange lights.", "Seek out the hermit.", "Defend the village.", "Follow the trail."]);
+    when(mockAiService.generateResponse(any,
+            systemMessage: anyNamed('systemMessage'),
+            history: anyNamed('history'),
+            temperature: anyNamed('temperature'),
+            maxTokens: anyNamed('maxTokens')))
+        .thenAnswer((_) async => "The mist swirls around your feet.");
+    when(mockAiService.generateBackstoryAppend(any, any, any)).thenAnswer((_) async => "New backstory.");
 
     when(mockSettingsService.getUiPreset()).thenReturn('Default');
-    when(mockSettingsService.getHfApiKey()).thenReturn('');
+    when(mockSettingsService.getHfApiKey()).thenReturn('fake-key');
     when(mockSettingsService.getTemperature()).thenReturn(0.8);
     when(mockSettingsService.getMaxTokens()).thenReturn(150);
     when(mockSettingsService.getRecommendedResponsesEnabled()).thenReturn(true);
@@ -61,7 +71,7 @@ void main() {
           characterRepositoryProvider.overrideWithValue(mockCharacterRepo),
           adventureRepositoryProvider.overrideWithValue(mockAdventureRepo),
           settingsServiceProvider.overrideWithValue(mockSettingsService),
-          aiServiceProvider.overrideWithValue(FakeAIService()),
+          aiServiceProvider.overrideWithValue(mockAiService),
         ],
         child: const GrimFableApp(),
       ),
