@@ -33,6 +33,16 @@ class _NewAdventureScreenState extends ConsumerState<NewAdventureScreen> {
       final activeCharacter = ref.read(activeCharacterProvider);
       if (activeCharacter == null) throw Exception("No active character found");
 
+      if (activeCharacter.cachedSuggestions.isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            _suggestions = activeCharacter.cachedSuggestions;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
       final adventures = ref.read(characterAdventuresProvider);
       final summaries = adventures
           .where((a) => !a.isActive && a.storyHistory.isNotEmpty)
@@ -45,6 +55,11 @@ class _NewAdventureScreenState extends ConsumerState<NewAdventureScreen> {
         activeCharacter.backstory,
         summaries,
       );
+
+      // Cache suggestions
+      await ref.read(charactersProvider.notifier).updateCharacter(
+            activeCharacter.copyWith(cachedSuggestions: suggestions),
+          );
 
       if (mounted) {
         setState(() {
@@ -67,6 +82,14 @@ class _NewAdventureScreenState extends ConsumerState<NewAdventureScreen> {
       _isLoading = true;
     });
     try {
+      final activeCharacter = ref.read(activeCharacterProvider);
+      if (activeCharacter != null) {
+        // Clear cached suggestions
+        await ref.read(charactersProvider.notifier).updateCharacter(
+              activeCharacter.copyWith(cachedSuggestions: []),
+            );
+      }
+
       await ref.read(activeAdventureProvider.notifier).startNewAdventure(customPrompt: prompt);
       if (mounted) {
         context.pushReplacement('/adventure');
@@ -162,11 +185,6 @@ class _NewAdventureScreenState extends ConsumerState<NewAdventureScreen> {
                     },
                   ),
                 ),
-              const SizedBox(height: 20),
-              OutlinedButton(
-                onPressed: () => _startAdventure("Start a new random dark fantasy adventure."),
-                child: const Text('FORGE MY OWN PATH'),
-              ),
             ],
           ),
         ),
