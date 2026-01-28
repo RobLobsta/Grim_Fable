@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +26,8 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
   String? _lastFailedAction;
   final Map<int, String> _animatedTexts = {};
   bool _isTyping = false;
+  bool _autoScrollEnabled = true;
+  Timer? _idleTimer;
 
   @override
   void initState() {
@@ -35,22 +38,11 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
       if (adventure != null) {
         setState(() {
           for (int i = 0; i < adventure.storyHistory.length; i++) {
-            // Only mark as animated if it's not the very first prompt of a new adventure
-            // or if it's already older than a few seconds.
-            // For now, let's just mark everything except the last one as animated.
-            if (i < adventure.storyHistory.length - 1) {
-              _animatedTexts[i] = adventure.storyHistory[i].aiResponse;
-            } else {
-              // If it's the last one, only mark as animated if it's not "fresh"
-              final segment = adventure.storyHistory[i];
-              if (DateTime.now().difference(segment.timestamp).inSeconds > 10) {
-                _animatedTexts[i] = segment.aiResponse;
-              } else {
-                _isTyping = true;
-              }
-            }
+            _animatedTexts[i] = adventure.storyHistory[i].aiResponse;
           }
+          _isTyping = false;
         });
+        _jumpToBottom();
       }
     });
   }
@@ -59,17 +51,41 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
   void dispose() {
     _controller.dispose();
     _scrollController.dispose();
+    _idleTimer?.cancel();
     super.dispose();
+  }
+
+  void _jumpToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
   }
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
+      if (_scrollController.hasClients && _autoScrollEnabled) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
+      }
+    });
+  }
+
+  void _onUserScroll() {
+    setState(() {
+      _autoScrollEnabled = false;
+    });
+    _idleTimer?.cancel();
+    _idleTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted && _isTyping) {
+        setState(() {
+          _autoScrollEnabled = true;
+        });
+        _scrollToBottom();
       }
     });
   }
@@ -129,6 +145,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
     setState(() {
       _isLoading = true;
       _isTyping = true;
+      _autoScrollEnabled = true;
       _errorMessage = null;
       _lastFailedAction = null;
     });
@@ -169,6 +186,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
     setState(() {
       _isLoading = true;
       _isTyping = true;
+      _autoScrollEnabled = true;
       _errorMessage = null;
       _lastFailedAction = null;
     });
@@ -233,14 +251,25 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
         onDoubleTap: () {
           if (_isTyping && hasChoicesIfRequired) {
             _lastSegmentKey.currentState?.skip();
+            setState(() {
+              _autoScrollEnabled = true;
+            });
+            _scrollToBottom();
           }
         },
         behavior: HitTestBehavior.translucent,
         child: Column(
           children: [
             Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  if (notification is UserScrollNotification) {
+                    _onUserScroll();
+                  }
+                  return false;
+                },
+                child: ListView.builder(
+                  controller: _scrollController,
                 padding: const EdgeInsets.all(16.0),
                 itemCount: adventure.storyHistory.length + (_isLoading ? 1 : 0) + (_errorMessage != null ? 1 : 0),
                 itemBuilder: (context, index) {
@@ -262,6 +291,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                           response: segment.aiResponse,
                           animate: shouldAnimate,
                           animateFromIndex: animateFromIndex,
+                          onProgress: isLast ? _scrollToBottom : null,
                           onFinishedTyping: () {
                             if (isLast) {
                               if (mounted) {
@@ -377,6 +407,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                 return const SizedBox.shrink();
               },
             ),
+          ),
           ),
           if (adventure.isActive)
             if (isPlayerTurn)
