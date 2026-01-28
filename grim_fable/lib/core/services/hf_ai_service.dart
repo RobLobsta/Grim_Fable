@@ -74,7 +74,7 @@ class HuggingFaceAIService implements AIService {
   @override
   Future<String> generateBackstory(String characterName) async {
     const systemMessage = "You are a creative storyteller for a dark fantasy adventure called Grim Fable.";
-    final prompt = "Generate a brief, concise, and realistic backstory (exactly 1 paragraph, 3-4 sentences) for a character named $characterName. The tone should be dark fantasy, gritty, mysterious, and evoke a sense of tragedy or ancient secrets.";
+    final prompt = "Generate a short, vague, and general character description (exactly 1 paragraph) for a character named $characterName. Focus on their general archetype and the atmosphere surrounding them, without naming specific locations or past events. The tone should be dark fantasy and gritty.";
 
     return generateResponse(prompt, systemMessage: systemMessage, maxTokens: 1000);
   }

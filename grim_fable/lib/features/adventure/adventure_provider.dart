@@ -65,12 +65,11 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
     state = adventure;
 
     // Generate first prompt
-    final firstPromptFull = await _generateFirstPrompt(customPrompt: customPrompt);
-    final parsed = _parseResponse(firstPromptFull);
+    final storyText = await _generateFirstPrompt(customPrompt: customPrompt);
     final firstSegment = StorySegment(
       playerInput: "Starting the journey...",
-      aiResponse: parsed.text,
-      recommendedChoices: parsed.choices,
+      aiResponse: storyText,
+      recommendedChoices: null,
       timestamp: DateTime.now(),
     );
 
@@ -79,6 +78,20 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
     );
 
     await _saveAdventure(updatedAdventure);
+
+    // If recommended actions enabled, get them in second call
+    if (_ref.read(recommendedResponsesProvider)) {
+      final choices = await _getChoices(storyText, []);
+      final segmentWithChoices = StorySegment(
+        playerInput: firstSegment.playerInput,
+        aiResponse: firstSegment.aiResponse,
+        recommendedChoices: choices,
+        timestamp: firstSegment.timestamp,
+      );
+      await _saveAdventure(updatedAdventure.copyWith(
+        storyHistory: [segmentWithChoices],
+      ));
+    }
 
     // Update last played time on character
     if (_activeCharacter != null) {
@@ -124,13 +137,9 @@ Maintain a dark fantasy, gritty, and realistic tone.
     final maxTokens = _ref.read(maxTokensProvider);
     final recommendedEnabled = _ref.read(recommendedResponsesProvider);
 
-    final finalSystemMessage = recommendedEnabled
-        ? "$systemMessage\nAt the end of your response, provide exactly 3 recommended player actions. Each action must be very short and concise (under 5 words) to fit in a small button. Format: [CHOICES] Action 1 | Action 2 | Action 3"
-        : systemMessage;
-
     final fullResponse = await _aiService.generateResponse(
       action,
-      systemMessage: finalSystemMessage,
+      systemMessage: systemMessage,
       history: history,
       temperature: temperature,
       maxTokens: maxTokens,
@@ -141,7 +150,7 @@ Maintain a dark fantasy, gritty, and realistic tone.
     final newSegment = StorySegment(
       playerInput: action,
       aiResponse: parsed.text,
-      recommendedChoices: parsed.choices,
+      recommendedChoices: parsed.choices, // Might still parse if AI misbehaves and adds them
       timestamp: DateTime.now(),
     );
 
@@ -151,6 +160,21 @@ Maintain a dark fantasy, gritty, and realistic tone.
     );
 
     await _saveAdventure(updatedAdventure);
+
+    if (recommendedEnabled && (newSegment.recommendedChoices == null || newSegment.recommendedChoices!.isEmpty)) {
+      final choices = await _getChoices(parsed.text, history);
+      final segmentWithChoices = StorySegment(
+        playerInput: newSegment.playerInput,
+        aiResponse: newSegment.aiResponse,
+        recommendedChoices: choices,
+        timestamp: newSegment.timestamp,
+      );
+      final finalHistory = [...state!.storyHistory];
+      finalHistory[finalHistory.length - 1] = segmentWithChoices;
+      await _saveAdventure(state!.copyWith(
+        storyHistory: finalHistory,
+      ));
+    }
 
     // Update last played time on character
     if (_activeCharacter != null) {
@@ -182,13 +206,9 @@ Maintain a dark fantasy, gritty, and realistic tone.
     final maxTokens = _ref.read(maxTokensProvider);
     final recommendedEnabled = _ref.read(recommendedResponsesProvider);
 
-    final finalSystemMessage = recommendedEnabled
-        ? "$systemMessage\nAt the end of your response, provide exactly 3 recommended player actions. Each action must be very short and concise (under 5 words) to fit in a small button. Format: [CHOICES] Action 1 | Action 2 | Action 3"
-        : systemMessage;
-
     final fullResponse = await _aiService.generateResponse(
       "Continue",
-      systemMessage: finalSystemMessage,
+      systemMessage: systemMessage,
       history: history,
       temperature: temperature,
       maxTokens: maxTokens,
@@ -214,6 +234,21 @@ Maintain a dark fantasy, gritty, and realistic tone.
     );
 
     await _saveAdventure(updatedAdventure);
+
+    if (recommendedEnabled && (updatedSegment.recommendedChoices == null || updatedSegment.recommendedChoices!.isEmpty)) {
+      final choices = await _getChoices(parsed.text, history);
+      final segmentWithChoices = StorySegment(
+        playerInput: updatedSegment.playerInput,
+        aiResponse: updatedSegment.aiResponse,
+        recommendedChoices: choices,
+        timestamp: updatedSegment.timestamp,
+      );
+      final finalHistory = [...state!.storyHistory];
+      finalHistory[finalHistory.length - 1] = segmentWithChoices;
+      await _saveAdventure(state!.copyWith(
+        storyHistory: finalHistory,
+      ));
+    }
 
     // Update last played time on character
     if (_activeCharacter != null) {
@@ -270,20 +305,36 @@ Your response must be exactly 1 paragraph (3-5 sentences).
     final prompt = customPrompt ?? "Set the scene for a new adventure. Describe the location and the immediate situation. Maintain a gritty and realistic dark fantasy tone.";
 
     final temperature = _ref.read(temperatureProvider);
-    final recommendedEnabled = _ref.read(recommendedResponsesProvider);
-
-    final finalSystemMessage = recommendedEnabled
-        ? "$systemMessage\nAt the end of your response, provide exactly 3 recommended player actions. Each action must be very short and concise (under 5 words) to fit in a small button. Format: [CHOICES] Action 1 | Action 2 | Action 3"
-        : systemMessage;
 
     final response = await _aiService.generateResponse(
       prompt,
-      systemMessage: finalSystemMessage,
+      systemMessage: systemMessage,
       temperature: temperature,
       maxTokens: 1000, // First prompt can be slightly longer
     );
 
     return response;
+  }
+
+  Future<List<String>> _getChoices(String storyResponse, List<Map<String, String>> history) async {
+    final temperature = _ref.read(temperatureProvider);
+    final prompt = "stop the story and recommend exactly 3 short, plausible choices for ${_activeCharacter!.name}. Don't reference these choices later.";
+
+    // Include the immediate story response in the history
+    final updatedHistory = [
+      ...history,
+      {'role': 'assistant', 'content': storyResponse},
+    ];
+
+    final response = await _aiService.generateResponse(
+      prompt,
+      systemMessage: "You are a creative storyteller for Grim Fable. Respond ONLY with the choices formatted as: Choice 1 | Choice 2 | Choice 3",
+      history: updatedHistory,
+      temperature: temperature,
+      maxTokens: 100,
+    );
+
+    return response.split("|").map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
   }
 
   _ParsedResponse _parseResponse(String response) {

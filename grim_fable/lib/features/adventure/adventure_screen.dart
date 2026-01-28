@@ -19,6 +19,7 @@ class AdventureScreen extends ConsumerStatefulWidget {
 class _AdventureScreenState extends ConsumerState<AdventureScreen> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
+  final GlobalKey<StorySegmentWidgetState> _lastSegmentKey = GlobalKey();
   bool _isLoading = false;
   String? _errorMessage;
   String? _lastFailedAction;
@@ -201,6 +202,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
   Widget build(BuildContext context) {
     final adventure = ref.watch(activeAdventureProvider);
     final freeFormInput = ref.watch(freeFormInputProvider);
+    final recommendedEnabled = ref.watch(recommendedResponsesProvider);
 
     // Auto scroll when adventure updates
     ref.listen(activeAdventureProvider, (_, __) => _scrollToBottom());
@@ -210,6 +212,10 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
+
+    final lastSegment = adventure.storyHistory.isNotEmpty ? adventure.storyHistory.last : null;
+    final hasChoicesIfRequired = !recommendedEnabled || (lastSegment?.recommendedChoices != null && lastSegment!.recommendedChoices!.isNotEmpty);
+    final isPlayerTurn = adventure.isActive && !_isLoading && !_isTyping && hasChoicesIfRequired;
 
     return Scaffold(
       appBar: AppBar(
@@ -223,67 +229,86 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
             ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16.0),
-              itemCount: adventure.storyHistory.length + (_isLoading ? 1 : 0) + (_errorMessage != null ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index < adventure.storyHistory.length) {
-                  final segment = adventure.storyHistory[index];
-                  final isLast = index == adventure.storyHistory.length - 1;
-                  final previousText = _animatedTexts[index] ?? "";
-                  final shouldAnimate = isLast && previousText != segment.aiResponse;
-                  final animateFromIndex = (shouldAnimate && segment.aiResponse.startsWith(previousText))
-                      ? previousText.length
-                      : 0;
+      body: GestureDetector(
+        onDoubleTap: () {
+          if (_isTyping && hasChoicesIfRequired) {
+            _lastSegmentKey.currentState?.skip();
+          }
+        },
+        behavior: HitTestBehavior.translucent,
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.all(16.0),
+                itemCount: adventure.storyHistory.length + (_isLoading ? 1 : 0) + (_errorMessage != null ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index < adventure.storyHistory.length) {
+                    final segment = adventure.storyHistory[index];
+                    final isLast = index == adventure.storyHistory.length - 1;
+                    final previousText = _animatedTexts[index] ?? "";
+                    final shouldAnimate = isLast && previousText != segment.aiResponse;
+                    final animateFromIndex = (shouldAnimate && segment.aiResponse.startsWith(previousText))
+                        ? previousText.length
+                        : 0;
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (index > 0) PlayerActionWidget(input: segment.playerInput),
-                      StorySegmentWidget(
-                        response: segment.aiResponse,
-                        animate: shouldAnimate,
-                        animateFromIndex: animateFromIndex,
-                        onFinishedTyping: () {
-                          if (isLast) {
-                            if (mounted) {
-                              setState(() {
-                                _animatedTexts[index] = segment.aiResponse;
-                                _isTyping = false;
-                              });
-                              _scrollToBottom();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (index > 0) PlayerActionWidget(input: segment.playerInput),
+                        StorySegmentWidget(
+                          key: isLast ? _lastSegmentKey : null,
+                          response: segment.aiResponse,
+                          animate: shouldAnimate,
+                          animateFromIndex: animateFromIndex,
+                          onFinishedTyping: () {
+                            if (isLast) {
+                              if (mounted) {
+                                setState(() {
+                                  _animatedTexts[index] = segment.aiResponse;
+                                  _isTyping = false;
+                                });
+                                _scrollToBottom();
+                              }
                             }
-                          }
-                        },
-                      ),
-                      // Only show recommended choices for the last segment when typing is finished
-                      if (index == adventure.storyHistory.length - 1 &&
-                          segment.recommendedChoices != null &&
-                          segment.recommendedChoices!.isNotEmpty &&
-                          adventure.isActive &&
-                          !_isTyping) ...[
-                        const SizedBox(height: 16),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: segment.recommendedChoices!.map((choice) => ActionChip(
-                            label: Text(
-                              choice.toUpperCase(),
-                              style: const TextStyle(fontSize: 10, letterSpacing: 1, fontWeight: FontWeight.bold),
-                            ),
-                            backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                            onPressed: (_isLoading || _isTyping) ? null : () => _submitAction(retryAction: choice),
-                          )).toList(),
+                          },
                         ),
+                        // Only show recommended choices for the last segment when typing is finished
+                        if (index == adventure.storyHistory.length - 1 &&
+                            segment.recommendedChoices != null &&
+                            segment.recommendedChoices!.isNotEmpty &&
+                            adventure.isActive &&
+                            !_isTyping) ...[
+                          const SizedBox(height: 16),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: segment.recommendedChoices!.map((choice) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: ElevatedButton(
+                                onPressed: (_isLoading || _isTyping) ? null : () => _submitAction(retryAction: choice),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                  foregroundColor: Theme.of(context).colorScheme.secondary,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.3)),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: Text(
+                                  choice.toUpperCase(),
+                                  style: const TextStyle(fontSize: 12, letterSpacing: 2, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            )).toList(),
+                          ),
+                        ],
+                        const SizedBox(height: 32),
                       ],
-                      const SizedBox(height: 32),
-                    ],
-                  );
-                }
+                    );
+                  }
 
                 if (_isLoading && index == adventure.storyHistory.length) {
                   return const Padding(
@@ -354,121 +379,124 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
             ),
           ),
           if (adventure.isActive)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
-                    blurRadius: 20,
-                    offset: const Offset(0, -5),
+            if (isPlayerTurn)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.5),
+                      blurRadius: 20,
+                      offset: const Offset(0, -5),
+                    ),
+                  ],
+                  border: Border(
+                    top: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.3), width: 1),
                   ),
-                ],
-                border: Border(
-                  top: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.3), width: 1),
                 ),
-              ),
-              child: SafeArea(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Row(
-                        children: [
-                          const Spacer(),
-                          // Only show the continue button when not loading and not typing
-                          if (!_isLoading && !_isTyping)
+                child: SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Row(
+                          children: [
+                            const Spacer(),
+                            // Only show the continue button when not loading and not typing
+                            if (!_isLoading && !_isTyping)
+                              Expanded(
+                                flex: 2,
+                                child: ElevatedButton.icon(
+                                  onPressed: (_isLoading || _isTyping) ? null : _handleContinue,
+                                  icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                                  label: const Text(
+                                    "CONTINUE",
+                                    style: TextStyle(
+                                      letterSpacing: 2,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                                    foregroundColor: Theme.of(context).colorScheme.secondary,
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              const Spacer(flex: 2),
                             Expanded(
-                              flex: 2,
-                              child: ElevatedButton.icon(
-                                onPressed: (_isLoading || _isTyping) ? null : _handleContinue,
-                                icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                                label: const Text(
-                                  "CONTINUE",
-                                  style: TextStyle(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: IconButton(
+                                  icon: const Icon(Icons.inventory_2_outlined, color: Color(0xFFC0C0C0)),
+                                  onPressed: () {
+                                    final character = ref.read(activeCharacterProvider);
+                                    if (character != null) {
+                                      InventoryDialog.show(context, character.inventory);
+                                    }
+                                  },
+                                  tooltip: 'Inventory',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (freeFormInput)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _controller,
+                                decoration: InputDecoration(
+                                    hintText: _isTyping ? "OBSERVING..." : "WHAT IS THY WILL?",
+                                  hintStyle: TextStyle(
+                                    color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
                                     letterSpacing: 2,
-                                    fontWeight: FontWeight.bold,
                                     fontSize: 12,
                                   ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
-                                  foregroundColor: Theme.of(context).colorScheme.secondary,
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                    borderSide: BorderSide.none,
                                   ),
+                                  filled: true,
+                                  fillColor: Colors.black.withOpacity(0.3),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                 ),
+                                style: const TextStyle(fontFamily: 'Serif', fontSize: 16),
+                                onSubmitted: (_) => _submitAction(),
+                                enabled: !_isLoading && !_isTyping,
+                                maxLines: null,
+                                textInputAction: TextInputAction.send,
                               ),
-                            )
-                          else
-                            const Spacer(flex: 2),
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerRight,
+                            ),
+                            const SizedBox(width: 12),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                shape: BoxShape.circle,
+                              ),
                               child: IconButton(
-                                icon: const Icon(Icons.inventory_2_outlined, color: Color(0xFFC0C0C0)),
-                                onPressed: () {
-                                  final character = ref.read(activeCharacterProvider);
-                                  if (character != null) {
-                                    InventoryDialog.show(context, character.inventory);
-                                  }
-                                },
-                                tooltip: 'Inventory',
+                                icon: const Icon(Icons.send_rounded),
+                                onPressed: (_isLoading || _isTyping) ? null : _submitAction,
+                                color: Theme.of(context).colorScheme.secondary,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (freeFormInput)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _controller,
-                              decoration: InputDecoration(
-                                  hintText: _isTyping ? "OBSERVING..." : "WHAT IS THY WILL?",
-                                hintStyle: TextStyle(
-                                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
-                                  letterSpacing: 2,
-                                  fontSize: 12,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                  borderSide: BorderSide.none,
-                                ),
-                                filled: true,
-                                fillColor: Colors.black.withOpacity(0.3),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              ),
-                              style: const TextStyle(fontFamily: 'Serif', fontSize: 16),
-                              onSubmitted: (_) => _submitAction(),
-                              enabled: !_isLoading && !_isTyping,
-                              maxLines: null,
-                              textInputAction: TextInputAction.send,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary,
-                              shape: BoxShape.circle,
-                            ),
-                            child: IconButton(
-                              icon: const Icon(Icons.send_rounded),
-                              onPressed: (_isLoading || _isTyping) ? null : _submitAction,
-                              color: Theme.of(context).colorScheme.secondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
+                          ],
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            )
+              )
+            else
+              const SizedBox.shrink()
           else
             Container(
               padding: const EdgeInsets.all(24.0),
@@ -490,6 +518,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
             ),
         ],
       ),
+    ),
     );
   }
 }
