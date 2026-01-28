@@ -11,9 +11,9 @@ final adventureRepositoryProvider = Provider((ref) => AdventureRepository());
 
 final characterAdventuresProvider = Provider.autoDispose<List<Adventure>>((ref) {
   final repository = ref.watch(adventureRepositoryProvider);
-  final characterId = ref.watch(activeCharacterProvider.select((c) => c?.id));
-  if (characterId == null) return [];
-  return repository.getAdventuresForCharacter(characterId);
+  final character = ref.watch(activeCharacterProvider);
+  if (character == null) return [];
+  return repository.getAdventuresForCharacter(character.id);
 });
 
 final hasActiveAdventureProvider = Provider.autoDispose<bool>((ref) {
@@ -275,9 +275,16 @@ Maintain a dark fantasy, gritty, and realistic tone.
 
     final newBackstory = "${_activeCharacter!.backstory}\n\n$backstoryAppend";
 
+    // Evolve occupation
+    final newOccupation = await _aiService.generateOccupationEvolution(
+      _activeCharacter!.occupation,
+      summary,
+    );
+
     await _characterNotifier.updateCharacter(
       _activeCharacter!.copyWith(
         backstory: newBackstory,
+        occupation: newOccupation,
         lastPlayedAt: DateTime.now(),
       ),
     );
@@ -342,11 +349,22 @@ Your response must be exactly 1 paragraph (3-5 sentences).
     // Use non-greedy match to avoid stripping choices that contain colons
     String cleaned = response.replaceFirst(RegExp(r'^.*?:', caseSensitive: false), '');
 
-    return cleaned.split("|")
+    // Matches labels like: "Choice 1:", "1.", "1)", "A.", "A)", "- ", "* ", "• "
+    final labelPattern = RegExp(
+      r'^(?:Choice\s*\d+:?\s*|[a-z0-9][\.\)]\s*|[-*•]\s*)',
+      caseSensitive: false,
+    );
+
+    // Matches trailing numbers like: " (1)", " [1]", " 1"
+    final trailingPattern = RegExp(r'\s*[\(\[]?\s*\d+\s*[\)\]]?$');
+
+    return cleaned.split(RegExp(r'[|\n]'))
         .map((e) => e.trim())
-        // Remove labels like "Choice 1:", "1.", "- "
-        .map((e) => e.replaceFirst(RegExp(r'^(Choice\s+\d+[:\.\s]*|Suggestion\s+\d+[:\.\s]*|\d+[:\.\s]+|[-*]\s+)', caseSensitive: false), ''))
-        .where((e) => e.isNotEmpty)
+        .map((e) => e.replaceFirst(labelPattern, ''))
+        .map((e) => e.replaceFirst(trailingPattern, ''))
+        .map((e) => e.trim())
+        // Filter out empty choices, choices that are just numbers, or choices that are too short
+        .where((e) => e.isNotEmpty && !RegExp(r'^\d+$').hasMatch(e) && e.length > 3)
         .toList();
   }
 

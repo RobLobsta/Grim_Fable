@@ -37,10 +37,21 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
       final adventure = ref.read(activeAdventureProvider);
       if (adventure != null) {
         setState(() {
+          // If it's a very new adventure (created in the last 30 seconds) and only has one segment,
+          // we want to animate that first prompt.
+          final isNewAdventure = adventure.storyHistory.length == 1 &&
+              DateTime.now().difference(adventure.createdAt).inSeconds < 30;
+
           for (int i = 0; i < adventure.storyHistory.length; i++) {
+            if (isNewAdventure && i == adventure.storyHistory.length - 1) {
+              _isTyping = true;
+              continue;
+            }
             _animatedTexts[i] = adventure.storyHistory[i].aiResponse;
           }
-          _isTyping = false;
+          if (!isNewAdventure) {
+            _isTyping = false;
+          }
         });
         _jumpToBottom();
       }
@@ -249,9 +260,11 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
       ),
       body: GestureDetector(
         onDoubleTap: () {
+          // Skip is only available if we are typing AND (recommended is off OR we have received the choices)
           if (_isTyping && hasChoicesIfRequired) {
             _lastSegmentKey.currentState?.skip();
             setState(() {
+              _isTyping = false; // Ensure choices appear immediately
               _autoScrollEnabled = true;
             });
             _scrollToBottom();

@@ -19,7 +19,7 @@ void main() {
     final mockSettingsService = MockSettingsService();
     final mockAiService = MockAIService();
 
-    when(mockAiService.generateBackstory(any)).thenAnswer((_) async => "Sir Test was born in a storm.");
+    when(mockAiService.generateBackstory(any, any)).thenAnswer((_) async => "Sir Test was born in a storm.");
     when(mockAiService.generateAdventureSuggestions(any, any, any)).thenAnswer((_) async => ["Investigate the strange lights.", "Seek out the hermit.", "Defend the village.", "Follow the trail."]);
     when(mockAiService.generateResponse(any,
             systemMessage: anyNamed('systemMessage'),
@@ -28,6 +28,7 @@ void main() {
             maxTokens: anyNamed('maxTokens')))
         .thenAnswer((_) async => "The mist swirls around your feet.");
     when(mockAiService.generateBackstoryAppend(any, any, any)).thenAnswer((_) async => "New backstory.");
+    when(mockAiService.generateOccupationEvolution(any, any)).thenAnswer((_) async => "Paladin");
 
     when(mockSettingsService.getUiPreset()).thenReturn('Default');
     when(mockSettingsService.getHfApiKey()).thenReturn('fake-key');
@@ -91,7 +92,8 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('FORGE CHARACTER'), findsOneWidget);
-    await tester.enterText(find.byType(TextFormField).first, 'Sir Test');
+    await tester.enterText(find.byType(TextFormField).at(0), 'Sir Test');
+    await tester.enterText(find.byType(TextFormField).at(1), 'Knight');
 
     // Need to generate backstory now as it's required
     await tester.tap(find.text('AI DIVINATION'));

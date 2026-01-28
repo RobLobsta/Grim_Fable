@@ -9,7 +9,9 @@ import '../../shared/widgets/ai_settings_dialog.dart';
 import 'character_provider.dart';
 
 class CharacterCreationScreen extends ConsumerStatefulWidget {
-  const CharacterCreationScreen({super.key});
+  final Character? characterToEdit;
+
+  const CharacterCreationScreen({super.key, this.characterToEdit});
 
   @override
   ConsumerState<CharacterCreationScreen> createState() => _CharacterCreationScreenState();
@@ -18,12 +20,24 @@ class CharacterCreationScreen extends ConsumerStatefulWidget {
 class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _occupationController = TextEditingController();
   final _backstoryController = TextEditingController();
   bool _isGenerating = false;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.characterToEdit != null) {
+      _nameController.text = widget.characterToEdit!.name;
+      _occupationController.text = widget.characterToEdit!.occupation;
+      _backstoryController.text = widget.characterToEdit!.backstory;
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
+    _occupationController.dispose();
     _backstoryController.dispose();
     super.dispose();
   }
@@ -36,13 +50,23 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
       return;
     }
 
+    if (_occupationController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('A hero must have a trade... enter an occupation')),
+      );
+      return;
+    }
+
     setState(() {
       _isGenerating = true;
     });
 
     try {
       final aiService = ref.read(aiServiceProvider);
-      final backstory = await aiService.generateBackstory(_nameController.text.trim());
+      final backstory = await aiService.generateBackstory(
+        _nameController.text.trim(),
+        _occupationController.text.trim(),
+      );
       setState(() {
         _backstoryController.text = backstory;
       });
@@ -75,12 +99,22 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
         return;
       }
 
-      final character = Character.create(
-        name: _nameController.text.trim(),
-        backstory: _backstoryController.text.trim(),
-      );
+      if (widget.characterToEdit != null) {
+        final updatedCharacter = widget.characterToEdit!.copyWith(
+          name: _nameController.text.trim(),
+          occupation: _occupationController.text.trim(),
+          backstory: _backstoryController.text.trim(),
+        );
+        await ref.read(charactersProvider.notifier).updateCharacter(updatedCharacter);
+      } else {
+        final character = Character.create(
+          name: _nameController.text.trim(),
+          occupation: _occupationController.text.trim(),
+          backstory: _backstoryController.text.trim(),
+        );
+        await ref.read(charactersProvider.notifier).addCharacter(character);
+      }
 
-      await ref.read(charactersProvider.notifier).addCharacter(character);
       if (mounted) {
         context.pop();
       }
@@ -90,10 +124,11 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
   @override
   Widget build(BuildContext context) {
     final hasApiKey = ref.watch(hfApiKeyProvider).isNotEmpty;
+    final isEditing = widget.characterToEdit != null;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('FORGE CHARACTER'),
+        title: Text(isEditing ? 'REFORGE CHARACTER' : 'FORGE CHARACTER'),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -127,6 +162,23 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'THE NAMELESS CANNOT BE FORGED';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _occupationController,
+                  maxLength: 40,
+                  decoration: const InputDecoration(
+                    labelText: 'OCCUPATION',
+                    prefixIcon: Icon(Icons.work_outline),
+                    counterStyle: TextStyle(color: Colors.grey, fontSize: 10),
+                  ),
+                  style: const TextStyle(fontFamily: 'Serif', letterSpacing: 1.2),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'ONE MUST HAVE A PURPOSE IN THIS DARK WORLD';
                     }
                     return null;
                   },
@@ -184,7 +236,7 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                 const SizedBox(height: 60),
                 ElevatedButton(
                   onPressed: _saveCharacter,
-                  child: const Text('FORGE LEGEND'),
+                  child: Text(isEditing ? 'REFORGE LEGEND' : 'FORGE LEGEND'),
                 ),
               ],
             ),
