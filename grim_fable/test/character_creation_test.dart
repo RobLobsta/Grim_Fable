@@ -4,10 +4,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:grim_fable/features/character/character_creation_screen.dart';
 import 'package:grim_fable/core/services/ai_provider.dart';
-import 'package:grim_fable/core/services/fake_ai_service.dart';
+import 'package:grim_fable/core/services/settings_service.dart';
+import 'package:mockito/mockito.dart';
+import 'mocks.mocks.dart';
 
 void main() {
   testWidgets('Character Creation Screen Test', (WidgetTester tester) async {
+    final mockAiService = MockAIService();
+    final mockSettingsService = MockSettingsService();
+
+    when(mockAiService.generateBackstory(any)).thenAnswer((_) async => "Test Hero was born in a storm.");
+    when(mockSettingsService.getHfApiKey()).thenReturn('fake-key');
+
     final router = GoRouter(
       routes: [
         GoRoute(
@@ -24,7 +32,8 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          aiServiceProvider.overrideWithValue(FakeAIService()),
+          aiServiceProvider.overrideWithValue(mockAiService),
+          settingsServiceProvider.overrideWithValue(mockSettingsService),
         ],
         child: MaterialApp.router(
           routerConfig: router,

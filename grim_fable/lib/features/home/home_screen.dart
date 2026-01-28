@@ -340,6 +340,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         const SizedBox(height: 60),
         ElevatedButton(
+          onPressed: null, // Disabled for now
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.grey.withOpacity(0.2),
+            foregroundColor: Colors.white38,
+          ),
+          child: const Text('SAGA MODE (COMING SOON)'),
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton(
           onPressed: () => setState(() => _isSelectionMode = true),
           child: const Text('ADVENTURE MODE'),
         ),
@@ -349,6 +358,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildCharacterSection(BuildContext context, dynamic activeCharacter) {
     final hasBackstory = activeCharacter.backstory.trim().isNotEmpty;
+    final hasApiKey = ref.watch(hfApiKeyProvider).isNotEmpty;
 
     return Column(
       children: [
@@ -377,19 +387,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (hasBackstory) ...[
           if (ref.watch(hasActiveAdventureProvider))
             ElevatedButton(
-              onPressed: _continueAdventure,
+              onPressed: hasApiKey ? _continueAdventure : null,
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(260, 60),
               ),
-              child: const Text('CONTINUE ADVENTURE'),
+              child: Text(hasApiKey ? 'CONTINUE ADVENTURE' : 'KEY REQUIRED TO CONTINUE'),
             )
           else
             ElevatedButton(
-              onPressed: () => context.push('/new-adventure'),
+              onPressed: hasApiKey ? () => context.push('/new-adventure') : null,
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(260, 60),
               ),
-              child: const Text('NEW ADVENTURE'),
+              child: Text(hasApiKey ? 'NEW ADVENTURE' : 'KEY REQUIRED FOR NEW JOURNEY'),
             ),
         ] else ...[
           const Text(

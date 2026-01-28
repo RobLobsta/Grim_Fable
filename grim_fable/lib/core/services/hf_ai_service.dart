@@ -61,6 +61,9 @@ class HuggingFaceAIService implements AIService {
       }
     } catch (e) {
       if (e is DioException) {
+        if (e.response?.statusCode == 401 || e.response?.statusCode == 403) {
+          throw Exception("Invalid API Key: Access denied by AI service.");
+        }
         final errorMessage = e.response?.data?['error']?['message'] ?? e.message;
         throw Exception("Network Error: $errorMessage");
       }

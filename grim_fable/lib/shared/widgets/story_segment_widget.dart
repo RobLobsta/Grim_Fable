@@ -5,12 +5,14 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 class StorySegmentWidget extends StatefulWidget {
   final String response;
   final bool animate;
+  final int animateFromIndex;
   final VoidCallback? onFinishedTyping;
 
   const StorySegmentWidget({
     super.key,
     required this.response,
     this.animate = false,
+    this.animateFromIndex = 0,
     this.onFinishedTyping,
   });
 
@@ -28,7 +30,8 @@ class _StorySegmentWidgetState extends State<StorySegmentWidget> {
   void initState() {
     super.initState();
     if (widget.animate) {
-      _displayResponse = "";
+      _currentIndex = widget.animateFromIndex;
+      _displayResponse = widget.response.substring(0, _currentIndex);
       _isAnimating = true;
       _startTyping();
     } else {
@@ -47,8 +50,8 @@ class _StorySegmentWidgetState extends State<StorySegmentWidget> {
     super.didUpdateWidget(oldWidget);
     if (widget.response != oldWidget.response && widget.animate) {
       _timer?.cancel();
-      _displayResponse = "";
-      _currentIndex = 0;
+      _currentIndex = widget.animateFromIndex;
+      _displayResponse = widget.response.substring(0, _currentIndex);
       _isAnimating = true;
       _startTyping();
     } else if (widget.response != oldWidget.response && !widget.animate) {
