@@ -17,6 +17,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isStarting = false;
+  bool _isSelectionMode = false;
   late PageController _pageController;
 
   @override
@@ -94,104 +95,164 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final activeCharacter = ref.watch(activeCharacterProvider);
 
     if (_isStarting) {
-      return const Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(height: 20),
-              Text(
-                'Consulting the fates...',
-                style: TextStyle(fontFamily: 'Serif', fontSize: 18),
-              ),
-            ],
-          ),
-        ),
-      );
+      return _buildLoadingOverlay();
     }
 
+    if (!_isSelectionMode) {
+      return _buildWelcomeView(context, activeCharacter);
+    }
+
+    return _buildSelectionView(context, activeCharacter);
+  }
+
+  Widget _buildLoadingOverlay() {
+    return const Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 20),
+            Text(
+              'Consulting the fates...',
+              style: TextStyle(fontFamily: 'Serif', fontSize: 18),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWelcomeView(BuildContext context, dynamic activeCharacter) {
+    return Scaffold(
+      body: _buildBackgroundContainer(
+        child: Column(
+          children: [
+            _buildAppBar(context, activeCharacter),
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildHeroIcon(),
+                      const SizedBox(height: 40),
+                      _buildWelcomeSection(context),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSelectionView(BuildContext context, dynamic activeCharacter) {
     final allCharacters = ref.watch(charactersProvider);
     final sortedCharacters = [...allCharacters];
     sortedCharacters.sort((a, b) => b.lastPlayedAt.compareTo(a.lastPlayedAt));
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment.center,
-            radius: 1.5,
-            colors: [
-              Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              Theme.of(context).colorScheme.background,
-            ],
-          ),
+      body: _buildBackgroundContainer(
+        child: Column(
+          children: [
+            _buildAppBar(context, activeCharacter),
+            Expanded(
+              child: sortedCharacters.isEmpty
+                  ? _buildEmptyState(context)
+                  : _buildCharacterPager(sortedCharacters, activeCharacter),
+            ),
+            if (activeCharacter != null && sortedCharacters.length > 1)
+              _buildPageIndicator(sortedCharacters, activeCharacter),
+          ],
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildAppBar(context, activeCharacter),
-              Expanded(
-                child: activeCharacter == null
-                    ? Center(
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildHeroIcon(),
-                              const SizedBox(height: 40),
-                              _buildWelcomeSection(context),
-                            ],
-                          ),
-                        ),
-                      )
-                    : PageView.builder(
-                        controller: _pageController,
-                        itemCount: sortedCharacters.length,
-                        onPageChanged: (index) {
-                          ref.read(selectedCharacterIdProvider.notifier).state = sortedCharacters[index].id;
-                        },
-                        itemBuilder: (context, index) {
-                          final character = sortedCharacters[index];
-                          return Center(
-                            child: SingleChildScrollView(
-                              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  _buildHeroIcon(),
-                                  const SizedBox(height: 40),
-                                  _buildCharacterSection(context, character),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-              ),
-              if (activeCharacter != null && sortedCharacters.length > 1)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 24.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      sortedCharacters.length,
-                      (index) => Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: activeCharacter.id == sortedCharacters[index].id
-                              ? Theme.of(context).colorScheme.secondary
-                              : Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+      ),
+    );
+  }
+
+  Widget _buildBackgroundContainer({required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: RadialGradient(
+          center: Alignment.center,
+          radius: 1.5,
+          colors: [
+            Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            Theme.of(context).colorScheme.background,
+          ],
+        ),
+      ),
+      child: SafeArea(child: child),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildHeroIcon(),
+          const SizedBox(height: 40),
+          Text(
+            'NO LEGENDS FOUND',
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 20),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () => _navigateToCreation(context),
+            child: const Text('FORGE FIRST CHARACTER'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCharacterPager(List<dynamic> characters, dynamic activeCharacter) {
+    return PageView.builder(
+      controller: _pageController,
+      itemCount: characters.length,
+      onPageChanged: (index) {
+        ref.read(selectedCharacterIdProvider.notifier).state = characters[index].id;
+      },
+      itemBuilder: (context, index) {
+        final character = characters[index];
+        return Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildHeroIcon(),
+                const SizedBox(height: 40),
+                _buildCharacterSection(context, character),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPageIndicator(List<dynamic> characters, dynamic activeCharacter) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(
+          characters.length,
+          (index) => Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: activeCharacter.id == characters[index].id
+                  ? Theme.of(context).colorScheme.secondary
+                  : Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+            ),
           ),
         ),
       ),
@@ -204,14 +265,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'GRIM FABLE',
-            style: TextStyle(
-              fontFamily: 'Serif',
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 4,
-              color: Color(0xFFC0C0C0),
+          GestureDetector(
+            onTap: () => setState(() => _isSelectionMode = false),
+            child: const Text(
+              'GRIM FABLE',
+              style: TextStyle(
+                fontFamily: 'Serif',
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 4,
+                color: Color(0xFFC0C0C0),
+              ),
             ),
           ),
           Row(
@@ -226,7 +290,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onPressed: () => AiSettingsDialog.show(context),
                 tooltip: 'AI Settings',
               ),
-              if (activeCharacter != null)
+              if (_isSelectionMode)
                 IconButton(
                   icon: const Icon(Icons.person_add_outlined, color: Color(0xFFC0C0C0)),
                   onPressed: () => _navigateToCreation(context),
@@ -276,14 +340,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         const SizedBox(height: 60),
         ElevatedButton(
-          onPressed: () => _navigateToCreation(context),
-          child: const Text('BEGIN JOURNEY'),
+          onPressed: () => setState(() => _isSelectionMode = true),
+          child: const Text('ADVENTURE MODE'),
         ),
       ],
     );
   }
 
   Widget _buildCharacterSection(BuildContext context, dynamic activeCharacter) {
+    final hasBackstory = activeCharacter.backstory.trim().isNotEmpty;
+
     return Column(
       children: [
         Text(
@@ -308,22 +374,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
         const SizedBox(height: 60),
-        if (ref.watch(hasActiveAdventureProvider))
-          ElevatedButton(
-            onPressed: _continueAdventure,
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(260, 60),
+        if (hasBackstory) ...[
+          if (ref.watch(hasActiveAdventureProvider))
+            ElevatedButton(
+              onPressed: _continueAdventure,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(260, 60),
+              ),
+              child: const Text('CONTINUE ADVENTURE'),
+            )
+          else
+            ElevatedButton(
+              onPressed: () => context.push('/new-adventure'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(260, 60),
+              ),
+              child: const Text('NEW ADVENTURE'),
             ),
-            child: const Text('CONTINUE ADVENTURE'),
-          )
-        else
-          ElevatedButton(
-            onPressed: () => context.push('/new-adventure'),
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(260, 60),
-            ),
-            child: const Text('NEW ADVENTURE'),
+        ] else ...[
+          const Text(
+            "Forge a backstory to begin adventures.",
+            style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
           ),
+          const SizedBox(height: 12),
+          TextButton.icon(
+            onPressed: () => context.push('/create-character'), // Or a dedicated edit screen if we had one
+            icon: const Icon(Icons.auto_awesome, size: 16),
+            label: const Text("FORGE BACKSTORY"),
+          ),
+        ],
         const SizedBox(height: 24),
         TextButton.icon(
           onPressed: () => context.push('/history'),

@@ -70,8 +70,13 @@ void main() {
     await tester.pump();
 
     // 1. Start Journey (Create Character)
-    expect(find.text('BEGIN JOURNEY'), findsOneWidget);
-    await tester.tap(find.text('BEGIN JOURNEY'));
+    expect(find.text('ADVENTURE MODE'), findsOneWidget);
+    await tester.tap(find.text('ADVENTURE MODE'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('FORGE FIRST CHARACTER'), findsOneWidget);
+    await tester.tap(find.text('FORGE FIRST CHARACTER'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 

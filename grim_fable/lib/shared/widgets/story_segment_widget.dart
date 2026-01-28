@@ -5,11 +5,13 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 class StorySegmentWidget extends StatefulWidget {
   final String response;
   final bool animate;
+  final VoidCallback? onFinishedTyping;
 
   const StorySegmentWidget({
     super.key,
     required this.response,
     this.animate = false,
+    this.onFinishedTyping,
   });
 
   @override
@@ -32,6 +34,11 @@ class _StorySegmentWidgetState extends State<StorySegmentWidget> {
     } else {
       _displayResponse = widget.response;
       _isAnimating = false;
+      if (widget.onFinishedTyping != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          widget.onFinishedTyping?.call();
+        });
+      }
     }
   }
 
@@ -44,10 +51,15 @@ class _StorySegmentWidgetState extends State<StorySegmentWidget> {
       _currentIndex = 0;
       _isAnimating = true;
       _startTyping();
-    } else if (!widget.animate) {
+    } else if (widget.response != oldWidget.response && !widget.animate) {
       _timer?.cancel();
       _displayResponse = widget.response;
       _isAnimating = false;
+      if (widget.onFinishedTyping != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          widget.onFinishedTyping?.call();
+        });
+      }
     }
   }
 
@@ -71,6 +83,7 @@ class _StorySegmentWidgetState extends State<StorySegmentWidget> {
           setState(() {
             _isAnimating = false;
           });
+          widget.onFinishedTyping?.call();
         }
         _timer?.cancel();
       }

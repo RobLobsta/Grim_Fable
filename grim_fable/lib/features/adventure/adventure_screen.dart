@@ -23,6 +23,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
   String? _errorMessage;
   String? _lastFailedAction;
   final Map<int, String> _animatedTexts = {};
+  bool _isTyping = false;
 
   @override
   void initState() {
@@ -109,10 +110,11 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
   }
 
   Future<void> _handleContinue() async {
-    if (_isLoading) return;
+    if (_isLoading || _isTyping) return;
 
     setState(() {
       _isLoading = true;
+      _isTyping = true;
       _errorMessage = null;
       _lastFailedAction = null;
     });
@@ -121,6 +123,11 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
       await ref.read(activeAdventureProvider.notifier).continueAdventure();
       _scrollToBottom();
     } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isTyping = false;
+        });
+      }
       if (mounted) {
         setState(() {
           _errorMessage = e.toString();
@@ -139,7 +146,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
 
   Future<void> _submitAction({String? retryAction}) async {
     final text = retryAction ?? _controller.text.trim();
-    if (text.isEmpty || _isLoading) return;
+    if (text.isEmpty || _isLoading || _isTyping) return;
 
     if (retryAction == null) {
       _controller.clear();
@@ -147,6 +154,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
 
     setState(() {
       _isLoading = true;
+      _isTyping = true;
       _errorMessage = null;
       _lastFailedAction = null;
     });
@@ -155,6 +163,11 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
       await ref.read(activeAdventureProvider.notifier).submitAction(text);
       _scrollToBottom();
     } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isTyping = false;
+        });
+      }
       if (mounted) {
         setState(() {
           _errorMessage = e.toString();
@@ -207,10 +220,9 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
               itemBuilder: (context, index) {
                 if (index < adventure.storyHistory.length) {
                   final segment = adventure.storyHistory[index];
-                  final shouldAnimate = index == adventure.storyHistory.length - 1 && _animatedTexts[index] != segment.aiResponse;
-                  if (shouldAnimate) {
-                    _animatedTexts[index] = segment.aiResponse;
-                  }
+                  final isLast = index == adventure.storyHistory.length - 1;
+                  final shouldAnimate = isLast && _animatedTexts[index] != segment.aiResponse;
+
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -218,8 +230,18 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                       StorySegmentWidget(
                         response: segment.aiResponse,
                         animate: shouldAnimate,
+                        onFinishedTyping: () {
+                          if (isLast) {
+                            if (mounted) {
+                              setState(() {
+                                _animatedTexts[index] = segment.aiResponse;
+                                _isTyping = false;
+                              });
+                            }
+                          }
+                        },
                       ),
-                      if (index == adventure.storyHistory.length - 1 && segment.recommendedChoices != null && segment.recommendedChoices!.isNotEmpty && adventure.isActive) ...[
+                      if (index == adventure.storyHistory.length - 1 && segment.recommendedChoices != null && segment.recommendedChoices!.isNotEmpty && adventure.isActive && !_isTyping) ...[
                         const SizedBox(height: 16),
                         Wrap(
                           spacing: 8,
@@ -230,7 +252,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                               style: const TextStyle(fontSize: 10, letterSpacing: 1, fontWeight: FontWeight.bold),
                             ),
                             backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                            onPressed: _isLoading ? null : () => _submitAction(retryAction: choice),
+                            onPressed: (_isLoading || _isTyping) ? null : () => _submitAction(retryAction: choice),
                           )).toList(),
                         ),
                       ],
@@ -332,11 +354,11 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                       child: Row(
                         children: [
                           const Spacer(),
-                          if (!_isLoading)
+                          if (!_isLoading && !_isTyping)
                             Expanded(
                               flex: 2,
                               child: ElevatedButton.icon(
-                                onPressed: _handleContinue,
+                                onPressed: (_isLoading || _isTyping) ? null : _handleContinue,
                                 icon: const Icon(Icons.arrow_forward_rounded, size: 16),
                                 label: const Text(
                                   "CONTINUE",
@@ -383,7 +405,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                             child: TextField(
                               controller: _controller,
                               decoration: InputDecoration(
-                                hintText: "WHAT IS THY WILL?",
+                                  hintText: _isTyping ? "OBSERVING..." : "WHAT IS THY WILL?",
                                 hintStyle: TextStyle(
                                   color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
                                   letterSpacing: 2,
@@ -399,7 +421,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                               ),
                               style: const TextStyle(fontFamily: 'Serif', fontSize: 16),
                               onSubmitted: (_) => _submitAction(),
-                              enabled: !_isLoading,
+                              enabled: !_isLoading && !_isTyping,
                               maxLines: null,
                               textInputAction: TextInputAction.send,
                             ),
@@ -412,7 +434,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                             ),
                             child: IconButton(
                               icon: const Icon(Icons.send_rounded),
-                              onPressed: _isLoading ? null : _submitAction,
+                              onPressed: (_isLoading || _isTyping) ? null : _submitAction,
                               color: Theme.of(context).colorScheme.secondary,
                             ),
                           ),
