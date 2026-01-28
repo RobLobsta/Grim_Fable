@@ -16,7 +16,7 @@ class FakeAIService implements AIService {
   @override
   Future<String> generateBackstory(String characterName) async {
     await Future.delayed(const Duration(seconds: 2));
-    return "$characterName was born under a blood-red moon in the dying village of Oakhaven. After the Great Blight took their family, they wandered the scorched wastes, guided by whispers from a locket that shouldn't be able to speak.\n\nNow, they seek the Shattered Throne, carrying a burden of guilt and a blade forged from star-fallen iron, hoping to find redemption or at least a meaningful end to their suffering.";
+    return "$characterName was born in the dying village of Oakhaven under a blood-red moon. After the Great Blight took their family, they wandered the scorched wastes guided by whispers from a haunted locket. Now, they seek the Shattered Throne, carrying a blade forged from star-fallen iron and a heavy burden of guilt.";
   }
 
   @override
@@ -36,7 +36,8 @@ class FakeAIService implements AIService {
     return [
       "Investigate the strange lights appearing in the ruins of the Old Watchtower.",
       "Seek out the hermit who claims to have a map to the Sunken City.",
-      "Defend the village from the spectral riders that appear at every full moon."
+      "Defend the village from the spectral riders that appear at every full moon.",
+      "Follow the trail of blood into the Whispering Woods."
     ];
   }
 }

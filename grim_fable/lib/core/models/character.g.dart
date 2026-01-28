@@ -22,13 +22,14 @@ class CharacterAdapter extends TypeAdapter<Character> {
       backstory: fields[2] as String,
       createdAt: fields[3] as DateTime,
       lastPlayedAt: fields[4] as DateTime,
+      inventory: (fields[5] as List).cast<String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Character obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class CharacterAdapter extends TypeAdapter<Character> {
       ..writeByte(3)
       ..write(obj.createdAt)
       ..writeByte(4)
-      ..write(obj.lastPlayedAt);
+      ..write(obj.lastPlayedAt)
+      ..writeByte(5)
+      ..write(obj.inventory);
   }
 
   @override
