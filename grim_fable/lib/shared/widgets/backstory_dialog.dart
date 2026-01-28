@@ -33,26 +33,14 @@ class BackstoryDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'THY CHRONICLES',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontFamily: 'Serif',
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.black54),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.black54),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
             ),
-            const Divider(color: Colors.black26),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Flexible(
               child: SingleChildScrollView(
                 child: Text(

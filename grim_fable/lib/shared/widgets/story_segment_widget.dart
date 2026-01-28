@@ -7,6 +7,7 @@ class StorySegmentWidget extends StatefulWidget {
   final bool animate;
   final int animateFromIndex;
   final VoidCallback? onFinishedTyping;
+  final VoidCallback? onProgress;
 
   const StorySegmentWidget({
     super.key,
@@ -14,6 +15,7 @@ class StorySegmentWidget extends StatefulWidget {
     this.animate = false,
     this.animateFromIndex = 0,
     this.onFinishedTyping,
+    this.onProgress,
   });
 
   @override
@@ -80,6 +82,7 @@ class StorySegmentWidgetState extends State<StorySegmentWidget> {
             _displayResponse = widget.response.substring(0, _currentIndex + 1);
             _currentIndex++;
           });
+          widget.onProgress?.call();
         }
       } else {
         if (mounted) {

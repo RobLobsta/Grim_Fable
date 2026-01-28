@@ -334,7 +334,20 @@ Your response must be exactly 1 paragraph (3-5 sentences).
       maxTokens: 100,
     );
 
-    return response.split("|").map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    return _cleanChoices(response);
+  }
+
+  List<String> _cleanChoices(String response) {
+    // Remove introductory text like "Here are your choices:"
+    // Use non-greedy match to avoid stripping choices that contain colons
+    String cleaned = response.replaceFirst(RegExp(r'^.*?:', caseSensitive: false), '');
+
+    return cleaned.split("|")
+        .map((e) => e.trim())
+        // Remove labels like "Choice 1:", "1.", "- "
+        .map((e) => e.replaceFirst(RegExp(r'^(Choice\s+\d+[:\.\s]*|Suggestion\s+\d+[:\.\s]*|\d+[:\.\s]+|[-*]\s+)', caseSensitive: false), ''))
+        .where((e) => e.isNotEmpty)
+        .toList();
   }
 
   _ParsedResponse _parseResponse(String response) {
@@ -342,7 +355,7 @@ Your response must be exactly 1 paragraph (3-5 sentences).
       final parts = response.split("[CHOICES]");
       final text = parts[0].trim();
       final choicesPart = parts[1].trim();
-      final choices = choicesPart.split("|").map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      final choices = _cleanChoices(choicesPart);
       return _ParsedResponse(text, choices);
     }
     return _ParsedResponse(response, null);
