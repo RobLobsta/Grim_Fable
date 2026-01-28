@@ -26,6 +26,7 @@ void main() {
     when(mockSettingsService.getHfApiKey()).thenReturn('');
     when(mockSettingsService.getTemperature()).thenReturn(0.8);
     when(mockSettingsService.getMaxTokens()).thenReturn(150);
+    when(mockSettingsService.getFreeFormInputEnabled()).thenReturn(true);
 
     final character = Character.create(name: 'Test Hero', backstory: 'A brave soul.');
     final adventure = Adventure.create(characterId: character.id);

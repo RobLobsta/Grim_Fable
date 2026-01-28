@@ -16,6 +16,7 @@ class AppSettingsDialog extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final uiPreset = ref.watch(uiPresetProvider);
     final recommendedResponses = ref.watch(recommendedResponsesProvider);
+    final freeFormInput = ref.watch(freeFormInputProvider);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     return AlertDialog(
@@ -71,6 +72,33 @@ class AppSettingsDialog extends ConsumerWidget {
                   value: recommendedResponses,
                   onChanged: (value) {
                     ref.read(recommendedResponsesProvider.notifier).updateValue(value);
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'FREE-FORM INPUT',
+                        style: TextStyle(fontFamily: 'Serif', fontSize: 14, color: Colors.white70),
+                      ),
+                      Text(
+                        'Allow player choices',
+                        style: TextStyle(fontSize: 12, color: Colors.white38),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: freeFormInput,
+                  onChanged: (value) {
+                    ref.read(freeFormInputProvider.notifier).updateValue(value);
                   },
                 ),
               ],

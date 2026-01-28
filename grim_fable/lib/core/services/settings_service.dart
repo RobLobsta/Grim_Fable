@@ -28,6 +28,11 @@ final recommendedResponsesProvider = StateNotifierProvider<SettingsNotifier<bool
   return SettingsNotifier(service, service.getRecommendedResponsesEnabled, service.setRecommendedResponsesEnabled);
 });
 
+final freeFormInputProvider = StateNotifierProvider<SettingsNotifier<bool>, bool>((ref) {
+  final service = ref.watch(settingsServiceProvider);
+  return SettingsNotifier(service, service.getFreeFormInputEnabled, service.setFreeFormInputEnabled);
+});
+
 class SettingsService {
   static const String _settingsBoxName = 'settings';
   static const String _hfApiKey = 'hf_api_key';
@@ -35,6 +40,7 @@ class SettingsService {
   static const String _maxTokens = 'max_tokens';
   static const String _uiPreset = 'ui_preset';
   static const String _recommendedResponses = 'recommended_responses';
+  static const String _freeFormInput = 'free_form_input';
 
   Future<void> init() async {
     await Hive.openBox(_settingsBoxName);
@@ -88,6 +94,16 @@ class SettingsService {
   Future<void> setRecommendedResponsesEnabled(bool value) async {
     final box = Hive.box(_settingsBoxName);
     await box.put(_recommendedResponses, value);
+  }
+
+  bool getFreeFormInputEnabled() {
+    final box = Hive.box(_settingsBoxName);
+    return box.get(_freeFormInput, defaultValue: true) as bool;
+  }
+
+  Future<void> setFreeFormInputEnabled(bool value) async {
+    final box = Hive.box(_settingsBoxName);
+    await box.put(_freeFormInput, value);
   }
 }
 

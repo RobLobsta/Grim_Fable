@@ -24,6 +24,7 @@ void main() {
     when(mockSettingsService.getTemperature()).thenReturn(0.8);
     when(mockSettingsService.getMaxTokens()).thenReturn(150);
     when(mockSettingsService.getRecommendedResponsesEnabled()).thenReturn(true);
+    when(mockSettingsService.getFreeFormInputEnabled()).thenReturn(true);
 
     // We'll use a real-ish but mocked state
     final characters = <dynamic>[];

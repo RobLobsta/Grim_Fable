@@ -410,4 +410,23 @@ class MockSettingsService extends _i1.Mock implements _i9.SettingsService {
         returnValue: _i3.Future<void>.value(),
         returnValueForMissingStub: _i3.Future<void>.value(),
       ) as _i3.Future<void>);
+
+  @override
+  bool getFreeFormInputEnabled() => (super.noSuchMethod(
+        Invocation.method(
+          #getFreeFormInputEnabled,
+          [],
+        ),
+        returnValue: false,
+      ) as bool);
+
+  @override
+  _i3.Future<void> setFreeFormInputEnabled(bool? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setFreeFormInputEnabled,
+          [value],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
 }
