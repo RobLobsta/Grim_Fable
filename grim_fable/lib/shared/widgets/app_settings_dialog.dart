@@ -33,7 +33,7 @@ class AppSettingsDialog extends ConsumerWidget {
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               value: uiPreset,
-              items: ['Default', 'Abyssal', 'Blood', 'Emerald'].map((preset) {
+              items: ['Default', 'Abyssal', 'Blood', 'Envy', 'Wrath', 'Void'].map((preset) {
                 return DropdownMenuItem(
                   value: preset,
                   child: Text(preset, style: const TextStyle(fontFamily: 'Serif')),

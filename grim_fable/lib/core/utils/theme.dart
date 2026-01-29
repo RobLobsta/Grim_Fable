@@ -23,14 +23,29 @@ class GrimFableTheme {
         backgroundColor = const Color(0xFF1A0000);
         accentColor = const Color(0xFFFF5252);
         bodyFont = 'Crimson Pro';
-        displayFont = 'Grenze Gotisch';
+        displayFont = 'Grenze';
         break;
-      case 'Emerald':
+      case 'Envy':
         primaryColor = const Color(0xFF003300);
         backgroundColor = const Color(0xFF001A00);
-        accentColor = const Color(0xFFD4AF37); // Gold accent for Emerald
+        accentColor = const Color(0xFFD4AF37); // Gold accent for Envy
         bodyFont = 'Faustina';
         displayFont = 'Cinzel';
+        break;
+      case 'Wrath':
+        primaryColor = const Color(0xFFB71C1C);
+        backgroundColor = const Color(0xFF0A0505);
+        accentColor = const Color(0xFFFFD600);
+        bodyFont = 'Spectral';
+        displayFont = 'Metal Mania';
+        break;
+      case 'Void':
+        primaryColor = const Color(0xFFC0C0C0);
+        backgroundColor = const Color(0xFF000000);
+        accentColor = const Color(0xFFFFFFFF);
+        textColor = const Color(0xFFFFFFFF);
+        bodyFont = 'Inter';
+        displayFont = 'Cinzel Decorative';
         break;
       default:
         primaryColor = const Color(0xFF283593);
@@ -41,7 +56,7 @@ class GrimFableTheme {
     }
 
     const secondaryColor = Color(0xFFF5F5F5); // Brighter for better contrast
-    const surfaceColor = Color(0xFF161B22);
+    final surfaceColor = preset == 'Void' ? const Color(0xFF000000) : const Color(0xFF161B22);
 
     return ThemeData(
       useMaterial3: true,
@@ -121,12 +136,12 @@ class GrimFableTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
+          backgroundColor: preset == 'Void' ? Colors.black : primaryColor,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: accentColor, width: 1.5),
+            side: BorderSide(color: preset == 'Void' ? primaryColor : accentColor, width: 1.5),
           ),
           elevation: 10,
           textStyle: GoogleFonts.getFont(
@@ -140,7 +155,7 @@ class GrimFableTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: secondaryColor,
-          side: BorderSide(color: accentColor, width: 2),
+          side: BorderSide(color: preset == 'Void' ? primaryColor : accentColor, width: 2),
           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

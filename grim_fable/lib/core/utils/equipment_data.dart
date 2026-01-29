@@ -78,7 +78,7 @@ class EquipmentData {
     if (lowerItem.contains('key') || lowerItem.contains('lockpick')) return FontAwesomeIcons.key;
     if (lowerItem.contains('torch') || lowerItem.contains('lantern') || lowerItem.contains('candle')) return FontAwesomeIcons.fire;
     if (lowerItem.contains('rope')) return FontAwesomeIcons.bezierCurve; // Fallback
-    if (lowerItem.contains('bag') || lowerItem.contains('pouch') || lowerItem.contains('sack') || lowerItem.contains('quiver')) return FontAwesomeIcons.bagShopping;
+    if (lowerItem.contains('bag') || lowerItem.contains('pouch') || lowerItem.contains('sack') || lowerItem.contains('quiver') || lowerItem.contains('satchel')) return FontAwesomeIcons.bagShopping;
 
     // Food & Drink
     if (lowerItem.contains('bread') || lowerItem.contains('apple') || lowerItem.contains('rations') || lowerItem.contains('meat') || lowerItem.contains('pot')) return FontAwesomeIcons.utensils;
@@ -112,7 +112,7 @@ class EquipmentData {
     if (lowerItem.contains('map')) return '🗺️';
     if (lowerItem.contains('key') || lowerItem.contains('lockpick')) return '🔑';
     if (lowerItem.contains('torch') || lowerItem.contains('lantern')) return '🔦';
-    if (lowerItem.contains('bag') || lowerItem.contains('pouch')) return '💰';
+    if (lowerItem.contains('bag') || lowerItem.contains('pouch') || lowerItem.contains('satchel')) return '💰';
     if (lowerItem.contains('bread') || lowerItem.contains('rations')) return '🍞';
     if (lowerItem.contains('gold') || lowerItem.contains('coin')) return '🪙';
     if (lowerItem.contains('gem') || lowerItem.contains('ring')) return '💎';
