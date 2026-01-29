@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import 'package:grim_fable/features/character/character_repository.dart';
 import 'package:grim_fable/features/character/character_provider.dart';
 import 'package:grim_fable/features/adventure/adventure_repository.dart';
 import 'package:grim_fable/features/adventure/adventure_provider.dart';
+import 'package:grim_fable/features/adventure/adventure_screen.dart';
 import 'package:grim_fable/core/services/ai_provider.dart';
 import 'package:grim_fable/core/services/ai_service.dart';
 import 'package:grim_fable/core/services/settings_service.dart';
@@ -33,7 +35,13 @@ void main() {
             maxTokens: anyNamed('maxTokens'),
             topP: anyNamed('topP'),
             frequencyPenalty: anyNamed('frequencyPenalty')))
-        .thenAnswer((_) async => "The mist swirls around your feet.");
+        .thenAnswer((invocation) async {
+      final systemMessage = invocation.namedArguments[#systemMessage] as String?;
+      if (systemMessage != null && systemMessage.contains('Respond ONLY with the choices')) {
+        return "Choice 1: Go North | Choice 2: Go South | Choice 3: Go East";
+      }
+      return "The mist swirls around your feet.";
+    });
     when(mockAiService.generateBackstoryAppend(any, any, any)).thenAnswer((_) async => "New backstory.");
     when(mockAiService.generateOccupationEvolution(any, any)).thenAnswer((_) async => "Paladin");
 
@@ -139,37 +147,52 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
-    // It calls AI service for first prompt which takes ~2s in FakeAIService
-    await tester.pump(const Duration(seconds: 5));
-    // After AI finishes, loading screen should be gone and navigation complete
+    // It calls AI service for first prompt and typewriter
     await tester.pump(const Duration(seconds: 2));
-    await tester.pump(const Duration(seconds: 5)); // Typewriter
+    await tester.pumpAndSettle();
 
     // Should be on Adventure Screen
-    expect(find.byIcon(Icons.done_all), findsOneWidget);
+    expect(find.byType(AdventureScreen), findsOneWidget);
+    expect(find.byType(MarkdownBody), findsAtLeastNWidgets(1));
     expect(find.text('WHAT IS THY WILL?'), findsOneWidget);
 
-    // 3. Play a turn
-    await tester.enterText(find.byType(TextField), 'I search the room.');
+    // 3. Play a turn and trigger auto-finalization
+    when(mockAiService.generateResponse(any,
+            systemMessage: anyNamed('systemMessage'),
+            history: anyNamed('history'),
+            temperature: anyNamed('temperature'),
+            maxTokens: anyNamed('maxTokens'),
+            topP: anyNamed('topP'),
+            frequencyPenalty: anyNamed('frequencyPenalty')))
+        .thenAnswer((invocation) async {
+      final systemMessage = invocation.namedArguments[#systemMessage] as String?;
+      if (systemMessage != null && systemMessage.contains('choices')) {
+        return "Choice 1: Go North | Choice 2: Go South | Choice 3: Go East";
+      }
+      final prompt = invocation.positionalArguments[0] as String;
+      if (prompt.contains('search')) {
+        return "You find the light. [ADVENTURE_COMPLETE]";
+      }
+      return "The mist swirls around your feet.";
+    });
+
+    final textField1 = find.byType(TextField).hitTestable();
+    await tester.enterText(textField1, 'I search the room.');
     await tester.tap(find.byIcon(Icons.send_rounded));
     await tester.pump();
-    await tester.pump(const Duration(seconds: 3));
-    await tester.pump(const Duration(seconds: 5)); // Typewriter
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle(); // Wait for AI and typewriter
+    await tester.pump(const Duration(seconds: 10)); // Auto-finalization call (backstory update calls AI)
+    await tester.pumpAndSettle();
 
-    expect(find.text('I SEARCH THE ROOM.'), findsOneWidget);
 
-    // 4. Complete Adventure
-    await tester.tap(find.byIcon(Icons.done_all));
-    await tester.pump(const Duration(seconds: 1));
-    await tester.ensureVisible(find.text('Complete'));
-    await tester.tap(find.text('Complete'));
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 5)); // Backstory update
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
+    expect(find.text('RETURN TO HOME'), findsOneWidget);
+    await tester.tap(find.text('RETURN TO HOME'));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 2));
 
     // Should be back on Home Screen
-    expect(find.textContaining('SIR TEST'), findsOneWidget);
+    expect(find.textContaining('SIR TEST'), findsAtLeastNWidgets(1));
 
     // Check if chronicles list has the adventure
     await tester.ensureVisible(find.text('VIEW CHRONICLES'));

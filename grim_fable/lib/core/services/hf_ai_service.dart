@@ -169,7 +169,7 @@ Use third person exclusively. Do NOT use "I" or "my".
 
 Also, provide a list of 2-4 starting items that this character would realistically possess based on their occupation and backstory.
 I suggest these items: $itemsExample. You may use them or similar grounded items.
-Also include a plausible number of gold coins they start with (typically 1-10).
+Also include a plausible number of gold coins they start with (typically 5-10 for commoners, up to 20 for more affluent backgrounds). Variation is encouraged.
 
 Format the items and gold using tags at the end of the backstory:
 [ITEM_GAINED: Item Name]

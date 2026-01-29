@@ -56,29 +56,44 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
           actions: [
             if (isReview)
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => context.pop(),
                 child: const Text('CLOSE'),
               )
             else ...[
-              TextButton(
+              ElevatedButton(
                 onPressed: () {
                   setState(() {
                     _generatedBackstory = '';
                     _generatedItems = [];
                     _itemDescriptions = {};
+                    _generatedGold = 0;
+                    _backstoryAccepted = false;
                   });
-                  Navigator.pop(context);
+                  context.pop();
                 },
-                child: const Text('DECLINE', style: TextStyle(color: Colors.redAccent)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.redAccent,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  side: const BorderSide(color: Colors.redAccent, width: 1),
+                ),
+                child: const Text('DECLINE', style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold)),
               ),
-              TextButton(
+              const SizedBox(width: 8),
+              ElevatedButton(
                 onPressed: () {
                   setState(() {
                     _backstoryAccepted = true;
                   });
-                  Navigator.pop(context);
+                  context.pop();
                 },
-                child: const Text('ACCEPT'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: const Color(0xFFC0C0C0), // Silver
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  side: const BorderSide(color: Color(0xFFC0C0C0), width: 1),
+                ),
+                child: const Text('ACCEPT', style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold)),
               ),
             ],
           ],
@@ -242,23 +257,41 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                 SectionHeader(
                   title: 'IDENTITY',
                   icon: Icons.badge_outlined,
-                  trailing: (_generatedBackstory.isNotEmpty) ? IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
-                    onPressed: () {
-                      setState(() {
-                        _nameController.clear();
-                        _occupationController.clear();
-                        _descriptionController.clear();
-                        _generatedBackstory = '';
-                        _generatedItems = [];
-                        _itemDescriptions = {};
-                        _generatedGold = 0;
-                        _backstoryAccepted = false;
-                        _nameError = null;
-                        _occupationError = null;
-                      });
-                    },
-                    tooltip: 'Reset Identity',
+                  trailing: (_generatedBackstory.isNotEmpty) ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.refresh, color: Colors.redAccent, size: 20),
+                        onPressed: () {
+                          setState(() {
+                            _generatedBackstory = '';
+                            _generatedItems = [];
+                            _itemDescriptions = {};
+                            _generatedGold = 0;
+                            _backstoryAccepted = false;
+                          });
+                        },
+                        tooltip: 'Re-divine',
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                        onPressed: () {
+                          setState(() {
+                            _nameController.clear();
+                            _occupationController.clear();
+                            _descriptionController.clear();
+                            _generatedBackstory = '';
+                            _generatedItems = [];
+                            _itemDescriptions = {};
+                            _generatedGold = 0;
+                            _backstoryAccepted = false;
+                            _nameError = null;
+                            _occupationError = null;
+                          });
+                        },
+                        tooltip: 'Reset Identity',
+                      ),
+                    ],
                   ) : null,
                 ),
                 const SizedBox(height: 16),
@@ -395,17 +428,6 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                               backgroundColor: Colors.black,
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             ),
-                          ),
-                          TextButton.icon(
-                            onPressed: () => setState(() {
-                              _generatedBackstory = '';
-                              _generatedItems = [];
-                              _itemDescriptions = {};
-                              _generatedGold = 0;
-                              _backstoryAccepted = false;
-                            }),
-                            icon: const Icon(Icons.refresh, size: 18, color: Colors.redAccent),
-                            label: const Text('RE-DIVINE', style: TextStyle(fontSize: 12, color: Colors.redAccent)),
                           ),
                         ],
                       ),

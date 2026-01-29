@@ -134,6 +134,11 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
     if (state == null || activeCharacter == null) return;
 
     final inventoryList = activeCharacter.inventory.isEmpty ? "None" : activeCharacter.inventory.join(", ");
+    final maxTokens = _ref.read(maxTokensProvider);
+    final turnCount = state!.storyHistory.length + 1;
+    final nudge = (turnCount % 5 == 0)
+        ? "\n\nGently nudge the story toward the main goal: ${state!.mainGoal}. The character might ponder their situation or notice something relevant to this goal."
+        : "";
 
     final systemMessage = """
 You are a creative storyteller for Grim Fable. Always write in the third person.
@@ -144,6 +149,7 @@ Inventory: $inventoryList
 Gold: ${activeCharacter.gold}
 
 Keep your responses short, exactly 1 paragraph (3-5 sentences).
+Be aware of the token limit of $maxTokens and aim to use approximately 80% of it for a detailed response, ensuring you do not cut off mid-sentence.
 Maintain a dark fantasy, gritty, and realistic tone.
 Use third person exclusively (e.g., "${activeCharacter.name} enters the room" NOT "I enter the room").
 
@@ -153,6 +159,8 @@ You can grant or remove items or gold from the player using these tags at the en
 [GOLD_GAINED: Number]
 [GOLD_REMOVED: Number]
 Do not constantly remind the player of their inventory or gold.
+If the main goal (${state!.mainGoal}) has been clearly and successfully achieved, add the tag [ADVENTURE_COMPLETE] at the end of your response.
+$nudge
 """;
 
     final history = state!.storyHistory.takeLast(5).expand((s) => [
@@ -161,7 +169,6 @@ Do not constantly remind the player of their inventory or gold.
     ]).toList();
 
     final temperature = _ref.read(temperatureProvider);
-    final maxTokens = _ref.read(maxTokensProvider);
     final topP = _ref.read(topPProvider);
     final frequencyPenalty = _ref.read(frequencyPenaltyProvider);
     final recommendedEnabled = _ref.read(recommendedResponsesProvider);
@@ -193,6 +200,12 @@ Do not constantly remind the player of their inventory or gold.
 
     await _saveAdventure(updatedAdventure);
 
+    // Check for auto-finalization
+    if (await _checkCompletion(fullResponse)) {
+      await completeAdventure();
+      return;
+    }
+
     if (recommendedEnabled && (newSegment.recommendedChoices == null || newSegment.recommendedChoices!.isEmpty)) {
       final choices = await _getChoices(parsed.text, history);
       final segmentWithChoices = StorySegment(
@@ -221,6 +234,13 @@ Do not constantly remind the player of their inventory or gold.
     if (state == null || activeCharacter == null || state!.storyHistory.isEmpty) return;
 
     final inventoryList = activeCharacter.inventory.isEmpty ? "None" : activeCharacter.inventory.join(", ");
+    final maxTokens = _ref.read(maxTokensProvider);
+    // continueAdventure doesn't increment turn count as it appends to the last segment,
+    // but we can still check if we should nudge based on current history length.
+    final turnCount = state!.storyHistory.length;
+    final nudge = (turnCount > 0 && turnCount % 5 == 0)
+        ? "\n\nGently nudge the story toward the main goal: ${state!.mainGoal}. The character might ponder their situation or notice something relevant to this goal."
+        : "";
 
     final systemMessage = """
 You are a creative storyteller for Grim Fable. Always write in the third person.
@@ -232,6 +252,7 @@ Gold: ${activeCharacter.gold}
 
 Continue the story naturally from the last point.
 Keep your responses short, exactly 1 paragraph (3-5 sentences).
+Be aware of the token limit of $maxTokens and aim to use approximately 80% of it for a detailed response, ensuring you do not cut off mid-sentence.
 Maintain a dark fantasy, gritty, and realistic tone.
 Use third person exclusively.
 
@@ -241,6 +262,8 @@ You can grant or remove items or gold from the player using these tags at the en
 [GOLD_GAINED: Number]
 [GOLD_REMOVED: Number]
 Do not constantly remind the player of their inventory or gold.
+If the main goal (${state!.mainGoal}) has been clearly and successfully achieved, add the tag [ADVENTURE_COMPLETE] at the end of your response.
+$nudge
 """;
 
     final history = state!.storyHistory.takeLast(5).expand((s) => [
@@ -249,7 +272,6 @@ Do not constantly remind the player of their inventory or gold.
     ]).toList();
 
     final temperature = _ref.read(temperatureProvider);
-    final maxTokens = _ref.read(maxTokensProvider);
     final topP = _ref.read(topPProvider);
     final frequencyPenalty = _ref.read(frequencyPenaltyProvider);
     final recommendedEnabled = _ref.read(recommendedResponsesProvider);
@@ -285,6 +307,12 @@ Do not constantly remind the player of their inventory or gold.
     );
 
     await _saveAdventure(updatedAdventure);
+
+    // Check for auto-finalization
+    if (await _checkCompletion(fullResponse)) {
+      await completeAdventure();
+      return;
+    }
 
     if (recommendedEnabled && (updatedSegment.recommendedChoices == null || updatedSegment.recommendedChoices!.isEmpty)) {
       final choices = await _getChoices(parsed.text, history);
@@ -342,6 +370,45 @@ Do not constantly remind the player of their inventory or gold.
 
     final updatedAdventure = state!.copyWith(isActive: false);
     await _saveAdventure(updatedAdventure);
+  }
+
+  Future<bool> _checkCompletion(String response) async {
+    if (response.contains("[ADVENTURE_COMPLETE]")) return true;
+
+    // Intelligent parsing for common completion indicators
+    final lower = response.toLowerCase();
+    final completionTerms = [
+      'the adventure ends',
+      'journey is complete',
+      'mission accomplished',
+      'finally at rest',
+      'goal has been met',
+      'quest is over',
+      'his journey concluded',
+      'her journey concluded',
+      'their journey concluded',
+    ];
+    bool suspected = completionTerms.any((term) => lower.contains(term));
+
+    if (suspected) {
+      // Ask AI for clarification if ambiguous
+      const systemMessage = "You are a precise validator for Grim Fable. Determine if the story segment indicates the successful completion of the character's main goal.";
+      final prompt = """
+Main Goal: ${state!.mainGoal}
+Story Segment: $response
+
+Based on the story segment, has the character successfully achieved their main goal?
+Return ONLY 'YES' or 'NO'.
+""";
+      try {
+        final clarification = await _aiService.generateResponse(prompt, systemMessage: systemMessage, maxTokens: 10, temperature: 0.0);
+        return clarification.trim().toUpperCase().contains('YES');
+      } catch (_) {
+        return false;
+      }
+    }
+
+    return false;
   }
 
   Future<void> _saveAdventure(Adventure adventure) async {
@@ -403,6 +470,7 @@ Inventory: $inventoryList
 Gold: ${activeCharacter.gold}
 
 Your response must be the first story segment of exactly 1 paragraph (3-5 sentences).
+Be aware of the token limit of 500 and aim to use approximately 80% of it for a detailed response, ensuring you do not cut off mid-sentence.
 Maintain a gritty and realistic dark fantasy tone.
 Use third person exclusively.
 
