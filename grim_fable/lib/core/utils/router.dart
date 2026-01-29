@@ -18,9 +18,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/create-character',
-        builder: (context, state) => CharacterCreationScreen(
-          characterToEdit: state.extra as Character?,
-        ),
+        builder: (context, state) => const CharacterCreationScreen(),
       ),
       GoRoute(
         path: '/adventure',

@@ -19,11 +19,11 @@ class CharacterAdapter extends TypeAdapter<Character> {
     return Character(
       id: fields[0] as String,
       name: fields[1] as String,
-      backstory: fields[2] as String,
+      backstory: fields[2] as String? ?? '',
       createdAt: fields[3] as DateTime,
       lastPlayedAt: fields[4] as DateTime,
-      inventory: (fields[5] as List?)?.cast<String>() ?? [],
-      cachedSuggestions: (fields[6] as List?)?.cast<String>() ?? [],
+      inventory: (fields[5] as List?)?.cast<String>() ?? const [],
+      cachedSuggestions: (fields[6] as List?)?.cast<String>() ?? const [],
       occupation: fields[7] as String? ?? '',
     );
   }

@@ -198,10 +198,21 @@ class MockAIService extends _i1.Mock implements _i7.AIService {
       ) as _i3.Future<String>);
 
   @override
+  _i3.Future<bool> validateOccupation(String? occupation) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #validateOccupation,
+          [occupation],
+        ),
+        returnValue: _i3.Future<bool>.value(false),
+      ) as _i3.Future<bool>);
+
+  @override
   _i3.Future<String> generateBackstory(
     String? characterName,
-    String? occupation,
-  ) =>
+    String? occupation, {
+    String? description,
+  }) =>
       (super.noSuchMethod(
         Invocation.method(
           #generateBackstory,
@@ -209,6 +220,7 @@ class MockAIService extends _i1.Mock implements _i7.AIService {
             characterName,
             occupation,
           ],
+          {#description: description},
         ),
         returnValue: _i3.Future<String>.value(_i8.dummyValue<String>(
           this,
@@ -218,6 +230,7 @@ class MockAIService extends _i1.Mock implements _i7.AIService {
               characterName,
               occupation,
             ],
+            {#description: description},
           ),
         )),
       ) as _i3.Future<String>);

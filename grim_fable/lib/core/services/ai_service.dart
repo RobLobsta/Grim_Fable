@@ -6,7 +6,8 @@ abstract class AIService {
     double? temperature,
     int? maxTokens,
   });
-  Future<String> generateBackstory(String characterName, String occupation);
+  Future<bool> validateOccupation(String occupation);
+  Future<String> generateBackstory(String characterName, String occupation, {String? description});
   Future<String> generateBackstoryUpdate(String currentBackstory, String adventureSummary);
   Future<String> generateBackstoryAppend(String currentBackstory, String adventureSummary, int paragraphs);
   Future<String> generateOccupationEvolution(String currentOccupation, String adventureSummary);

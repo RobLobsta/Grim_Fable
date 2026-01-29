@@ -72,21 +72,50 @@ class HuggingFaceAIService implements AIService {
   }
 
   @override
-  Future<String> generateBackstory(String characterName, String occupation) async {
-    const systemMessage = "You are a creative storyteller for a dark fantasy adventure called Grim Fable.";
+  Future<bool> validateOccupation(String occupation) async {
+    const systemMessage = "You are a validator for a dark fantasy RPG called Grim Fable.";
     final prompt = """
-Generate a compelling and gritty dark fantasy backstory for a character.
+Determine if the following occupation is valid for a dark fantasy setting (similar to medieval/renaissance fantasy).
+Valid occupations include common trades (chef, blacksmith, farmer) and fantasy roles (fighter, cleric, necromancer).
+Invalid occupations include modern ones (scientist, pilot, mechanic, modern soldier) or nonsensical gibberish (gx7kilr).
+
+Occupation: $occupation
+
+Return ONLY 'VALID' or 'INVALID'.
+""";
+
+    final response = await generateResponse(prompt, systemMessage: systemMessage, maxTokens: 10, temperature: 0.0);
+    final result = response.trim().toUpperCase();
+    return result == 'VALID';
+  }
+
+  @override
+  Future<String> generateBackstory(String characterName, String occupation, {String? description}) async {
+    const systemMessage = "You are a creative storyteller for a dark fantasy adventure called Grim Fable.";
+
+    String descriptionPart = "";
+    if (description != null && description.trim().isNotEmpty) {
+      descriptionPart = "\nUse this description as a guide: $description";
+    }
+
+    final prompt = """
+Generate a compelling, natural, and realistic dark fantasy backstory for a character.
+The character should be a normal person with a normal occupation, avoiding overused "mysterious brooding figure" tropes.
 
 Character Name: $characterName
 Occupation: $occupation
+$descriptionPart
 
 The backstory must be exactly 3-4 sentences total, covering:
-- Origin: Their beginnings and how they became a $occupation.
-- Conflict: A pivotal struggle they faced.
-- Current State: Their current motivation.
+- Origin: Their humble beginnings and how they became a $occupation.
+- Conflict: A realistic struggle they faced in their daily life.
+- Current State: Why they are setting out on an adventure now.
 
-Maintain a dark fantasy, vague, and atmospheric tone. Avoid naming specific locations.
-Do NOT use multiple paragraphs. Return ONLY the 3-4 sentences.
+Also, provide a list of 2-4 starting items that this character would realistically possess based on their occupation and backstory.
+Format the items using tags at the end of the backstory: [ITEM_GAINED: Item Name]
+
+Maintain a gritty, grounded dark fantasy tone. Avoid naming specific locations.
+Do NOT use multiple paragraphs. Return ONLY the 3-4 sentences followed by the item tags.
 """;
 
     return generateResponse(prompt, systemMessage: systemMessage, maxTokens: 500);
