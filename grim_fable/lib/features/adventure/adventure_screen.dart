@@ -483,7 +483,12 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                                   onPressed: () {
                                     final character = ref.read(activeCharacterProvider);
                                     if (character != null) {
-                                      InventoryDialog.show(context, character.inventory, gold: character.gold);
+                                      InventoryDialog.show(
+                                        context,
+                                        character.inventory,
+                                        itemDescriptions: character.itemDescriptions,
+                                        gold: character.gold,
+                                      );
                                     }
                                   },
                                   tooltip: 'Inventory',

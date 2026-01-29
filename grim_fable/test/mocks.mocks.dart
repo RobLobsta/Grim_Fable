@@ -372,6 +372,63 @@ class MockAIService extends _i1.Mock implements _i2.AIService {
         ),
         returnValue: _i4.Future<int>.value(0),
       ) as _i4.Future<int>);
+
+  @override
+  _i4.Future<Map<String, String>> verifyItems(
+    List<String>? items,
+    String? occupation,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #verifyItems,
+          [
+            items,
+            occupation,
+          ],
+        ),
+        returnValue: _i4.Future<Map<String, String>>.value(<String, String>{}),
+      ) as _i4.Future<Map<String, String>>);
+
+  @override
+  _i4.Future<({String mainGoal, String title})> generateAdventureTitleAndGoal(
+    String? characterName,
+    String? backstory,
+    String? startingPrompt,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #generateAdventureTitleAndGoal,
+          [
+            characterName,
+            backstory,
+            startingPrompt,
+          ],
+        ),
+        returnValue: _i4.Future<({String mainGoal, String title})>.value((
+          mainGoal: _i8.dummyValue<String>(
+            this,
+            Invocation.method(
+              #generateAdventureTitleAndGoal,
+              [
+                characterName,
+                backstory,
+                startingPrompt,
+              ],
+            ),
+          ),
+          title: _i8.dummyValue<String>(
+            this,
+            Invocation.method(
+              #generateAdventureTitleAndGoal,
+              [
+                characterName,
+                backstory,
+                startingPrompt,
+              ],
+            ),
+          )
+        )),
+      ) as _i4.Future<({String mainGoal, String title})>);
 }
 
 /// A class which mocks [SettingsService].

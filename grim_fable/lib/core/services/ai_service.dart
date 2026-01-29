@@ -27,4 +27,6 @@ abstract class AIService {
   Future<String> generateOccupationEvolution(String currentOccupation, String adventureSummary);
   Future<List<String>> generateAdventureSuggestions(String characterName, String backstory, List<String> pastAdventureSummaries);
   Future<int> clarifyGoldAmount(String context);
+  Future<Map<String, String>> verifyItems(List<String> items, String occupation);
+  Future<({String title, String mainGoal})> generateAdventureTitleAndGoal(String characterName, String backstory, String startingPrompt);
 }

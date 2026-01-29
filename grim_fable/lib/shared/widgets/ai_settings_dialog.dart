@@ -81,6 +81,7 @@ class _AiSettingsDialogInternalState extends State<_AiSettingsDialogInternal> {
           label,
           style: const TextStyle(fontFamily: 'Serif', fontSize: 14, color: Colors.white70),
         ),
+        const SizedBox(width: 4),
         GestureDetector(
           onTap: () {
             showDialog(
@@ -98,11 +99,11 @@ class _AiSettingsDialogInternalState extends State<_AiSettingsDialogInternal> {
             );
           },
           child: Transform.translate(
-            offset: const Offset(2, -4),
+            offset: const Offset(0, -4),
             child: Text(
-              '^?',
+              '?',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.tertiary,
               ),

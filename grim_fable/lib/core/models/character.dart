@@ -32,6 +32,9 @@ class Character extends HiveObject {
   @HiveField(8, defaultValue: 0)
   final int gold;
 
+  @HiveField(9, defaultValue: {})
+  final Map<String, String> itemDescriptions;
+
   Character({
     required this.id,
     required this.name,
@@ -42,6 +45,7 @@ class Character extends HiveObject {
     this.cachedSuggestions = const [],
     this.occupation = '',
     this.gold = 0,
+    this.itemDescriptions = const {},
   });
 
   factory Character.create({
@@ -49,6 +53,7 @@ class Character extends HiveObject {
     String backstory = '',
     String occupation = '',
     int gold = 0,
+    Map<String, String> itemDescriptions = const {},
   }) {
     final now = DateTime.now();
     return Character(
@@ -61,6 +66,7 @@ class Character extends HiveObject {
       cachedSuggestions: const [],
       occupation: occupation,
       gold: gold,
+      itemDescriptions: itemDescriptions,
     );
   }
 
@@ -72,6 +78,7 @@ class Character extends HiveObject {
     List<String>? cachedSuggestions,
     String? occupation,
     int? gold,
+    Map<String, String>? itemDescriptions,
   }) {
     return Character(
       id: id,
@@ -83,6 +90,7 @@ class Character extends HiveObject {
       cachedSuggestions: cachedSuggestions ?? this.cachedSuggestions,
       occupation: occupation ?? this.occupation,
       gold: gold ?? this.gold,
+      itemDescriptions: itemDescriptions ?? this.itemDescriptions,
     );
   }
 }

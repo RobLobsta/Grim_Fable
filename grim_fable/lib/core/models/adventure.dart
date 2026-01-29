@@ -48,6 +48,9 @@ class Adventure extends HiveObject {
   @HiveField(6)
   final bool isActive;
 
+  @HiveField(7, defaultValue: '')
+  final String mainGoal;
+
   Adventure({
     required this.id,
     required this.characterId,
@@ -56,9 +59,14 @@ class Adventure extends HiveObject {
     required this.createdAt,
     required this.lastPlayedAt,
     this.isActive = true,
+    this.mainGoal = '',
   });
 
-  factory Adventure.create({required String characterId, String title = 'New Adventure'}) {
+  factory Adventure.create({
+    required String characterId,
+    String title = 'New Adventure',
+    String mainGoal = '',
+  }) {
     final now = DateTime.now();
     return Adventure(
       id: const Uuid().v4(),
@@ -67,6 +75,7 @@ class Adventure extends HiveObject {
       storyHistory: [],
       createdAt: now,
       lastPlayedAt: now,
+      mainGoal: mainGoal,
     );
   }
 
@@ -75,6 +84,7 @@ class Adventure extends HiveObject {
     List<StorySegment>? storyHistory,
     DateTime? lastPlayedAt,
     bool? isActive,
+    String? mainGoal,
   }) {
     return Adventure(
       id: id,
@@ -84,6 +94,7 @@ class Adventure extends HiveObject {
       createdAt: createdAt,
       lastPlayedAt: lastPlayedAt ?? this.lastPlayedAt,
       isActive: isActive ?? this.isActive,
+      mainGoal: mainGoal ?? this.mainGoal,
     );
   }
 }
