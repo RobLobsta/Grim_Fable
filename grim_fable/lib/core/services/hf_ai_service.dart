@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'ai_service.dart';
+import '../utils/equipment_data.dart';
 
 class HuggingFaceAIService implements AIService {
   final Dio _dio;
@@ -21,6 +22,8 @@ class HuggingFaceAIService implements AIService {
     List<Map<String, String>>? history,
     double? temperature,
     int? maxTokens,
+    double? topP,
+    double? frequencyPenalty,
   }) async {
     if (_apiKey.isEmpty) {
       return "AI Service Error: API Key is missing. Please provide a Hugging Face API key.";
@@ -40,7 +43,8 @@ class HuggingFaceAIService implements AIService {
           'messages': messages,
           'max_tokens': maxTokens ?? 150,
           'temperature': temperature ?? 0.8,
-          'top_p': 0.9,
+          'top_p': topP ?? 0.9,
+          'frequency_penalty': frequencyPenalty ?? 0.0,
           'stream': false,
         },
         options: Options(
@@ -90,7 +94,7 @@ Rules for Name:
 
 Rules for Occupation:
 - Must be valid for a dark fantasy setting (similar to medieval/renaissance fantasy).
-- Valid: chef, blacksmith, farmer, fighter, cleric, necromancer.
+- Valid: chef, blacksmith, farmer, fighter, cleric, necromancer, alchemist, barbarian.
 - Invalid: scientist, pilot, mechanic, modern soldier, or nonsensical gibberish (gx7kilr).
 
 Return 'VALID' ONLY if BOTH are valid. Otherwise return 'INVALID'.
@@ -111,6 +115,9 @@ Return ONLY 'VALID' or 'INVALID'.
       descriptionPart = "\nUse this description as a guide: $description";
     }
 
+    final suggestedItems = EquipmentData.getStartingEquipment(occupation);
+    final itemsExample = suggestedItems.map((e) => '"$e"').join(", ");
+
     final prompt = """
 Generate a compelling, natural, and realistic dark fantasy backstory for a character.
 The character should be a normal person with a normal occupation, avoiding overused "mysterious brooding figure" tropes.
@@ -129,7 +136,7 @@ The backstory must be exactly 3-4 SHORTER sentences total, covering:
 Use third person exclusively. Do NOT use "I" or "my".
 
 Also, provide a list of 2-4 starting items that this character would realistically possess based on their occupation and backstory.
-Starting items should be simple and grounded (e.g., "Leather Armor", "Crude Dagger", "Bag of Bones", "Rotten Apple").
+I suggest these items: $itemsExample. You may use them or similar grounded items.
 Also include a plausible number of gold coins they start with (typically 1-10).
 
 Format the items and gold using tags at the end of the backstory:

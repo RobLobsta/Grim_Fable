@@ -154,6 +154,8 @@ Do not constantly remind the player of their inventory or gold.
 
     final temperature = _ref.read(temperatureProvider);
     final maxTokens = _ref.read(maxTokensProvider);
+    final topP = _ref.read(topPProvider);
+    final frequencyPenalty = _ref.read(frequencyPenaltyProvider);
     final recommendedEnabled = _ref.read(recommendedResponsesProvider);
 
     final fullResponse = await _aiService.generateResponse(
@@ -162,6 +164,8 @@ Do not constantly remind the player of their inventory or gold.
       history: history,
       temperature: temperature,
       maxTokens: maxTokens,
+      topP: topP,
+      frequencyPenalty: frequencyPenalty,
     );
 
     final parsed = _parseResponse(fullResponse);
@@ -238,6 +242,8 @@ Do not constantly remind the player of their inventory or gold.
 
     final temperature = _ref.read(temperatureProvider);
     final maxTokens = _ref.read(maxTokensProvider);
+    final topP = _ref.read(topPProvider);
+    final frequencyPenalty = _ref.read(frequencyPenaltyProvider);
     final recommendedEnabled = _ref.read(recommendedResponsesProvider);
 
     final fullResponse = await _aiService.generateResponse(
@@ -246,6 +252,8 @@ Do not constantly remind the player of their inventory or gold.
       history: history,
       temperature: temperature,
       maxTokens: maxTokens,
+      topP: topP,
+      frequencyPenalty: frequencyPenalty,
     );
 
     final parsed = _parseResponse(fullResponse);
@@ -405,12 +413,16 @@ Story: [Starting Paragraph]
     final prompt = customPrompt ?? "Set the scene for a new adventure. Describe the location and the immediate situation.";
 
     final temperature = _ref.read(temperatureProvider);
+    final topP = _ref.read(topPProvider);
+    final frequencyPenalty = _ref.read(frequencyPenaltyProvider);
 
     final response = await _aiService.generateResponse(
       prompt,
       systemMessage: systemMessage,
       temperature: temperature,
       maxTokens: 1000, // First prompt can be slightly longer
+      topP: topP,
+      frequencyPenalty: frequencyPenalty,
     );
 
     String title = "New Adventure";
@@ -432,6 +444,8 @@ Story: [Starting Paragraph]
 
   Future<List<String>> _getChoices(String storyResponse, List<Map<String, String>> history) async {
     final temperature = _ref.read(temperatureProvider);
+    final topP = _ref.read(topPProvider);
+    final frequencyPenalty = _ref.read(frequencyPenaltyProvider);
     final prompt = "stop the story and recommend exactly 3 short, plausible choices for ${_activeCharacter!.name}. Don't reference these choices later.";
 
     // Include the immediate story response in the history
@@ -446,6 +460,8 @@ Story: [Starting Paragraph]
       history: updatedHistory,
       temperature: temperature,
       maxTokens: 100,
+      topP: topP,
+      frequencyPenalty: frequencyPenalty,
     );
 
     return _cleanChoices(response);

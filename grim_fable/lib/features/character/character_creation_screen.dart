@@ -325,15 +325,16 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                         child: const Text('FORGE CHARACTER'),
                       ),
                       const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 16,
+                        runSpacing: 8,
                         children: [
                           TextButton.icon(
                             onPressed: () => _showBackstoryDialog(isReview: true),
                             icon: const Icon(Icons.history_edu, size: 18),
                             label: const Text('REVIEW BACKSTORY', style: TextStyle(fontSize: 12)),
                           ),
-                          const SizedBox(width: 16),
                           TextButton.icon(
                             onPressed: () {
                               InventoryDialog.show(context, _generatedItems, gold: _generatedGold);
@@ -341,7 +342,6 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                             icon: const Icon(Icons.inventory_2_outlined, size: 18),
                             label: const Text('INITIAL EQUIPMENT', style: TextStyle(fontSize: 12)),
                           ),
-                          const SizedBox(width: 16),
                           TextButton.icon(
                             onPressed: () => setState(() {
                               _generatedBackstory = '';

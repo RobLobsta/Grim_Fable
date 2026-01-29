@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../core/utils/equipment_data.dart';
 
 class InventoryDialog extends StatelessWidget {
   final List<String> items;
@@ -41,11 +43,17 @@ class InventoryDialog extends StatelessWidget {
                     itemCount: items.length,
                     separatorBuilder: (context, index) => Divider(color: Colors.white.withOpacity(0.1)),
                     itemBuilder: (context, index) {
+                      final itemName = items[index];
+                      final icon = EquipmentData.getIconForItem(itemName);
+                      final emoji = EquipmentData.getEmojiForItem(itemName);
+
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: const Icon(Icons.auto_awesome, size: 16, color: Colors.grey),
+                        leading: icon != null
+                          ? FaIcon(icon, size: 16, color: Colors.grey)
+                          : Text(emoji ?? '✨', style: const TextStyle(fontSize: 16)),
                         title: Text(
-                          items[index],
+                          itemName,
                           style: const TextStyle(
                             fontFamily: 'Serif',
                             fontSize: 16,

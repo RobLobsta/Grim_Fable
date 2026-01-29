@@ -25,7 +25,9 @@ void main() {
             systemMessage: anyNamed('systemMessage'),
             history: anyNamed('history'),
             temperature: anyNamed('temperature'),
-            maxTokens: anyNamed('maxTokens')))
+            maxTokens: anyNamed('maxTokens'),
+            topP: anyNamed('topP'),
+            frequencyPenalty: anyNamed('frequencyPenalty')))
         .thenAnswer((_) async => "The mist swirls around your feet.");
     when(mockAiService.generateBackstoryAppend(any, any, any)).thenAnswer((_) async => "New backstory.");
     when(mockAiService.generateOccupationEvolution(any, any)).thenAnswer((_) async => "Test Hero");
@@ -35,6 +37,8 @@ void main() {
     when(mockSettingsService.getHfApiKey()).thenReturn('fake-key');
     when(mockSettingsService.getTemperature()).thenReturn(0.8);
     when(mockSettingsService.getMaxTokens()).thenReturn(150);
+    when(mockSettingsService.getTopP()).thenReturn(0.9);
+    when(mockSettingsService.getFrequencyPenalty()).thenReturn(0.0);
     when(mockSettingsService.getFreeFormInputEnabled()).thenReturn(true);
 
     final character = Character.create(name: 'Test Hero', backstory: 'A brave soul.');
