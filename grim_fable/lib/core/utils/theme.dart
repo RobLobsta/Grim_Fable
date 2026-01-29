@@ -23,7 +23,7 @@ class GrimFableTheme {
         backgroundColor = const Color(0xFF1A0000);
         accentColor = const Color(0xFFFF5252);
         bodyFont = 'Crimson Pro';
-        displayFont = 'Grenze Gotisch';
+        displayFont = 'Grenze';
         break;
       case 'Emerald':
         primaryColor = const Color(0xFF003300);

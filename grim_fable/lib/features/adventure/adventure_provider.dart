@@ -135,6 +135,7 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
 
     final inventoryList = activeCharacter.inventory.isEmpty ? "None" : activeCharacter.inventory.join(", ");
     final maxTokens = _ref.read(maxTokensProvider);
+    final targetTokens = (maxTokens * 0.8).toInt();
     final turnCount = state!.storyHistory.length + 1;
     final nudge = (turnCount % 5 == 0)
         ? "\n\nGently nudge the story toward the main goal: ${state!.mainGoal}. The character might ponder their situation or notice something relevant to this goal."
@@ -149,7 +150,7 @@ Inventory: $inventoryList
 Gold: ${activeCharacter.gold}
 
 Keep your responses short, exactly 1 paragraph (3-5 sentences).
-Be aware of the token limit of $maxTokens and aim to use approximately 80% of it for a detailed response, ensuring you do not cut off mid-sentence.
+The maximum length for your response is $maxTokens tokens. To avoid being cut off mid-sentence, aim for a length of about $targetTokens tokens.
 Maintain a dark fantasy, gritty, and realistic tone.
 Use third person exclusively (e.g., "${activeCharacter.name} enters the room" NOT "I enter the room").
 
@@ -235,6 +236,7 @@ $nudge
 
     final inventoryList = activeCharacter.inventory.isEmpty ? "None" : activeCharacter.inventory.join(", ");
     final maxTokens = _ref.read(maxTokensProvider);
+    final targetTokens = (maxTokens * 0.8).toInt();
     // continueAdventure doesn't increment turn count as it appends to the last segment,
     // but we can still check if we should nudge based on current history length.
     final turnCount = state!.storyHistory.length;
@@ -252,7 +254,7 @@ Gold: ${activeCharacter.gold}
 
 Continue the story naturally from the last point.
 Keep your responses short, exactly 1 paragraph (3-5 sentences).
-Be aware of the token limit of $maxTokens and aim to use approximately 80% of it for a detailed response, ensuring you do not cut off mid-sentence.
+The maximum length for your response is $maxTokens tokens. To avoid being cut off mid-sentence, aim for a length of about $targetTokens tokens.
 Maintain a dark fantasy, gritty, and realistic tone.
 Use third person exclusively.
 
@@ -460,6 +462,8 @@ Return ONLY 'YES' or 'NO'.
     if (activeCharacter == null) return "";
 
     final inventoryList = activeCharacter.inventory.isEmpty ? "None" : activeCharacter.inventory.join(", ");
+    const int maxTokens = 500;
+    const int targetTokens = 400;
 
     final systemMessage = """
 You are a creative storyteller for a dark fantasy adventure called Grim Fable. Always write in the third person.
@@ -470,7 +474,7 @@ Inventory: $inventoryList
 Gold: ${activeCharacter.gold}
 
 Your response must be the first story segment of exactly 1 paragraph (3-5 sentences).
-Be aware of the token limit of 500 and aim to use approximately 80% of it for a detailed response, ensuring you do not cut off mid-sentence.
+The maximum length for your response is $maxTokens tokens. To avoid being cut off mid-sentence, aim for a length of about $targetTokens tokens.
 Maintain a gritty and realistic dark fantasy tone.
 Use third person exclusively.
 
@@ -493,7 +497,7 @@ Return ONLY the starting paragraph followed by any tags.
       prompt,
       systemMessage: systemMessage,
       temperature: temperature,
-      maxTokens: 500,
+      maxTokens: maxTokens,
       topP: topP,
       frequencyPenalty: frequencyPenalty,
     );
@@ -505,7 +509,7 @@ Return ONLY the starting paragraph followed by any tags.
     final temperature = _ref.read(temperatureProvider);
     final topP = _ref.read(topPProvider);
     final frequencyPenalty = _ref.read(frequencyPenaltyProvider);
-    final prompt = "stop the story and recommend exactly 3 short, plausible choices for ${_activeCharacter!.name}. Don't reference these choices later.";
+    final prompt = "stop the story and recommend exactly 3 VERY short (max 8 words each), plausible choices for ${_activeCharacter!.name}. Don't reference these choices later.";
 
     // Include the immediate story response in the history
     final updatedHistory = [
