@@ -9,9 +9,7 @@ import '../../shared/widgets/ai_settings_dialog.dart';
 import 'character_provider.dart';
 
 class CharacterCreationScreen extends ConsumerStatefulWidget {
-  final Character? characterToEdit;
-
-  const CharacterCreationScreen({super.key, this.characterToEdit});
+  const CharacterCreationScreen({super.key});
 
   @override
   ConsumerState<CharacterCreationScreen> createState() => _CharacterCreationScreenState();
@@ -21,25 +19,38 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _occupationController = TextEditingController();
-  final _backstoryController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  String _generatedBackstory = '';
+  List<String> _generatedItems = [];
   bool _isGenerating = false;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.characterToEdit != null) {
-      _nameController.text = widget.characterToEdit!.name;
-      _occupationController.text = widget.characterToEdit!.occupation;
-      _backstoryController.text = widget.characterToEdit!.backstory;
-    }
-  }
 
   @override
   void dispose() {
     _nameController.dispose();
     _occupationController.dispose();
-    _backstoryController.dispose();
+    _descriptionController.dispose();
     super.dispose();
+  }
+
+  void _showBackstoryDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('THY DESTINY REVEALED', style: TextStyle(fontFamily: 'Serif', letterSpacing: 2)),
+        content: SingleChildScrollView(
+          child: Text(
+            _generatedBackstory,
+            style: const TextStyle(fontFamily: 'Serif', fontSize: 16, height: 1.6),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CLOSE'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _generateBackstory() async {
@@ -63,13 +74,41 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
 
     try {
       final aiService = ref.read(aiServiceProvider);
-      final backstory = await aiService.generateBackstory(
+
+      // Validate occupation first
+      final isValid = await aiService.validateOccupation(_occupationController.text.trim());
+      if (!isValid) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please enter a valid occupation.')),
+          );
+          _occupationController.clear();
+          setState(() {
+            _isGenerating = false;
+          });
+        }
+        return;
+      }
+
+      final fullResponse = await aiService.generateBackstory(
         _nameController.text.trim(),
         _occupationController.text.trim(),
+        description: _descriptionController.text.trim(),
       );
+
+      // Parse items and backstory
+      final itemRegex = RegExp(r'\[ITEM_GAINED:\s*([^\]]+)\]');
+      final items = itemRegex.allMatches(fullResponse).map((m) => m.group(1)!.trim()).toList();
+      final backstory = fullResponse.replaceAll(itemRegex, '').trim();
+
       setState(() {
-        _backstoryController.text = backstory;
+        _generatedBackstory = backstory;
+        _generatedItems = items;
       });
+
+      if (mounted) {
+        _showBackstoryDialog();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -92,28 +131,20 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
 
   Future<void> _saveCharacter() async {
     if (_formKey.currentState!.validate()) {
-      if (_backstoryController.text.trim().isEmpty) {
+      if (_generatedBackstory.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('A LEGEND REQUIRES A PAST')),
         );
         return;
       }
 
-      if (widget.characterToEdit != null) {
-        final updatedCharacter = widget.characterToEdit!.copyWith(
-          name: _nameController.text.trim(),
-          occupation: _occupationController.text.trim(),
-          backstory: _backstoryController.text.trim(),
-        );
-        await ref.read(charactersProvider.notifier).updateCharacter(updatedCharacter);
-      } else {
-        final character = Character.create(
-          name: _nameController.text.trim(),
-          occupation: _occupationController.text.trim(),
-          backstory: _backstoryController.text.trim(),
-        );
-        await ref.read(charactersProvider.notifier).addCharacter(character);
-      }
+      final character = Character.create(
+        name: _nameController.text.trim(),
+        occupation: _occupationController.text.trim(),
+        backstory: _generatedBackstory,
+      ).copyWith(inventory: _generatedItems);
+
+      await ref.read(charactersProvider.notifier).addCharacter(character);
 
       if (mounted) {
         context.pop();
@@ -124,11 +155,10 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
   @override
   Widget build(BuildContext context) {
     final hasApiKey = ref.watch(hfApiKeyProvider).isNotEmpty;
-    final isEditing = widget.characterToEdit != null;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'REFORGE CHARACTER' : 'FORGE CHARACTER'),
+        title: const Text('FORGE CHARACTER'),
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -183,11 +213,24 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                     return null;
                   },
                 ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _descriptionController,
+                  maxLength: 100,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'DESCRIPTION (OPTIONAL)',
+                    prefixIcon: Icon(Icons.description_outlined),
+                    counterStyle: TextStyle(color: Colors.grey, fontSize: 10),
+                    hintText: 'e.g., A weary traveler from the north...',
+                  ),
+                  style: const TextStyle(fontFamily: 'Serif', letterSpacing: 1.2),
+                ),
                 const SizedBox(height: 48),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const SectionHeader(title: 'BACKSTORY', icon: Icons.history_edu),
+                    const SectionHeader(title: 'DIVINATION', icon: Icons.auto_awesome_outlined),
                     if (_isGenerating)
                       const SizedBox(
                         width: 20,
@@ -195,49 +238,35 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                         child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFC0C0C0)),
                       )
                     else
-                      TextButton.icon(
-                        onPressed: hasApiKey ? _generateBackstory : null,
-                        icon: Icon(
-                          hasApiKey ? Icons.auto_awesome_outlined : Icons.lock_outline,
-                          size: 18,
-                        ),
-                        label: Text(
-                          hasApiKey ? 'AI DIVINATION' : 'KEY REQUIRED',
-                          style: const TextStyle(letterSpacing: 1.2, fontSize: 12),
-                        ),
+                      Row(
+                        children: [
+                          if (_generatedBackstory.isNotEmpty)
+                            IconButton(
+                              onPressed: _showBackstoryDialog,
+                              icon: const Icon(Icons.history_edu, color: Color(0xFFC0C0C0)),
+                              tooltip: 'REVIEW BACKSTORY',
+                            ),
+                          TextButton.icon(
+                            onPressed: hasApiKey ? _generateBackstory : null,
+                            icon: Icon(
+                              hasApiKey ? Icons.auto_awesome_outlined : Icons.lock_outline,
+                              size: 18,
+                            ),
+                            label: Text(
+                              hasApiKey ? 'AI DIVINATION' : 'KEY REQUIRED',
+                              style: const TextStyle(letterSpacing: 1.2, fontSize: 12),
+                            ),
+                          ),
+                        ],
                       ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  height: 200,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                    ),
-                  ),
-                  child: SingleChildScrollView(
-                    child: Text(
-                      _backstoryController.text.isEmpty
-                          ? 'Use AI Divination to forge a backstory...'
-                          : _backstoryController.text,
-                      style: TextStyle(
-                        fontFamily: 'Serif',
-                        fontSize: 16,
-                        height: 1.6,
-                        color: _backstoryController.text.isEmpty ? Colors.grey : Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 60),
-                ElevatedButton(
-                  onPressed: _saveCharacter,
-                  child: Text(isEditing ? 'REFORGE LEGEND' : 'FORGE LEGEND'),
-                ),
+                if (_generatedBackstory.isNotEmpty)
+                  ElevatedButton(
+                    onPressed: _saveCharacter,
+                    child: const Text('FORGE LEGEND'),
+                  ),
               ],
             ),
           ),

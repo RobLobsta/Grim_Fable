@@ -11,7 +11,7 @@ class Character extends HiveObject {
   @HiveField(1)
   final String name;
 
-  @HiveField(2)
+  @HiveField(2, defaultValue: '')
   final String backstory;
 
   @HiveField(3)
@@ -20,13 +20,13 @@ class Character extends HiveObject {
   @HiveField(4)
   final DateTime lastPlayedAt;
 
-  @HiveField(5)
+  @HiveField(5, defaultValue: [])
   final List<String> inventory;
 
-  @HiveField(6)
+  @HiveField(6, defaultValue: [])
   final List<String> cachedSuggestions;
 
-  @HiveField(7)
+  @HiveField(7, defaultValue: '')
   final String occupation;
 
   Character({

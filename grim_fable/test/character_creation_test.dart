@@ -13,7 +13,9 @@ void main() {
     final mockAiService = MockAIService();
     final mockSettingsService = MockSettingsService();
 
-    when(mockAiService.generateBackstory(any, any)).thenAnswer((_) async => "Test Hero was born in a storm.");
+    when(mockAiService.validateOccupation(any)).thenAnswer((_) async => true);
+    when(mockAiService.generateBackstory(any, any, description: anyNamed('description')))
+        .thenAnswer((_) async => "Test Hero was born in a storm. [ITEM_GAINED: Rusty Sword]");
     when(mockSettingsService.getHfApiKey()).thenReturn('fake-key');
 
     final router = GoRouter(
@@ -59,7 +61,15 @@ void main() {
     // Since MockAIService has a 2-second delay, we need to pump with duration
     await tester.pump(const Duration(seconds: 3));
 
-    // Verify backstory is filled
+    // Verify backstory dialog is shown
+    expect(find.text('THY DESTINY REVEALED'), findsOneWidget);
     expect(find.textContaining('was born in a storm'), findsOneWidget);
+
+    // Close dialog
+    await tester.tap(find.text('CLOSE'));
+    await tester.pumpAndSettle();
+
+    // Verify Forge Legend button is visible
+    expect(find.text('FORGE LEGEND'), findsOneWidget);
   });
 }

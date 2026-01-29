@@ -117,15 +117,25 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
   }
 
   Future<void> submitAction(String action) async {
-    if (state == null || _activeCharacter == null) return;
+    final activeCharacter = _ref.read(activeCharacterProvider);
+    if (state == null || activeCharacter == null) return;
+
+    final inventoryList = activeCharacter.inventory.isEmpty ? "None" : activeCharacter.inventory.join(", ");
 
     final systemMessage = """
 You are a creative storyteller for Grim Fable.
-Character: ${_activeCharacter!.name}
-Backstory: ${_activeCharacter!.backstory}
+Character: ${activeCharacter.name}
+Occupation: ${activeCharacter.occupation}
+Backstory: ${activeCharacter.backstory}
+Inventory: $inventoryList
 
 Keep your responses short, exactly 1 paragraph (3-5 sentences).
 Maintain a dark fantasy, gritty, and realistic tone.
+
+You can grant or remove items from the player's inventory using these tags at the end of your response:
+[ITEM_GAINED: Item Name]
+[ITEM_REMOVED: Item Name]
+Do not constantly remind the player of their inventory.
 """;
 
     final history = state!.storyHistory.takeLast(5).expand((s) => [
@@ -146,10 +156,11 @@ Maintain a dark fantasy, gritty, and realistic tone.
     );
 
     final parsed = _parseResponse(fullResponse);
+    final processed = await _processInventoryTags(parsed.text);
 
     final newSegment = StorySegment(
       playerInput: action,
-      aiResponse: parsed.text,
+      aiResponse: processed,
       recommendedChoices: parsed.choices, // Might still parse if AI misbehaves and adds them
       timestamp: DateTime.now(),
     );
@@ -185,16 +196,26 @@ Maintain a dark fantasy, gritty, and realistic tone.
   }
 
   Future<void> continueAdventure() async {
-    if (state == null || _activeCharacter == null || state!.storyHistory.isEmpty) return;
+    final activeCharacter = _ref.read(activeCharacterProvider);
+    if (state == null || activeCharacter == null || state!.storyHistory.isEmpty) return;
+
+    final inventoryList = activeCharacter.inventory.isEmpty ? "None" : activeCharacter.inventory.join(", ");
 
     final systemMessage = """
 You are a creative storyteller for Grim Fable.
-Character: ${_activeCharacter!.name}
-Backstory: ${_activeCharacter!.backstory}
+Character: ${activeCharacter.name}
+Occupation: ${activeCharacter.occupation}
+Backstory: ${activeCharacter.backstory}
+Inventory: $inventoryList
 
 Continue the story naturally from the last point.
 Keep your responses short, exactly 1 paragraph (3-5 sentences).
 Maintain a dark fantasy, gritty, and realistic tone.
+
+You can grant or remove items from the player's inventory using these tags at the end of your response:
+[ITEM_GAINED: Item Name]
+[ITEM_REMOVED: Item Name]
+Do not constantly remind the player of their inventory.
 """;
 
     final history = state!.storyHistory.takeLast(5).expand((s) => [
@@ -215,12 +236,13 @@ Maintain a dark fantasy, gritty, and realistic tone.
     );
 
     final parsed = _parseResponse(fullResponse);
+    final processed = await _processInventoryTags(parsed.text);
 
     final lastSegment = state!.storyHistory.last;
     // Use double line break to separate the new response from the previous one
     final updatedSegment = StorySegment(
       playerInput: lastSegment.playerInput,
-      aiResponse: "${lastSegment.aiResponse}\n\n${parsed.text}",
+      aiResponse: "${lastSegment.aiResponse}\n\n$processed",
       recommendedChoices: parsed.choices,
       timestamp: DateTime.now(),
     );
@@ -298,15 +320,54 @@ Maintain a dark fantasy, gritty, and realistic tone.
     state = adventure;
   }
 
+  Future<String> _processInventoryTags(String response) async {
+    final activeCharacter = _ref.read(activeCharacterProvider);
+    if (activeCharacter == null) return response;
+
+    final gainedRegex = RegExp(r'\[ITEM_GAINED:\s*([^\]]+)\]', caseSensitive: false);
+    final removedRegex = RegExp(r'\[ITEM_REMOVED:\s*([^\]]+)\]', caseSensitive: false);
+
+    final gainedMatches = gainedRegex.allMatches(response);
+    final removedMatches = removedRegex.allMatches(response);
+
+    if (gainedMatches.isEmpty && removedMatches.isEmpty) return response;
+
+    List<String> newInventory = List<String>.from(activeCharacter.inventory);
+
+    for (final match in gainedMatches) {
+      final item = match.group(1)!.trim();
+      if (!newInventory.any((i) => i.toLowerCase() == item.toLowerCase())) {
+        newInventory.add(item);
+      }
+    }
+
+    for (final match in removedMatches) {
+      final item = match.group(1)!.trim();
+      newInventory.removeWhere((i) => i.toLowerCase() == item.toLowerCase());
+    }
+
+    await _characterNotifier.updateCharacter(activeCharacter.copyWith(inventory: newInventory));
+
+    // Strip tags from response
+    String cleaned = response.replaceAll(gainedRegex, '').replaceAll(removedRegex, '').trim();
+    return cleaned;
+  }
+
   Future<String> _generateFirstPrompt({String? customPrompt}) async {
-    if (_activeCharacter == null) return "";
+    final activeCharacter = _ref.read(activeCharacterProvider);
+    if (activeCharacter == null) return "";
+
+    final inventoryList = activeCharacter.inventory.isEmpty ? "None" : activeCharacter.inventory.join(", ");
 
     final systemMessage = """
 You are a creative storyteller for a dark fantasy adventure called Grim Fable.
-Character: ${_activeCharacter!.name}
-Backstory: ${_activeCharacter!.backstory}
+Character: ${activeCharacter.name}
+Occupation: ${activeCharacter.occupation}
+Backstory: ${activeCharacter.backstory}
+Inventory: $inventoryList
 
 Your response must be exactly 1 paragraph (3-5 sentences).
+Maintain a gritty and realistic dark fantasy tone.
 """;
 
     final prompt = customPrompt ?? "Set the scene for a new adventure. Describe the location and the immediate situation. Maintain a gritty and realistic dark fantasy tone.";
@@ -320,7 +381,7 @@ Your response must be exactly 1 paragraph (3-5 sentences).
       maxTokens: 1000, // First prompt can be slightly longer
     );
 
-    return response;
+    return _processInventoryTags(response);
   }
 
   Future<List<String>> _getChoices(String storyResponse, List<Map<String, String>> history) async {

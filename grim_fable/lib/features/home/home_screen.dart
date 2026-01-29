@@ -297,12 +297,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 tooltip: 'AI Settings',
               ),
               if (_isSelectionMode) ...[
-                if (activeCharacter != null)
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined, color: Color(0xFFC0C0C0)),
-                    onPressed: () => context.push('/create-character', extra: activeCharacter),
-                    tooltip: 'Edit Character',
-                  ),
                 IconButton(
                   icon: const Icon(Icons.person_add_outlined, color: Color(0xFFC0C0C0)),
                   onPressed: () => _navigateToCreation(context),
@@ -418,17 +412,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               child: Text(hasApiKey ? 'NEW ADVENTURE' : 'KEY REQUIRED FOR NEW JOURNEY'),
             ),
-        ] else ...[
-          const Text(
-            "Forge a backstory to begin adventures.",
-            style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
-          ),
-          const SizedBox(height: 12),
-          TextButton.icon(
-            onPressed: () => context.push('/create-character'), // Or a dedicated edit screen if we had one
-            icon: const Icon(Icons.auto_awesome, size: 16),
-            label: const Text("FORGE BACKSTORY"),
-          ),
         ],
         if (ref.watch(characterAdventuresProvider).any((a) => !a.isActive)) ...[
           const SizedBox(height: 24),
