@@ -65,8 +65,12 @@ void main() {
     expect(find.text('THY DESTINY REVEALED'), findsOneWidget);
     expect(find.textContaining('was born in a storm'), findsOneWidget);
 
-    // Close dialog
-    await tester.tap(find.text('CLOSE'));
+    // Verify ACCEPT and DECLINE buttons are present
+    expect(find.text('ACCEPT'), findsOneWidget);
+    expect(find.text('DECLINE'), findsOneWidget);
+
+    // Accept backstory
+    await tester.tap(find.text('ACCEPT'));
     await tester.pumpAndSettle();
 
     // Verify Forge Legend button is visible

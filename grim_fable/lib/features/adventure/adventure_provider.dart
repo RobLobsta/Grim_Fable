@@ -6,6 +6,7 @@ import '../character/character_provider.dart';
 import '../../core/services/ai_provider.dart';
 import '../../core/services/ai_service.dart';
 import '../../core/services/settings_service.dart';
+import '../../core/utils/item_parser.dart';
 
 final adventureRepositoryProvider = Provider((ref) => AdventureRepository());
 
@@ -324,33 +325,27 @@ Do not constantly remind the player of their inventory.
     final activeCharacter = _ref.read(activeCharacterProvider);
     if (activeCharacter == null) return response;
 
-    final gainedRegex = RegExp(r'\[ITEM_GAINED:\s*([^\]]+)\]', caseSensitive: false);
-    final removedRegex = RegExp(r'\[ITEM_REMOVED:\s*([^\]]+)\]', caseSensitive: false);
+    final gainedItems = ItemParser.parseGainedItems(response);
+    final removedItems = ItemParser.parseRemovedItems(response);
 
-    final gainedMatches = gainedRegex.allMatches(response);
-    final removedMatches = removedRegex.allMatches(response);
-
-    if (gainedMatches.isEmpty && removedMatches.isEmpty) return response;
+    if (gainedItems.isEmpty && removedItems.isEmpty) return response;
 
     List<String> newInventory = List<String>.from(activeCharacter.inventory);
 
-    for (final match in gainedMatches) {
-      final item = match.group(1)!.trim();
+    for (final item in gainedItems) {
       if (!newInventory.any((i) => i.toLowerCase() == item.toLowerCase())) {
         newInventory.add(item);
       }
     }
 
-    for (final match in removedMatches) {
-      final item = match.group(1)!.trim();
+    for (final item in removedItems) {
       newInventory.removeWhere((i) => i.toLowerCase() == item.toLowerCase());
     }
 
     await _characterNotifier.updateCharacter(activeCharacter.copyWith(inventory: newInventory));
 
     // Strip tags from response
-    String cleaned = response.replaceAll(gainedRegex, '').replaceAll(removedRegex, '').trim();
-    return cleaned;
+    return ItemParser.cleanText(response);
   }
 
   Future<String> _generateFirstPrompt({String? customPrompt}) async {

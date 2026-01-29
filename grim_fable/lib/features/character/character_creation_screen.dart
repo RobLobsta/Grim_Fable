@@ -6,6 +6,7 @@ import '../../core/services/ai_provider.dart';
 import '../../core/services/settings_service.dart';
 import '../../shared/widgets/section_header.dart';
 import '../../shared/widgets/ai_settings_dialog.dart';
+import '../../core/utils/item_parser.dart';
 import 'character_provider.dart';
 
 class CharacterCreationScreen extends ConsumerStatefulWidget {
@@ -32,23 +33,44 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
     super.dispose();
   }
 
-  void _showBackstoryDialog() {
+  void _showBackstoryDialog({bool isReview = false}) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('THY DESTINY REVEALED', style: TextStyle(fontFamily: 'Serif', letterSpacing: 2)),
-        content: SingleChildScrollView(
-          child: Text(
-            _generatedBackstory,
-            style: const TextStyle(fontFamily: 'Serif', fontSize: 16, height: 1.6),
+      barrierDismissible: isReview,
+      builder: (context) => PopScope(
+        canPop: isReview,
+        child: AlertDialog(
+          title: const Text('THY DESTINY REVEALED', style: TextStyle(fontFamily: 'Serif', letterSpacing: 2)),
+          content: SingleChildScrollView(
+            child: Text(
+              _generatedBackstory,
+              style: const TextStyle(fontFamily: 'Serif', fontSize: 16, height: 1.6),
+            ),
           ),
+          actions: [
+            if (isReview)
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('CLOSE'),
+              )
+            else ...[
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _generatedBackstory = '';
+                    _generatedItems = [];
+                  });
+                  Navigator.pop(context);
+                },
+                child: const Text('DECLINE', style: TextStyle(color: Colors.redAccent)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('ACCEPT'),
+              ),
+            ],
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('CLOSE'),
-          ),
-        ],
       ),
     );
   }
@@ -97,9 +119,8 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
       );
 
       // Parse items and backstory
-      final itemRegex = RegExp(r'\[ITEM_GAINED:\s*([^\]]+)\]');
-      final items = itemRegex.allMatches(fullResponse).map((m) => m.group(1)!.trim()).toList();
-      final backstory = fullResponse.replaceAll(itemRegex, '').trim();
+      final items = ItemParser.parseGainedItems(fullResponse);
+      final backstory = ItemParser.cleanText(fullResponse);
 
       setState(() {
         _generatedBackstory = backstory;
@@ -228,9 +249,11 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                 ),
                 const SizedBox(height: 48),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const SectionHeader(title: 'DIVINATION', icon: Icons.auto_awesome_outlined),
+                    const Expanded(
+                      child: SectionHeader(title: 'DIVINATION', icon: Icons.auto_awesome_outlined),
+                    ),
+                    const SizedBox(width: 8),
                     if (_isGenerating)
                       const SizedBox(
                         width: 20,
@@ -239,10 +262,11 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                       )
                     else
                       Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           if (_generatedBackstory.isNotEmpty)
                             IconButton(
-                              onPressed: _showBackstoryDialog,
+                              onPressed: () => _showBackstoryDialog(isReview: true),
                               icon: const Icon(Icons.history_edu, color: Color(0xFFC0C0C0)),
                               tooltip: 'REVIEW BACKSTORY',
                             ),

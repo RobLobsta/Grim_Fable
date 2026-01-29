@@ -16,13 +16,16 @@ class SectionHeader extends StatelessWidget {
       children: [
         Icon(icon, color: Theme.of(context).colorScheme.tertiary, size: 24),
         const SizedBox(width: 12),
-        Text(
-          title,
-          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                fontSize: 18,
-                letterSpacing: 2,
-                color: const Color(0xFFC0C0C0),
-              ),
+        Flexible(
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                  fontSize: 18,
+                  letterSpacing: 2,
+                  color: const Color(0xFFC0C0C0),
+                ),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );

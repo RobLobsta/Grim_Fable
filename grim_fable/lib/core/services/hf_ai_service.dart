@@ -106,6 +106,8 @@ Character Name: $characterName
 Occupation: $occupation
 $descriptionPart
 
+Pay approximately 30% attention to the optional description—you may incorporate it or ignore it at your discretion.
+
 The backstory must be exactly 3-4 sentences total, covering:
 - Origin: Their humble beginnings and how they became a $occupation.
 - Conflict: A realistic struggle they faced in their daily life.
