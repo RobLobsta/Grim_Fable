@@ -8,6 +8,7 @@ import 'package:grim_fable/features/character/character_provider.dart';
 import 'package:grim_fable/features/adventure/adventure_repository.dart';
 import 'package:grim_fable/features/adventure/adventure_provider.dart';
 import 'package:grim_fable/core/services/ai_provider.dart';
+import 'package:grim_fable/core/services/ai_service.dart';
 import 'package:grim_fable/core/services/settings_service.dart';
 import 'package:mockito/mockito.dart';
 import 'mocks.mocks.dart';
@@ -19,7 +20,7 @@ void main() {
     final mockSettingsService = MockSettingsService();
     final mockAiService = MockAIService();
 
-    when(mockAiService.validateIdentity(any, any)).thenAnswer((_) async => true);
+    when(mockAiService.validateIdentity(any, any)).thenAnswer((_) async => ValidationResult.valid());
     when(mockAiService.generateBackstory(any, any, description: anyNamed('description')))
         .thenAnswer((_) async => "Sir Test was born in a storm. [ITEM_GAINED: Rusty Sword]");
     when(mockAiService.generateAdventureSuggestions(any, any, any)).thenAnswer((_) async => ["Investigate the strange lights.", "Seek out the hermit.", "Defend the village.", "Follow the trail."]);

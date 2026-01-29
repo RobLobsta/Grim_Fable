@@ -27,6 +27,8 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
   int _generatedGold = 0;
   bool _isGenerating = false;
   bool _backstoryAccepted = false;
+  String? _nameError;
+  String? _occupationError;
 
   @override
   void dispose() {
@@ -106,15 +108,32 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
       final aiService = ref.read(aiServiceProvider);
 
       // Validate identity first
-      final isValid = await aiService.validateIdentity(
+      final validation = await aiService.validateIdentity(
         _nameController.text.trim(),
         _occupationController.text.trim(),
       );
 
-      if (!isValid) {
+      setState(() {
+        _nameError = validation.nameError;
+        _occupationError = validation.occupationError;
+      });
+
+      if (!validation.isValid) {
         if (mounted) {
+          String message = 'The fates reject this identity.';
+          if (validation.nameError != null && validation.occupationError != null) {
+            message = 'Both name and occupation are rejected.';
+          } else if (validation.nameError != null) {
+            message = 'The name is rejected: ${validation.nameError}';
+          } else if (validation.occupationError != null) {
+            message = 'The occupation is rejected: ${validation.occupationError}';
+          }
+
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('The fates reject this name or occupation. Ensure they are natural and fit this world.')),
+            SnackBar(
+              content: Text(message),
+              backgroundColor: Colors.red.shade900,
+            ),
           );
           setState(() {
             _isGenerating = false;
@@ -227,6 +246,8 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                         _generatedItems = [];
                         _generatedGold = 0;
                         _backstoryAccepted = false;
+                    _nameError = null;
+                    _occupationError = null;
                       });
                     },
                     tooltip: 'Reset Identity',
@@ -238,8 +259,14 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                   maxLength: 30,
                   enabled: !_backstoryAccepted,
                   readOnly: _backstoryAccepted,
+                  onChanged: (value) {
+                    if (_nameError != null) {
+                      setState(() => _nameError = null);
+                    }
+                  },
                   decoration: InputDecoration(
                     labelText: 'NAME',
+                    errorText: _nameError,
                     prefixIcon: const Icon(Icons.person_outline),
                     counterStyle: const TextStyle(color: Colors.grey, fontSize: 10),
                     fillColor: _backstoryAccepted ? Colors.white.withOpacity(0.05) : null,
@@ -259,8 +286,14 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                   maxLength: 40,
                   enabled: !_backstoryAccepted,
                   readOnly: _backstoryAccepted,
+                  onChanged: (value) {
+                    if (_occupationError != null) {
+                      setState(() => _occupationError = null);
+                    }
+                  },
                   decoration: InputDecoration(
                     labelText: 'OCCUPATION',
+                    errorText: _occupationError,
                     prefixIcon: const Icon(Icons.work_outline),
                     counterStyle: const TextStyle(color: Colors.grey, fontSize: 10),
                     fillColor: _backstoryAccepted ? Colors.white.withOpacity(0.05) : null,
