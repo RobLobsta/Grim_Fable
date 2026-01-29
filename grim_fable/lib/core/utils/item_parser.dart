@@ -110,11 +110,11 @@ class GoldParser {
   static final RegExp _goldRemovedTagRegex = RegExp(r'\[GOLD_REMOVED:\s*(\d+)\]', caseSensitive: false);
 
   // NLP Patterns
-  static final RegExp _goldGainedPattern = RegExp(r'(?:find|receive|get|acquire|gain|pocket|collect|pick up)\s+(?:a|an|the|some)?\s*(\d+)\s+(?:gold|coins?|pieces? of gold)', caseSensitive: false);
-  static final RegExp _goldLostPattern = RegExp(r'(?:lose|drop|give|pay|spend|discard)\s+(?:a|an|the|some)?\s*(\d+)\s+(?:gold|coins?|pieces? of gold)', caseSensitive: false);
+  static final RegExp _goldGainedPattern = RegExp(r'(?:find|receive|get|acquire|gain|pocket|collect|pick up)\s+(?:a|an|the|some)?\s*(\d+)\s+(?:gold|coins?|pieces? of gold|gold pieces?)', caseSensitive: false);
+  static final RegExp _goldLostPattern = RegExp(r'(?:lose|drop|give|pay|spend|discard)\s+(?:a|an|the|some)?\s*(\d+)\s+(?:gold|coins?|pieces? of gold|gold pieces?)', caseSensitive: false);
 
   // Ambiguous patterns (no number)
-  static final RegExp _ambiguousGoldPattern = RegExp(r'(?:the|some|those|thy|thy|all the)\s+(?:gold|coins?|pieces? of gold)', caseSensitive: false);
+  static final RegExp _ambiguousGoldPattern = RegExp(r'(?:the|some|those|thy|thy|all the)\s+(?:gold|coins?|pieces? of gold|gold pieces?)', caseSensitive: false);
   // Simple mentions like "pick up the gold"
   static final RegExp _simpleGoldMention = RegExp(r'\b(?:gold|coins)\b', caseSensitive: false);
 

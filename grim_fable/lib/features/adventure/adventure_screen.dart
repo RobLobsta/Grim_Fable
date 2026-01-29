@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../shared/widgets/player_action_widget.dart';
@@ -99,51 +100,6 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
         _scrollToBottom();
       }
     });
-  }
-
-  Future<void> _showCompleteDialog(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Complete Adventure'),
-        content: const Text('This will summarize your journey and update your character\'s backstory. You won\'t be able to continue this specific adventure session.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Complete'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = null;
-      });
-      try {
-        await ref.read(activeAdventureProvider.notifier).completeAdventure();
-        if (mounted) {
-          context.pop();
-        }
-      } catch (e) {
-        if (mounted) {
-          setState(() {
-            _errorMessage = "Failed to complete adventure: ${e.toString()}";
-          });
-        }
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
-      }
-    }
   }
 
   Future<void> _showApiKeyDialog(BuildContext context) async {
@@ -248,15 +204,14 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(adventure.title),
-        actions: [
-          if (adventure.isActive)
-            IconButton(
-              icon: const Icon(Icons.done_all),
-              onPressed: () => _showCompleteDialog(context),
-              tooltip: 'Complete Adventure',
-            ),
-        ],
+        title: AutoSizeText(
+          adventure.title,
+          maxLines: 2,
+          minFontSize: 12,
+          stepGranularity: 1,
+          style: const TextStyle(fontFamily: 'Serif'),
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
       body: GestureDetector(
         onDoubleTap: () {
@@ -554,15 +509,30 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                 color: const Color(0xFF1A1A1A),
                 border: Border(top: BorderSide(color: Colors.grey.withOpacity(0.3), width: 2)),
               ),
-              child: const Text(
-                "This chronicle has ended.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Serif',
-                  fontStyle: FontStyle.italic,
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "This chronicle has ended.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: 'Serif',
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => context.pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: Theme.of(context).colorScheme.tertiary,
+                      side: BorderSide(color: Theme.of(context).colorScheme.tertiary.withOpacity(0.5)),
+                    ),
+                    child: const Text("RETURN TO HOME", style: TextStyle(letterSpacing: 2, fontSize: 12)),
+                  ),
+                ],
               ),
             ),
         ],

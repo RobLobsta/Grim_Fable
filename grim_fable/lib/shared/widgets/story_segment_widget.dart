@@ -22,15 +22,20 @@ class StorySegmentWidget extends StatefulWidget {
   State<StorySegmentWidget> createState() => StorySegmentWidgetState();
 }
 
-class StorySegmentWidgetState extends State<StorySegmentWidget> {
+class StorySegmentWidgetState extends State<StorySegmentWidget> with SingleTickerProviderStateMixin {
   late String _displayResponse;
-  Timer? _timer;
+  late AnimationController _controller;
   int _currentIndex = 0;
   bool _isAnimating = false;
 
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: (widget.response.length - widget.animateFromIndex) * 20),
+    )..addListener(_updateText);
+
     if (widget.animate) {
       _currentIndex = widget.animateFromIndex;
       _displayResponse = widget.response.substring(0, _currentIndex);
@@ -50,55 +55,59 @@ class StorySegmentWidgetState extends State<StorySegmentWidget> {
   @override
   void didUpdateWidget(StorySegmentWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.response != oldWidget.response && widget.animate) {
-      _timer?.cancel();
-      _currentIndex = widget.animateFromIndex;
-      _displayResponse = widget.response.substring(0, _currentIndex);
-      _isAnimating = true;
-      _startTyping();
-    } else if (widget.response != oldWidget.response && !widget.animate) {
-      _timer?.cancel();
-      _displayResponse = widget.response;
-      _isAnimating = false;
-      if (widget.onFinishedTyping != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          widget.onFinishedTyping?.call();
-        });
+    if (widget.response != oldWidget.response) {
+      _controller.duration = Duration(milliseconds: (widget.response.length - widget.animateFromIndex) * 20);
+      if (widget.animate) {
+        _controller.stop();
+        _currentIndex = widget.animateFromIndex;
+        _displayResponse = widget.response.substring(0, _currentIndex);
+        _isAnimating = true;
+        _startTyping();
+      } else {
+        _controller.stop();
+        _displayResponse = widget.response;
+        _isAnimating = false;
+        if (widget.onFinishedTyping != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            widget.onFinishedTyping?.call();
+          });
+        }
       }
     }
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _controller.dispose();
     super.dispose();
   }
 
   void _startTyping() {
-    _timer = Timer.periodic(const Duration(milliseconds: 20), (timer) {
-      if (_currentIndex < widget.response.length) {
-        if (mounted) {
-          setState(() {
-            _displayResponse = widget.response.substring(0, _currentIndex + 1);
-            _currentIndex++;
-          });
-          widget.onProgress?.call();
-        }
-      } else {
-        if (mounted) {
-          setState(() {
-            _isAnimating = false;
-          });
-          widget.onFinishedTyping?.call();
-        }
-        _timer?.cancel();
+    _controller.reset();
+    _controller.forward().then((_) {
+      if (mounted && _isAnimating) {
+        setState(() {
+          _isAnimating = false;
+        });
+        widget.onFinishedTyping?.call();
       }
     });
   }
 
+  void _updateText() {
+    final newIndex = widget.animateFromIndex + ((widget.response.length - widget.animateFromIndex) * _controller.value).floor();
+    if (newIndex != _currentIndex && newIndex <= widget.response.length) {
+      setState(() {
+        _currentIndex = newIndex;
+        _displayResponse = widget.response.substring(0, _currentIndex);
+      });
+      widget.onProgress?.call();
+    }
+  }
+
   void skip() {
     if (_isAnimating) {
-      _timer?.cancel();
+      _controller.stop();
       if (mounted) {
         setState(() {
           _displayResponse = widget.response;

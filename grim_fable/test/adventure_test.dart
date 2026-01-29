@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,7 +29,13 @@ void main() {
             maxTokens: anyNamed('maxTokens'),
             topP: anyNamed('topP'),
             frequencyPenalty: anyNamed('frequencyPenalty')))
-        .thenAnswer((_) async => "The mist swirls around your feet.");
+        .thenAnswer((invocation) async {
+      final systemMessage = invocation.namedArguments[#systemMessage] as String?;
+      if (systemMessage != null && systemMessage.contains('Respond ONLY with the choices')) {
+        return "Choice 1: Go North | Choice 2: Go South | Choice 3: Go East";
+      }
+      return "The mist swirls around your feet.";
+    });
     when(mockAiService.generateBackstoryAppend(any, any, any)).thenAnswer((_) async => "New backstory.");
     when(mockAiService.generateOccupationEvolution(any, any)).thenAnswer((_) async => "Test Hero");
 
@@ -101,37 +108,45 @@ void main() {
     await tester.pump();
 
     // Need to pump enough to finish typewriter
-    await tester.pump(const Duration(seconds: 5));
-    expect(find.textContaining('Welcome to the dark woods.'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+    expect(find.byType(MarkdownBody), findsAtLeastNWidgets(1));
+
+    // Actually MarkdownBody.data contains the text
+    expect(find.byWidgetPredicate((w) => w is MarkdownBody && w.data.contains('Welcome to the dark woods.')), findsOneWidget);
 
     // Submit an action
-    await tester.enterText(find.byType(TextField), 'I look around.');
+    await tester.enterText(find.byType(TextField).first, 'I look around.');
     await tester.tap(find.byIcon(Icons.send_rounded));
     await tester.pump(); // Start loading
 
     // Wait for AI service
-    await tester.pump(const Duration(seconds: 3));
-    await tester.pump(); // Handle state update after AI
-    await tester.pump(const Duration(seconds: 5)); // Wait for typewriter
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle(); // Wait for typewriter and choices
+    await tester.pump();
 
     expect(find.byType(PlayerActionWidget), findsAtLeastNWidgets(1));
-    expect(find.textContaining('mist swirls'), findsOneWidget);
+    expect(find.byWidgetPredicate((w) => w is MarkdownBody && w.data.contains('mist swirls')), findsOneWidget);
 
-    // Test Complete Adventure
-    await tester.tap(find.byIcon(Icons.done_all));
+    // Test Auto-finalization
+    when(mockAiService.generateResponse(argThat(contains('Final action.')),
+            systemMessage: anyNamed('systemMessage'),
+            history: anyNamed('history'),
+            temperature: anyNamed('temperature'),
+            maxTokens: anyNamed('maxTokens'),
+            topP: anyNamed('topP'),
+            frequencyPenalty: anyNamed('frequencyPenalty')))
+        .thenAnswer((_) async => "You have achieved your goal. [ADVENTURE_COMPLETE]");
+
+    await tester.enterText(find.byType(TextField), 'Final action.');
+    await tester.tap(find.byIcon(Icons.send_rounded));
     await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle(); // Wait for AI and typewriter
+    await tester.pump(const Duration(seconds: 2)); // Auto-finalization call
+    await tester.pumpAndSettle();
 
-    expect(find.text('Complete Adventure'), findsOneWidget);
-    await tester.tap(find.text('Complete'));
-    await tester.pump(); // Start completing
-
-    await tester.pump(const Duration(seconds: 3)); // Wait for AI
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
-
-    // Should have popped back to home (but since we are only testing the screen in isolation in this test,
-    // we just check if it called the right methods)
-    verify(mockCharacterRepo.saveCharacter(any)).called(2);
+    // verify completion happened (saveCharacter called during completeAdventure)
+    verify(mockCharacterRepo.saveCharacter(any)).called(greaterThan(1));
   });
 }
