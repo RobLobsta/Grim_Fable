@@ -5,6 +5,8 @@ abstract class AIService {
     List<Map<String, String>>? history,
     double? temperature,
     int? maxTokens,
+    double? topP,
+    double? frequencyPenalty,
   });
   Future<bool> validateIdentity(String name, String occupation);
   Future<String> generateBackstory(String characterName, String occupation, {String? description});

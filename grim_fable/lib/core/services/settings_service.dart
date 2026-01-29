@@ -18,6 +18,16 @@ final maxTokensProvider = StateNotifierProvider<SettingsNotifier<int>, int>((ref
   return SettingsNotifier(service, service.getMaxTokens, service.setMaxTokens);
 });
 
+final topPProvider = StateNotifierProvider<SettingsNotifier<double>, double>((ref) {
+  final service = ref.watch(settingsServiceProvider);
+  return SettingsNotifier(service, service.getTopP, service.setTopP);
+});
+
+final frequencyPenaltyProvider = StateNotifierProvider<SettingsNotifier<double>, double>((ref) {
+  final service = ref.watch(settingsServiceProvider);
+  return SettingsNotifier(service, service.getFrequencyPenalty, service.setFrequencyPenalty);
+});
+
 final uiPresetProvider = StateNotifierProvider<SettingsNotifier<String>, String>((ref) {
   final service = ref.watch(settingsServiceProvider);
   return SettingsNotifier(service, service.getUiPreset, service.setUiPreset);
@@ -38,6 +48,8 @@ class SettingsService {
   static const String _hfApiKey = 'hf_api_key';
   static const String _temperature = 'temperature';
   static const String _maxTokens = 'max_tokens';
+  static const String _topP = 'top_p';
+  static const String _frequencyPenalty = 'frequency_penalty';
   static const String _uiPreset = 'ui_preset';
   static const String _recommendedResponses = 'recommended_responses';
   static const String _freeFormInput = 'free_form_input';
@@ -74,6 +86,26 @@ class SettingsService {
   Future<void> setMaxTokens(int value) async {
     final box = Hive.box(_settingsBoxName);
     await box.put(_maxTokens, value);
+  }
+
+  double getTopP() {
+    final box = Hive.box(_settingsBoxName);
+    return box.get(_topP, defaultValue: 0.9) as double;
+  }
+
+  Future<void> setTopP(double value) async {
+    final box = Hive.box(_settingsBoxName);
+    await box.put(_topP, value);
+  }
+
+  double getFrequencyPenalty() {
+    final box = Hive.box(_settingsBoxName);
+    return box.get(_frequencyPenalty, defaultValue: 0.0) as double;
+  }
+
+  Future<void> setFrequencyPenalty(double value) async {
+    final box = Hive.box(_settingsBoxName);
+    await box.put(_frequencyPenalty, value);
   }
 
   String getUiPreset() {

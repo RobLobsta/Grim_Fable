@@ -14,33 +14,32 @@ class AiSettingsDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final apiKeyController = TextEditingController(text: ref.watch(hfApiKeyProvider));
+    final apiKey = ref.watch(hfApiKeyProvider);
     final temperature = ref.watch(temperatureProvider);
     final maxTokens = ref.watch(maxTokensProvider);
+    final topP = ref.watch(topPProvider);
+    final frequencyPenalty = ref.watch(frequencyPenaltyProvider);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-    return StatefulBuilder(
-      builder: (context, setState) {
-        // We use local state for the sliders to make them smooth,
-        // but initialize with current provider values.
-        // Actually, since it's a dialog, we can just use local variables
-        // and only save when "SAVE" is pressed.
-        return _AiSettingsDialogInternal(
-          initialApiKey: apiKeyController.text,
-          initialTemperature: temperature,
-          initialMaxTokens: maxTokens,
-          onSave: (apiKey, temp, tokens) async {
-            await ref.read(hfApiKeyProvider.notifier).updateValue(apiKey);
-            await ref.read(temperatureProvider.notifier).updateValue(temp);
-            await ref.read(maxTokensProvider.notifier).updateValue(tokens);
-            if (context.mounted) {
-              Navigator.of(context).pop();
-              scaffoldMessenger.showSnackBar(
-                const SnackBar(content: Text('The fates have been updated.')),
-              );
-            }
-          },
-        );
+    return _AiSettingsDialogInternal(
+      initialApiKey: apiKey,
+      initialTemperature: temperature,
+      initialMaxTokens: maxTokens,
+      initialTopP: topP,
+      initialFrequencyPenalty: frequencyPenalty,
+      onSave: (apiKey, temp, tokens, topP, freq) async {
+        await ref.read(hfApiKeyProvider.notifier).updateValue(apiKey);
+        await ref.read(temperatureProvider.notifier).updateValue(temp);
+        await ref.read(maxTokensProvider.notifier).updateValue(tokens);
+        await ref.read(topPProvider.notifier).updateValue(topP);
+        await ref.read(frequencyPenaltyProvider.notifier).updateValue(freq);
+
+        if (context.mounted) {
+          Navigator.of(context).pop();
+          scaffoldMessenger.showSnackBar(
+            const SnackBar(content: Text('The fates have been updated.')),
+          );
+        }
       },
     );
   }
@@ -50,12 +49,16 @@ class _AiSettingsDialogInternal extends StatefulWidget {
   final String initialApiKey;
   final double initialTemperature;
   final int initialMaxTokens;
-  final Function(String, double, int) onSave;
+  final double initialTopP;
+  final double initialFrequencyPenalty;
+  final Function(String, double, int, double, double) onSave;
 
   const _AiSettingsDialogInternal({
     required this.initialApiKey,
     required this.initialTemperature,
     required this.initialMaxTokens,
+    required this.initialTopP,
+    required this.initialFrequencyPenalty,
     required this.onSave,
   });
 
@@ -67,6 +70,8 @@ class _AiSettingsDialogInternalState extends State<_AiSettingsDialogInternal> {
   late TextEditingController _apiKeyController;
   late double _temperature;
   late int _maxTokens;
+  late double _topP;
+  late double _frequencyPenalty;
 
   @override
   void initState() {
@@ -74,12 +79,23 @@ class _AiSettingsDialogInternalState extends State<_AiSettingsDialogInternal> {
     _apiKeyController = TextEditingController(text: widget.initialApiKey);
     _temperature = widget.initialTemperature;
     _maxTokens = widget.initialMaxTokens;
+    _topP = widget.initialTopP;
+    _frequencyPenalty = widget.initialFrequencyPenalty;
   }
 
   @override
   void dispose() {
     _apiKeyController.dispose();
     super.dispose();
+  }
+
+  void _restoreDefaults() {
+    setState(() {
+      _temperature = 0.8;
+      _maxTokens = 150;
+      _topP = 0.9;
+      _frequencyPenalty = 0.0;
+    });
   }
 
   @override
@@ -112,10 +128,10 @@ class _AiSettingsDialogInternalState extends State<_AiSettingsDialogInternal> {
               style: const TextStyle(fontFamily: 'Serif', fontSize: 14, color: Colors.white70),
             ),
             Slider(
-              value: _temperature,
+              value: _temperature.clamp(0.0, 1.0),
               min: 0.0,
-              max: 2.0,
-              divisions: 20,
+              max: 1.0,
+              divisions: 10,
               onChanged: (value) {
                 setState(() {
                   _temperature = value;
@@ -128,15 +144,55 @@ class _AiSettingsDialogInternalState extends State<_AiSettingsDialogInternal> {
               style: const TextStyle(fontFamily: 'Serif', fontSize: 14, color: Colors.white70),
             ),
             Slider(
-              value: _maxTokens.toDouble(),
+              value: _maxTokens.toDouble().clamp(50, 500),
               min: 50,
-              max: 1000,
-              divisions: 19,
+              max: 500,
+              divisions: 9,
               onChanged: (value) {
                 setState(() {
                   _maxTokens = value.toInt();
                 });
               },
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'TOP-P: ${_topP.toStringAsFixed(2)}',
+              style: const TextStyle(fontFamily: 'Serif', fontSize: 14, color: Colors.white70),
+            ),
+            Slider(
+              value: _topP.clamp(0.0, 1.0),
+              min: 0.0,
+              max: 1.0,
+              divisions: 20,
+              onChanged: (value) {
+                setState(() {
+                  _topP = value;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'FREQUENCY PENALTY: ${_frequencyPenalty.toStringAsFixed(1)}',
+              style: const TextStyle(fontFamily: 'Serif', fontSize: 14, color: Colors.white70),
+            ),
+            Slider(
+              value: _frequencyPenalty.clamp(0.0, 2.0),
+              min: 0.0,
+              max: 2.0,
+              divisions: 20,
+              onChanged: (value) {
+                setState(() {
+                  _frequencyPenalty = value;
+                });
+              },
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: TextButton.icon(
+                onPressed: _restoreDefaults,
+                icon: const Icon(Icons.refresh, size: 18),
+                label: const Text('RESTORE DEFAULTS'),
+              ),
             ),
           ],
         ),
@@ -151,6 +207,8 @@ class _AiSettingsDialogInternalState extends State<_AiSettingsDialogInternal> {
             _apiKeyController.text.trim(),
             _temperature,
             _maxTokens,
+            _topP,
+            _frequencyPenalty,
           ),
           child: const Text('SAVE'),
         ),

@@ -170,6 +170,8 @@ class MockAIService extends _i1.Mock implements _i7.AIService {
     List<Map<String, String>>? history,
     double? temperature,
     int? maxTokens,
+    double? topP,
+    double? frequencyPenalty,
   }) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -180,6 +182,8 @@ class MockAIService extends _i1.Mock implements _i7.AIService {
             #history: history,
             #temperature: temperature,
             #maxTokens: maxTokens,
+            #topP: topP,
+            #frequencyPenalty: frequencyPenalty,
           },
         ),
         returnValue: _i3.Future<String>.value(_i8.dummyValue<String>(
@@ -192,6 +196,8 @@ class MockAIService extends _i1.Mock implements _i7.AIService {
               #history: history,
               #temperature: temperature,
               #maxTokens: maxTokens,
+              #topP: topP,
+              #frequencyPenalty: frequencyPenalty,
             },
           ),
         )),
@@ -336,6 +342,15 @@ class MockAIService extends _i1.Mock implements _i7.AIService {
         ),
         returnValue: _i3.Future<List<String>>.value(<String>[]),
       ) as _i3.Future<List<String>>);
+
+  @override
+  _i3.Future<int> clarifyGoldAmount(String? context) => (super.noSuchMethod(
+        Invocation.method(
+          #clarifyGoldAmount,
+          [context],
+        ),
+        returnValue: _i3.Future<int>.value(0),
+      ) as _i3.Future<int>);
 }
 
 /// A class which mocks [SettingsService].
@@ -413,6 +428,44 @@ class MockSettingsService extends _i1.Mock implements _i9.SettingsService {
   _i3.Future<void> setMaxTokens(int? value) => (super.noSuchMethod(
         Invocation.method(
           #setMaxTokens,
+          [value],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  double getTopP() => (super.noSuchMethod(
+        Invocation.method(
+          #getTopP,
+          [],
+        ),
+        returnValue: 0.0,
+      ) as double);
+
+  @override
+  _i3.Future<void> setTopP(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setTopP,
+          [value],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  double getFrequencyPenalty() => (super.noSuchMethod(
+        Invocation.method(
+          #getFrequencyPenalty,
+          [],
+        ),
+        returnValue: 0.0,
+      ) as double);
+
+  @override
+  _i3.Future<void> setFrequencyPenalty(double? value) => (super.noSuchMethod(
+        Invocation.method(
+          #setFrequencyPenalty,
           [value],
         ),
         returnValue: _i3.Future<void>.value(),
