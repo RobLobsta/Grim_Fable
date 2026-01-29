@@ -76,7 +76,7 @@ class HuggingFaceAIService implements AIService {
   }
 
   @override
-  Future<bool> validateIdentity(String name, String occupation) async {
+  Future<ValidationResult> validateIdentity(String name, String occupation) async {
     const systemMessage = "You are a validator for a dark fantasy RPG called Grim Fable.";
     final prompt = """
 Determine if the following name and occupation are valid for a dark fantasy setting.
@@ -97,13 +97,45 @@ Rules for Occupation:
 - Valid: chef, blacksmith, farmer, fighter, cleric, necromancer, alchemist, barbarian.
 - Invalid: scientist, pilot, mechanic, modern soldier, or nonsensical gibberish (gx7kilr).
 
-Return 'VALID' ONLY if BOTH are valid. Otherwise return 'INVALID'.
-Return ONLY 'VALID' or 'INVALID'.
+Format your response EXACTLY as follows:
+VALID: Both are valid.
+OR
+INVALID_NAME: [Reason why the name is invalid]
+OR
+INVALID_OCCUPATION: [Reason why the occupation is invalid]
+OR
+INVALID_BOTH: [Reason for name] | [Reason for occupation]
+
+Return ONLY the specified format.
 """;
 
-    final response = await generateResponse(prompt, systemMessage: systemMessage, maxTokens: 10, temperature: 0.0);
+    final response = await generateResponse(prompt, systemMessage: systemMessage, maxTokens: 100, temperature: 0.0);
     final result = response.trim().toUpperCase();
-    return result == 'VALID';
+
+    if (result.contains('VALID:')) {
+      return ValidationResult.valid();
+    }
+
+    String? nameError;
+    String? occupationError;
+
+    if (result.contains('INVALID_BOTH:')) {
+      final content = result.replaceFirst('INVALID_BOTH:', '').trim();
+      final parts = content.split('|');
+      nameError = parts[0].trim();
+      occupationError = parts.length > 1 ? parts[1].trim() : "Invalid occupation";
+    } else if (result.contains('INVALID_NAME:')) {
+      nameError = result.replaceFirst('INVALID_NAME:', '').trim();
+    } else if (result.contains('INVALID_OCCUPATION:')) {
+      occupationError = result.replaceFirst('INVALID_OCCUPATION:', '').trim();
+    } else if (result.contains('INVALID')) {
+      nameError = "The fates reject this identity.";
+    } else {
+      // Fallback for unexpected success-like responses
+      return ValidationResult.valid();
+    }
+
+    return ValidationResult.invalid(nameError: nameError, occupationError: occupationError);
   }
 
   @override

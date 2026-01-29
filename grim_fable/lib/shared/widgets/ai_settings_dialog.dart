@@ -73,6 +73,46 @@ class _AiSettingsDialogInternalState extends State<_AiSettingsDialogInternal> {
   late double _topP;
   late double _frequencyPenalty;
 
+  Widget _buildSettingTitle(String label, String helpMessage) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontFamily: 'Serif', fontSize: 14, color: Colors.white70),
+        ),
+        GestureDetector(
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text(label),
+                content: Text(helpMessage),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('UNDERSTOOD'),
+                  ),
+                ],
+              ),
+            );
+          },
+          child: Transform.translate(
+            offset: const Offset(2, -4),
+            child: Text(
+              '^?',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.tertiary,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -123,9 +163,9 @@ class _AiSettingsDialogInternalState extends State<_AiSettingsDialogInternal> {
               style: const TextStyle(fontFamily: 'Serif'),
             ),
             const SizedBox(height: 24),
-            Text(
+            _buildSettingTitle(
               'TEMPERATURE: ${_temperature.toStringAsFixed(1)}',
-              style: const TextStyle(fontFamily: 'Serif', fontSize: 14, color: Colors.white70),
+              'Controls randomness. Higher values make output more creative but less predictable.',
             ),
             Slider(
               value: _temperature.clamp(0.0, 1.0),
@@ -139,9 +179,9 @@ class _AiSettingsDialogInternalState extends State<_AiSettingsDialogInternal> {
               },
             ),
             const SizedBox(height: 16),
-            Text(
+            _buildSettingTitle(
               'MAX TOKENS: $_maxTokens',
-              style: const TextStyle(fontFamily: 'Serif', fontSize: 14, color: Colors.white70),
+              'The maximum length of the generated response.',
             ),
             Slider(
               value: _maxTokens.toDouble().clamp(50, 500),
@@ -155,9 +195,9 @@ class _AiSettingsDialogInternalState extends State<_AiSettingsDialogInternal> {
               },
             ),
             const SizedBox(height: 16),
-            Text(
+            _buildSettingTitle(
               'TOP-P: ${_topP.toStringAsFixed(2)}',
-              style: const TextStyle(fontFamily: 'Serif', fontSize: 14, color: Colors.white70),
+              'Also known as nucleus sampling; another way to control the diversity of the response.',
             ),
             Slider(
               value: _topP.clamp(0.0, 1.0),
@@ -171,9 +211,9 @@ class _AiSettingsDialogInternalState extends State<_AiSettingsDialogInternal> {
               },
             ),
             const SizedBox(height: 16),
-            Text(
+            _buildSettingTitle(
               'FREQUENCY PENALTY: ${_frequencyPenalty.toStringAsFixed(1)}',
-              style: const TextStyle(fontFamily: 'Serif', fontSize: 14, color: Colors.white70),
+              'Decreases the likelihood of the model repeating the same line verbatim.',
             ),
             Slider(
               value: _frequencyPenalty.clamp(0.0, 2.0),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:grim_fable/features/character/character_creation_screen.dart';
 import 'package:grim_fable/core/services/ai_provider.dart';
+import 'package:grim_fable/core/services/ai_service.dart';
 import 'package:grim_fable/core/services/settings_service.dart';
 import 'package:mockito/mockito.dart';
 import 'mocks.mocks.dart';
@@ -13,7 +14,7 @@ void main() {
     final mockAiService = MockAIService();
     final mockSettingsService = MockSettingsService();
 
-    when(mockAiService.validateIdentity(any, any)).thenAnswer((_) async => true);
+    when(mockAiService.validateIdentity(any, any)).thenAnswer((_) async => ValidationResult.valid());
     when(mockAiService.generateBackstory(any, any, description: anyNamed('description')))
         .thenAnswer((_) async => "Test Hero was born in a storm. [ITEM_GAINED: Rusty Sword]");
     when(mockSettingsService.getHfApiKey()).thenReturn('fake-key');

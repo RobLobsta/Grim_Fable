@@ -6,7 +6,7 @@ class GrimFableTheme {
     Color primaryColor;
     Color backgroundColor;
     Color accentColor;
-    Color textColor = const Color(0xFFC0C0C0);
+    Color textColor = const Color(0xFFE0E0E0);
     String bodyFont;
     String displayFont;
 
@@ -40,7 +40,7 @@ class GrimFableTheme {
         displayFont = 'EB Garamond';
     }
 
-    const secondaryColor = Color(0xFFC0C0C0);
+    const secondaryColor = Color(0xFFF5F5F5); // Brighter for better contrast
     const surfaceColor = Color(0xFF161B22);
 
     return ThemeData(
@@ -122,11 +122,11 @@ class GrimFableTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
-          foregroundColor: secondaryColor,
+          foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: secondaryColor, width: 0.5),
+            side: BorderSide(color: accentColor, width: 1.5),
           ),
           elevation: 10,
           textStyle: GoogleFonts.getFont(
@@ -140,7 +140,7 @@ class GrimFableTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: secondaryColor,
-          side: const BorderSide(color: secondaryColor, width: 1.5),
+          side: BorderSide(color: accentColor, width: 2),
           padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
