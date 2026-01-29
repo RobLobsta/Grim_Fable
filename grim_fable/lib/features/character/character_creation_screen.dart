@@ -6,6 +6,7 @@ import '../../core/services/ai_provider.dart';
 import '../../core/services/settings_service.dart';
 import '../../shared/widgets/section_header.dart';
 import '../../shared/widgets/ai_settings_dialog.dart';
+import '../../shared/widgets/inventory_dialog.dart';
 import '../../core/utils/item_parser.dart';
 import 'character_provider.dart';
 
@@ -23,7 +24,9 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
   final _descriptionController = TextEditingController();
   String _generatedBackstory = '';
   List<String> _generatedItems = [];
+  int _generatedGold = 0;
   bool _isGenerating = false;
+  bool _backstoryAccepted = false;
 
   @override
   void dispose() {
@@ -65,7 +68,12 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                 child: const Text('DECLINE', style: TextStyle(color: Colors.redAccent)),
               ),
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  setState(() {
+                    _backstoryAccepted = true;
+                  });
+                  Navigator.pop(context);
+                },
                 child: const Text('ACCEPT'),
               ),
             ],
@@ -124,10 +132,12 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
       // Parse items and backstory
       final items = ItemParser.parseGainedItems(fullResponse);
       final backstory = ItemParser.cleanText(fullResponse);
+      final gold = GoldParser.parseInitialGold(fullResponse);
 
       setState(() {
         _generatedBackstory = backstory;
         _generatedItems = items;
+        _generatedGold = gold;
       });
 
       if (mounted) {
@@ -166,6 +176,7 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
         name: _nameController.text.trim(),
         occupation: _occupationController.text.trim(),
         backstory: _generatedBackstory,
+        gold: _generatedGold,
       ).copyWith(inventory: _generatedItems);
 
       await ref.read(charactersProvider.notifier).addCharacter(character);
@@ -202,15 +213,37 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SectionHeader(title: 'IDENTITY', icon: Icons.badge_outlined),
+                SectionHeader(
+                  title: 'IDENTITY',
+                  icon: Icons.badge_outlined,
+                  trailing: (_generatedBackstory.isNotEmpty) ? IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                    onPressed: () {
+                      setState(() {
+                        _nameController.clear();
+                        _occupationController.clear();
+                        _descriptionController.clear();
+                        _generatedBackstory = '';
+                        _generatedItems = [];
+                        _generatedGold = 0;
+                        _backstoryAccepted = false;
+                      });
+                    },
+                    tooltip: 'Reset Identity',
+                  ) : null,
+                ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _nameController,
                   maxLength: 30,
-                  decoration: const InputDecoration(
+                  enabled: !_backstoryAccepted,
+                  readOnly: _backstoryAccepted,
+                  decoration: InputDecoration(
                     labelText: 'NAME',
-                    prefixIcon: Icon(Icons.person_outline),
-                    counterStyle: TextStyle(color: Colors.grey, fontSize: 10),
+                    prefixIcon: const Icon(Icons.person_outline),
+                    counterStyle: const TextStyle(color: Colors.grey, fontSize: 10),
+                    fillColor: _backstoryAccepted ? Colors.white.withOpacity(0.05) : null,
+                    filled: _backstoryAccepted,
                   ),
                   style: const TextStyle(fontFamily: 'Serif', letterSpacing: 1.2),
                   validator: (value) {
@@ -224,10 +257,14 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                 TextFormField(
                   controller: _occupationController,
                   maxLength: 40,
-                  decoration: const InputDecoration(
+                  enabled: !_backstoryAccepted,
+                  readOnly: _backstoryAccepted,
+                  decoration: InputDecoration(
                     labelText: 'OCCUPATION',
-                    prefixIcon: Icon(Icons.work_outline),
-                    counterStyle: TextStyle(color: Colors.grey, fontSize: 10),
+                    prefixIcon: const Icon(Icons.work_outline),
+                    counterStyle: const TextStyle(color: Colors.grey, fontSize: 10),
+                    fillColor: _backstoryAccepted ? Colors.white.withOpacity(0.05) : null,
+                    filled: _backstoryAccepted,
                   ),
                   style: const TextStyle(fontFamily: 'Serif', letterSpacing: 1.2),
                   validator: (value) {
@@ -242,11 +279,15 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                   controller: _descriptionController,
                   maxLength: 100,
                   maxLines: 2,
-                  decoration: const InputDecoration(
+                  enabled: !_backstoryAccepted,
+                  readOnly: _backstoryAccepted,
+                  decoration: InputDecoration(
                     labelText: 'DESCRIPTION (OPTIONAL)',
-                    prefixIcon: Icon(Icons.description_outlined),
-                    counterStyle: TextStyle(color: Colors.grey, fontSize: 10),
+                    prefixIcon: const Icon(Icons.description_outlined),
+                    counterStyle: const TextStyle(color: Colors.grey, fontSize: 10),
                     hintText: 'e.g., A weary traveler from the north...',
+                    fillColor: _backstoryAccepted ? Colors.white.withOpacity(0.05) : null,
+                    filled: _backstoryAccepted,
                   ),
                   style: const TextStyle(fontFamily: 'Serif', letterSpacing: 1.2),
                 ),
@@ -261,7 +302,7 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                       ],
                     ),
                   )
-                else if (_generatedBackstory.isEmpty)
+                else if (_generatedBackstory.isEmpty || !_backstoryAccepted)
                   ElevatedButton.icon(
                     onPressed: hasApiKey ? _generateBackstory : null,
                     icon: Icon(hasApiKey ? Icons.auto_awesome_outlined : Icons.lock_outline),
@@ -294,9 +335,19 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                           ),
                           const SizedBox(width: 16),
                           TextButton.icon(
+                            onPressed: () {
+                              InventoryDialog.show(context, _generatedItems, gold: _generatedGold);
+                            },
+                            icon: const Icon(Icons.inventory_2_outlined, size: 18),
+                            label: const Text('INITIAL EQUIPMENT', style: TextStyle(fontSize: 12)),
+                          ),
+                          const SizedBox(width: 16),
+                          TextButton.icon(
                             onPressed: () => setState(() {
                               _generatedBackstory = '';
                               _generatedItems = [];
+                              _generatedGold = 0;
+                              _backstoryAccepted = false;
                             }),
                             icon: const Icon(Icons.refresh, size: 18, color: Colors.redAccent),
                             label: const Text('RE-DIVINE', style: TextStyle(fontSize: 12, color: Colors.redAccent)),
