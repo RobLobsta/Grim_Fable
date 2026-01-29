@@ -13,7 +13,7 @@ void main() {
     final mockAiService = MockAIService();
     final mockSettingsService = MockSettingsService();
 
-    when(mockAiService.validateOccupation(any)).thenAnswer((_) async => true);
+    when(mockAiService.validateIdentity(any, any)).thenAnswer((_) async => true);
     when(mockAiService.generateBackstory(any, any, description: anyNamed('description')))
         .thenAnswer((_) async => "Test Hero was born in a storm. [ITEM_GAINED: Rusty Sword]");
     when(mockSettingsService.getHfApiKey()).thenReturn('fake-key');
@@ -73,7 +73,7 @@ void main() {
     await tester.tap(find.text('ACCEPT'));
     await tester.pumpAndSettle();
 
-    // Verify Forge Legend button is visible
-    expect(find.text('FORGE LEGEND'), findsOneWidget);
+    // Verify Forge Character button is visible
+    expect(find.widgetWithText(ElevatedButton, 'FORGE CHARACTER'), findsOneWidget);
   });
 }

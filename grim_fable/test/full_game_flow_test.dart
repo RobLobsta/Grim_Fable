@@ -19,7 +19,7 @@ void main() {
     final mockSettingsService = MockSettingsService();
     final mockAiService = MockAIService();
 
-    when(mockAiService.validateOccupation(any)).thenAnswer((_) async => true);
+    when(mockAiService.validateIdentity(any, any)).thenAnswer((_) async => true);
     when(mockAiService.generateBackstory(any, any, description: anyNamed('description')))
         .thenAnswer((_) async => "Sir Test was born in a storm. [ITEM_GAINED: Rusty Sword]");
     when(mockAiService.generateAdventureSuggestions(any, any, any)).thenAnswer((_) async => ["Investigate the strange lights.", "Seek out the hermit.", "Defend the village.", "Follow the trail."]);
@@ -104,11 +104,12 @@ void main() {
 
     // Close backstory dialog
     expect(find.text('THY DESTINY REVEALED'), findsOneWidget);
-    await tester.tap(find.text('CLOSE'));
+    await tester.tap(find.text('ACCEPT'));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('FORGE LEGEND'));
-    await tester.tap(find.text('FORGE LEGEND'));
+    final forgeButton = find.widgetWithText(ElevatedButton, 'FORGE CHARACTER');
+    await tester.ensureVisible(forgeButton);
+    await tester.tap(forgeButton);
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 

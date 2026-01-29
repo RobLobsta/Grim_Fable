@@ -97,14 +97,17 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
     try {
       final aiService = ref.read(aiServiceProvider);
 
-      // Validate occupation first
-      final isValid = await aiService.validateOccupation(_occupationController.text.trim());
+      // Validate identity first
+      final isValid = await aiService.validateIdentity(
+        _nameController.text.trim(),
+        _occupationController.text.trim(),
+      );
+
       if (!isValid) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please enter a valid occupation.')),
+            const SnackBar(content: Text('The fates reject this name or occupation. Ensure they are natural and fit this world.')),
           );
-          _occupationController.clear();
           setState(() {
             _isGenerating = false;
           });
@@ -247,49 +250,60 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                   ),
                   style: const TextStyle(fontFamily: 'Serif', letterSpacing: 1.2),
                 ),
-                const SizedBox(height: 48),
-                Row(
-                  children: [
-                    const Expanded(
-                      child: SectionHeader(title: 'DIVINATION', icon: Icons.auto_awesome_outlined),
+                const SizedBox(height: 60),
+                if (_isGenerating)
+                  const Center(
+                    child: Column(
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 16),
+                        Text('CONSULTING THE FATES...', style: TextStyle(fontFamily: 'Serif', letterSpacing: 2, fontSize: 12)),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    if (_isGenerating)
-                      const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFC0C0C0)),
-                      )
-                    else
+                  )
+                else if (_generatedBackstory.isEmpty)
+                  ElevatedButton.icon(
+                    onPressed: hasApiKey ? _generateBackstory : null,
+                    icon: Icon(hasApiKey ? Icons.auto_awesome_outlined : Icons.lock_outline),
+                    label: Text(hasApiKey ? 'AI DIVINATION' : 'KEY REQUIRED'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                    ),
+                  )
+                else
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _saveCharacter,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          backgroundColor: Theme.of(context).colorScheme.secondary,
+                          foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                        ),
+                        child: const Text('FORGE CHARACTER'),
+                      ),
+                      const SizedBox(height: 16),
                       Row(
-                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          if (_generatedBackstory.isNotEmpty)
-                            IconButton(
-                              onPressed: () => _showBackstoryDialog(isReview: true),
-                              icon: const Icon(Icons.history_edu, color: Color(0xFFC0C0C0)),
-                              tooltip: 'REVIEW BACKSTORY',
-                            ),
                           TextButton.icon(
-                            onPressed: hasApiKey ? _generateBackstory : null,
-                            icon: Icon(
-                              hasApiKey ? Icons.auto_awesome_outlined : Icons.lock_outline,
-                              size: 18,
-                            ),
-                            label: Text(
-                              hasApiKey ? 'AI DIVINATION' : 'KEY REQUIRED',
-                              style: const TextStyle(letterSpacing: 1.2, fontSize: 12),
-                            ),
+                            onPressed: () => _showBackstoryDialog(isReview: true),
+                            icon: const Icon(Icons.history_edu, size: 18),
+                            label: const Text('REVIEW BACKSTORY', style: TextStyle(fontSize: 12)),
+                          ),
+                          const SizedBox(width: 16),
+                          TextButton.icon(
+                            onPressed: () => setState(() {
+                              _generatedBackstory = '';
+                              _generatedItems = [];
+                            }),
+                            icon: const Icon(Icons.refresh, size: 18, color: Colors.redAccent),
+                            label: const Text('RE-DIVINE', style: TextStyle(fontSize: 12, color: Colors.redAccent)),
                           ),
                         ],
                       ),
-                  ],
-                ),
-                const SizedBox(height: 60),
-                if (_generatedBackstory.isNotEmpty)
-                  ElevatedButton(
-                    onPressed: _saveCharacter,
-                    child: const Text('FORGE LEGEND'),
+                    ],
                   ),
               ],
             ),

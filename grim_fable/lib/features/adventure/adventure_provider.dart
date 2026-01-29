@@ -62,14 +62,18 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
   Future<void> startNewAdventure({String? customPrompt}) async {
     if (_activeCharacter == null) return;
 
-    final adventure = Adventure.create(characterId: _activeCharacter!.id);
+    // Generate first prompt and title
+    final result = await _generateFirstPrompt(customPrompt: customPrompt);
+
+    final adventure = Adventure.create(
+      characterId: _activeCharacter!.id,
+      title: result.title,
+    );
     state = adventure;
 
-    // Generate first prompt
-    final storyText = await _generateFirstPrompt(customPrompt: customPrompt);
     final firstSegment = StorySegment(
-      playerInput: "Starting the journey...",
-      aiResponse: storyText,
+      playerInput: customPrompt ?? "Starting the journey...",
+      aiResponse: result.story,
       recommendedChoices: null,
       timestamp: DateTime.now(),
     );
@@ -82,7 +86,7 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
 
     // If recommended actions enabled, get them in second call
     if (_ref.read(recommendedResponsesProvider)) {
-      final choices = await _getChoices(storyText, []);
+      final choices = await _getChoices(result.story, []);
       final segmentWithChoices = StorySegment(
         playerInput: firstSegment.playerInput,
         aiResponse: firstSegment.aiResponse,
@@ -124,7 +128,7 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
     final inventoryList = activeCharacter.inventory.isEmpty ? "None" : activeCharacter.inventory.join(", ");
 
     final systemMessage = """
-You are a creative storyteller for Grim Fable.
+You are a creative storyteller for Grim Fable. Always write in the third person.
 Character: ${activeCharacter.name}
 Occupation: ${activeCharacter.occupation}
 Backstory: ${activeCharacter.backstory}
@@ -132,6 +136,7 @@ Inventory: $inventoryList
 
 Keep your responses short, exactly 1 paragraph (3-5 sentences).
 Maintain a dark fantasy, gritty, and realistic tone.
+Use third person exclusively (e.g., "${activeCharacter.name} enters the room" NOT "I enter the room").
 
 You can grant or remove items from the player's inventory using these tags at the end of your response:
 [ITEM_GAINED: Item Name]
@@ -203,7 +208,7 @@ Do not constantly remind the player of their inventory.
     final inventoryList = activeCharacter.inventory.isEmpty ? "None" : activeCharacter.inventory.join(", ");
 
     final systemMessage = """
-You are a creative storyteller for Grim Fable.
+You are a creative storyteller for Grim Fable. Always write in the third person.
 Character: ${activeCharacter.name}
 Occupation: ${activeCharacter.occupation}
 Backstory: ${activeCharacter.backstory}
@@ -212,6 +217,7 @@ Inventory: $inventoryList
 Continue the story naturally from the last point.
 Keep your responses short, exactly 1 paragraph (3-5 sentences).
 Maintain a dark fantasy, gritty, and realistic tone.
+Use third person exclusively.
 
 You can grant or remove items from the player's inventory using these tags at the end of your response:
 [ITEM_GAINED: Item Name]
@@ -286,14 +292,14 @@ Do not constantly remind the player of their inventory.
 
     final summary = state!.storyHistory.map((s) => s.aiResponse).join(" ");
 
-    // 1 paragraph per 50 AI responses (Min 1, Max 3)
+    // 2-3 short sentences, scaled by length
     int aiResponseCount = state!.storyHistory.length;
-    int paragraphs = (aiResponseCount / 50).ceil().clamp(1, 3);
+    int sentences = (aiResponseCount / 10).ceil().clamp(2, 6);
 
     final backstoryAppend = await _aiService.generateBackstoryAppend(
       _activeCharacter!.backstory,
       summary,
-      paragraphs,
+      sentences,
     );
 
     final newBackstory = "${_activeCharacter!.backstory}\n\n$backstoryAppend";
@@ -348,24 +354,30 @@ Do not constantly remind the player of their inventory.
     return ItemParser.cleanText(response);
   }
 
-  Future<String> _generateFirstPrompt({String? customPrompt}) async {
+  Future<({String title, String story})> _generateFirstPrompt({String? customPrompt}) async {
     final activeCharacter = _ref.read(activeCharacterProvider);
-    if (activeCharacter == null) return "";
+    if (activeCharacter == null) return (title: "New Adventure", story: "");
 
     final inventoryList = activeCharacter.inventory.isEmpty ? "None" : activeCharacter.inventory.join(", ");
 
     final systemMessage = """
-You are a creative storyteller for a dark fantasy adventure called Grim Fable.
+You are a creative storyteller for a dark fantasy adventure called Grim Fable. Always write in the third person.
 Character: ${activeCharacter.name}
 Occupation: ${activeCharacter.occupation}
 Backstory: ${activeCharacter.backstory}
 Inventory: $inventoryList
 
-Your response must be exactly 1 paragraph (3-5 sentences).
+Your response must include a thematic title for this adventure and the first story segment.
+The story segment must be exactly 1 paragraph (3-5 sentences).
 Maintain a gritty and realistic dark fantasy tone.
+Use third person exclusively.
+
+Format your response exactly as follows:
+Title: [Thematic Title]
+Story: [Starting Paragraph]
 """;
 
-    final prompt = customPrompt ?? "Set the scene for a new adventure. Describe the location and the immediate situation. Maintain a gritty and realistic dark fantasy tone.";
+    final prompt = customPrompt ?? "Set the scene for a new adventure. Describe the location and the immediate situation.";
 
     final temperature = _ref.read(temperatureProvider);
 
@@ -376,7 +388,21 @@ Maintain a gritty and realistic dark fantasy tone.
       maxTokens: 1000, // First prompt can be slightly longer
     );
 
-    return _processInventoryTags(response);
+    String title = "New Adventure";
+    String story = response;
+
+    final titleMatch = RegExp(r"Title:\s*(.+)", caseSensitive: false).firstMatch(response);
+    final storyMatch = RegExp(r"Story:\s*(.+)", caseSensitive: false).firstMatch(response);
+
+    if (titleMatch != null) {
+      title = titleMatch.group(1)!.trim();
+    }
+    if (storyMatch != null) {
+      story = response.substring(storyMatch.start + 6).trim();
+    }
+
+    final processedStory = await _processInventoryTags(story);
+    return (title: title, story: processedStory);
   }
 
   Future<List<String>> _getChoices(String storyResponse, List<Map<String, String>> history) async {
@@ -391,7 +417,7 @@ Maintain a gritty and realistic dark fantasy tone.
 
     final response = await _aiService.generateResponse(
       prompt,
-      systemMessage: "You are a creative storyteller for Grim Fable. Respond ONLY with the choices formatted as: Choice 1 | Choice 2 | Choice 3",
+      systemMessage: "You are a creative storyteller for Grim Fable. Always write in the third person. Respond ONLY with the choices formatted as: Choice 1 | Choice 2 | Choice 3",
       history: updatedHistory,
       temperature: temperature,
       maxTokens: 100,
