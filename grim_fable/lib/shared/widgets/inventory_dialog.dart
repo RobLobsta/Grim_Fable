@@ -4,14 +4,20 @@ import '../../core/utils/equipment_data.dart';
 
 class InventoryDialog extends StatelessWidget {
   final List<String> items;
+  final Map<String, String> itemDescriptions;
   final int gold;
 
-  const InventoryDialog({super.key, required this.items, this.gold = 0});
+  const InventoryDialog({
+    super.key,
+    required this.items,
+    this.itemDescriptions = const {},
+    this.gold = 0,
+  });
 
-  static void show(BuildContext context, List<String> items, {int gold = 0}) {
+  static void show(BuildContext context, List<String> items, {Map<String, String> itemDescriptions = const {}, int gold = 0}) {
     showDialog(
       context: context,
-      builder: (context) => InventoryDialog(items: items, gold: gold),
+      builder: (context) => InventoryDialog(items: items, itemDescriptions: itemDescriptions, gold: gold),
     );
   }
 
@@ -44,6 +50,7 @@ class InventoryDialog extends StatelessWidget {
                     separatorBuilder: (context, index) => Divider(color: Colors.white.withOpacity(0.1)),
                     itemBuilder: (context, index) {
                       final itemName = items[index];
+                      final description = itemDescriptions[itemName];
                       final icon = EquipmentData.getIconForItem(itemName);
                       final emoji = EquipmentData.getEmojiForItem(itemName);
 
@@ -60,6 +67,20 @@ class InventoryDialog extends StatelessWidget {
                             color: Colors.white70,
                           ),
                         ),
+                        subtitle: description != null ? Text(
+                          'Tap for details',
+                          style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.3), fontStyle: FontStyle.italic),
+                        ) : null,
+                        onTap: description != null ? () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              backgroundColor: const Color(0xFF2A2A2A),
+                              title: Text(itemName.toUpperCase(), style: const TextStyle(fontFamily: 'Serif', fontSize: 16, letterSpacing: 2)),
+                              content: Text(description, style: const TextStyle(fontFamily: 'Serif', color: Colors.white70)),
+                            ),
+                          );
+                        } : null,
                       );
                     },
                   ),

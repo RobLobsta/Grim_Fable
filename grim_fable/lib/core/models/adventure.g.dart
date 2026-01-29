@@ -67,13 +67,14 @@ class AdventureAdapter extends TypeAdapter<Adventure> {
       createdAt: fields[4] as DateTime,
       lastPlayedAt: fields[5] as DateTime,
       isActive: fields[6] as bool,
+      mainGoal: fields[7] == null ? '' : fields[7] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, Adventure obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -87,7 +88,9 @@ class AdventureAdapter extends TypeAdapter<Adventure> {
       ..writeByte(5)
       ..write(obj.lastPlayedAt)
       ..writeByte(6)
-      ..write(obj.isActive);
+      ..write(obj.isActive)
+      ..writeByte(7)
+      ..write(obj.mainGoal);
   }
 
   @override

@@ -285,4 +285,75 @@ Return ONLY the numerical value of the gold (e.g., '5' or '-3' if lost). Do not 
     final cleanResponse = response.trim().replaceAll(RegExp(r'[^0-9-]'), '');
     return int.tryParse(cleanResponse) ?? 0;
   }
+
+  @override
+  Future<Map<String, String>> verifyItems(List<String> items, String occupation) async {
+    const systemMessage = "You are an equipment validator for a dark fantasy RPG.";
+    final itemsList = items.join(", ");
+    final prompt = """
+Verify if the following items are valid starting equipment for a character with the occupation: $occupation.
+Items: $itemsList
+
+For each item, determine if it's a valid, grounded item for a dark fantasy setting.
+If an item is invalid (e.g., modern, magical but too powerful for a starter, or nonsensical), replace it with a more suitable item for a $occupation.
+For each valid (or replaced) item, provide a short one-line description.
+
+Format your response EXACTLY as follows:
+[Item Name]: [One-line description]
+[Item Name]: [One-line description]
+...
+
+Return ONLY the list. Do not include any introductory or concluding text.
+""";
+
+    final response = await generateResponse(prompt, systemMessage: systemMessage, maxTokens: 500, temperature: 0.3);
+    final Map<String, String> verifiedItems = {};
+
+    final lines = response.split('\n');
+    for (var line in lines) {
+      if (line.contains(':')) {
+        final parts = line.split(':');
+        final name = parts[0].trim().replaceAll(RegExp(r'^[-*•]\s*'), ''); // Remove bullets
+        final description = parts.sublist(1).join(':').trim();
+        if (name.isNotEmpty && description.isNotEmpty) {
+          verifiedItems[name] = description;
+        }
+      }
+    }
+
+    return verifiedItems;
+  }
+
+  @override
+  Future<({String title, String mainGoal})> generateAdventureTitleAndGoal(String characterName, String backstory, String startingPrompt) async {
+    const systemMessage = "You are a creative storyteller for Grim Fable.";
+    final prompt = """
+Character: $characterName
+Backstory: $backstory
+Adventure Start: $startingPrompt
+
+Based on the character and the start of the adventure, generate a thematic title and a secret main goal that would resolve the immediate conflict.
+
+Format your response EXACTLY as follows:
+Title: [Thematic Title]
+Goal: [Short description of the main goal]
+""";
+
+    final response = await generateResponse(prompt, systemMessage: systemMessage, maxTokens: 200, temperature: 0.7);
+
+    String title = "New Adventure";
+    String mainGoal = "Survive and find a way forward.";
+
+    final titleMatch = RegExp(r"Title:\s*(.+)", caseSensitive: false).firstMatch(response);
+    final goalMatch = RegExp(r"Goal:\s*(.+)", caseSensitive: false).firstMatch(response);
+
+    if (titleMatch != null) {
+      title = titleMatch.group(1)!.trim();
+    }
+    if (goalMatch != null) {
+      mainGoal = goalMatch.group(1)!.trim();
+    }
+
+    return (title: title, mainGoal: mainGoal);
+  }
 }

@@ -24,6 +24,7 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
   final _descriptionController = TextEditingController();
   String _generatedBackstory = '';
   List<String> _generatedItems = [];
+  Map<String, String> _itemDescriptions = {};
   int _generatedGold = 0;
   bool _isGenerating = false;
   bool _backstoryAccepted = false;
@@ -64,6 +65,7 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                   setState(() {
                     _generatedBackstory = '';
                     _generatedItems = [];
+                    _itemDescriptions = {};
                   });
                   Navigator.pop(context);
                 },
@@ -149,13 +151,17 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
       );
 
       // Parse items and backstory
-      final items = ItemParser.parseGainedItems(fullResponse);
+      final initialItems = ItemParser.parseGainedItems(fullResponse);
       final backstory = ItemParser.cleanText(fullResponse);
       final gold = GoldParser.parseInitialGold(fullResponse);
 
+      // Verify items and get descriptions
+      final verifiedItemsMap = await aiService.verifyItems(initialItems, _occupationController.text.trim());
+
       setState(() {
         _generatedBackstory = backstory;
-        _generatedItems = items;
+        _generatedItems = verifiedItemsMap.keys.toList();
+        _itemDescriptions = verifiedItemsMap;
         _generatedGold = gold;
       });
 
@@ -196,6 +202,7 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
         occupation: _occupationController.text.trim(),
         backstory: _generatedBackstory,
         gold: _generatedGold,
+        itemDescriptions: _itemDescriptions,
       ).copyWith(inventory: _generatedItems);
 
       await ref.read(charactersProvider.notifier).addCharacter(character);
@@ -244,10 +251,11 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                         _descriptionController.clear();
                         _generatedBackstory = '';
                         _generatedItems = [];
+                        _itemDescriptions = {};
                         _generatedGold = 0;
                         _backstoryAccepted = false;
-                    _nameError = null;
-                    _occupationError = null;
+                        _nameError = null;
+                        _occupationError = null;
                       });
                     },
                     tooltip: 'Reset Identity',
@@ -363,22 +371,36 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                         spacing: 16,
                         runSpacing: 8,
                         children: [
-                          TextButton.icon(
+                          ElevatedButton.icon(
                             onPressed: () => _showBackstoryDialog(isReview: true),
-                            icon: const Icon(Icons.history_edu, size: 18),
-                            label: const Text('REVIEW BACKSTORY', style: TextStyle(fontSize: 12)),
+                            icon: const Icon(Icons.history_edu, size: 18, color: Color(0xFFC0C0C0)),
+                            label: const Text('REVIEW BACKSTORY', style: TextStyle(fontSize: 12, color: Color(0xFFC0C0C0))),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
                           ),
-                          TextButton.icon(
+                          ElevatedButton.icon(
                             onPressed: () {
-                              InventoryDialog.show(context, _generatedItems, gold: _generatedGold);
+                              InventoryDialog.show(
+                                context,
+                                _generatedItems,
+                                itemDescriptions: _itemDescriptions,
+                                gold: _generatedGold,
+                              );
                             },
-                            icon: const Icon(Icons.inventory_2_outlined, size: 18),
-                            label: const Text('INITIAL EQUIPMENT', style: TextStyle(fontSize: 12)),
+                            icon: const Icon(Icons.inventory_2_outlined, size: 18, color: Color(0xFFC0C0C0)),
+                            label: const Text('INITIAL EQUIPMENT', style: TextStyle(fontSize: 12, color: Color(0xFFC0C0C0))),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.black,
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
                           ),
                           TextButton.icon(
                             onPressed: () => setState(() {
                               _generatedBackstory = '';
                               _generatedItems = [];
+                              _itemDescriptions = {};
                               _generatedGold = 0;
                               _backstoryAccepted = false;
                             }),

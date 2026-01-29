@@ -389,7 +389,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(width: 24),
             IconButton(
               icon: const Icon(Icons.inventory_2_outlined, color: Color(0xFFC0C0C0), size: 32),
-              onPressed: () => InventoryDialog.show(context, activeCharacter.inventory, gold: activeCharacter.gold),
+              onPressed: () => InventoryDialog.show(
+                context,
+                activeCharacter.inventory,
+                itemDescriptions: activeCharacter.itemDescriptions,
+                gold: activeCharacter.gold,
+              ),
               tooltip: 'Inventory',
             ),
           ],

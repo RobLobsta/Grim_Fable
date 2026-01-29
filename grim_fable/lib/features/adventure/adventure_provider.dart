@@ -62,18 +62,26 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
   Future<void> startNewAdventure({String? customPrompt}) async {
     if (_activeCharacter == null) return;
 
-    // Generate first prompt and title
-    final result = await _generateFirstPrompt(customPrompt: customPrompt);
+    // Generate first story segment
+    final story = await _generateFirstStory(customPrompt: customPrompt);
+
+    // Generate thematic title and secret main goal separately
+    final titleAndGoal = await _aiService.generateAdventureTitleAndGoal(
+      _activeCharacter!.name,
+      _activeCharacter!.backstory,
+      story,
+    );
 
     final adventure = Adventure.create(
       characterId: _activeCharacter!.id,
-      title: result.title,
+      title: titleAndGoal.title,
+      mainGoal: titleAndGoal.mainGoal,
     );
     state = adventure;
 
     final firstSegment = StorySegment(
       playerInput: customPrompt ?? "Starting the journey...",
-      aiResponse: result.story,
+      aiResponse: story,
       recommendedChoices: null,
       timestamp: DateTime.now(),
     );
@@ -86,7 +94,7 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
 
     // If recommended actions enabled, get them in second call
     if (_ref.read(recommendedResponsesProvider)) {
-      final choices = await _getChoices(result.story, []);
+      final choices = await _getChoices(story, []);
       final segmentWithChoices = StorySegment(
         playerInput: firstSegment.playerInput,
         aiResponse: firstSegment.aiResponse,
@@ -380,9 +388,9 @@ Do not constantly remind the player of their inventory or gold.
     return ItemParser.cleanText(response);
   }
 
-  Future<({String title, String story})> _generateFirstPrompt({String? customPrompt}) async {
+  Future<String> _generateFirstStory({String? customPrompt}) async {
     final activeCharacter = _ref.read(activeCharacterProvider);
-    if (activeCharacter == null) return (title: "New Adventure", story: "");
+    if (activeCharacter == null) return "";
 
     final inventoryList = activeCharacter.inventory.isEmpty ? "None" : activeCharacter.inventory.join(", ");
 
@@ -394,8 +402,7 @@ Backstory: ${activeCharacter.backstory}
 Inventory: $inventoryList
 Gold: ${activeCharacter.gold}
 
-Your response must include a thematic title for this adventure and the first story segment.
-The story segment must be exactly 1 paragraph (3-5 sentences).
+Your response must be the first story segment of exactly 1 paragraph (3-5 sentences).
 Maintain a gritty and realistic dark fantasy tone.
 Use third person exclusively.
 
@@ -405,9 +412,7 @@ You can grant or remove items or gold from the player using these tags at the en
 [GOLD_GAINED: Number]
 [GOLD_REMOVED: Number]
 
-Format your response exactly as follows:
-Title: [Thematic Title]
-Story: [Starting Paragraph]
+Return ONLY the starting paragraph followed by any tags.
 """;
 
     final prompt = customPrompt ?? "Set the scene for a new adventure. Describe the location and the immediate situation.";
@@ -420,26 +425,12 @@ Story: [Starting Paragraph]
       prompt,
       systemMessage: systemMessage,
       temperature: temperature,
-      maxTokens: 1000, // First prompt can be slightly longer
+      maxTokens: 500,
       topP: topP,
       frequencyPenalty: frequencyPenalty,
     );
 
-    String title = "New Adventure";
-    String story = response;
-
-    final titleMatch = RegExp(r"Title:\s*(.+)", caseSensitive: false).firstMatch(response);
-    final storyMatch = RegExp(r"Story:\s*(.+)", caseSensitive: false).firstMatch(response);
-
-    if (titleMatch != null) {
-      title = titleMatch.group(1)!.trim();
-    }
-    if (storyMatch != null) {
-      story = response.substring(storyMatch.start + 6).trim();
-    }
-
-    final processedStory = await _processInventoryTags(story);
-    return (title: title, story: processedStory);
+    return await _processInventoryTags(response.trim());
   }
 
   Future<List<String>> _getChoices(String storyResponse, List<Map<String, String>> history) async {

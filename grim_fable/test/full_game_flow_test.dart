@@ -23,6 +23,8 @@ void main() {
     when(mockAiService.validateIdentity(any, any)).thenAnswer((_) async => ValidationResult.valid());
     when(mockAiService.generateBackstory(any, any, description: anyNamed('description')))
         .thenAnswer((_) async => "Sir Test was born in a storm. [ITEM_GAINED: Rusty Sword]");
+    when(mockAiService.verifyItems(any, any)).thenAnswer((_) async => {'Rusty Sword': 'A rusted old blade.'});
+    when(mockAiService.generateAdventureTitleAndGoal(any, any, any)).thenAnswer((_) async => (title: 'A New Journey', mainGoal: 'Find the light.'));
     when(mockAiService.generateAdventureSuggestions(any, any, any)).thenAnswer((_) async => ["Investigate the strange lights.", "Seek out the hermit.", "Defend the village.", "Follow the trail."]);
     when(mockAiService.generateResponse(any,
             systemMessage: anyNamed('systemMessage'),
@@ -174,7 +176,7 @@ void main() {
     await tester.tap(find.text('VIEW CHRONICLES'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
-    expect(find.text('New Adventure'), findsOneWidget);
+    expect(find.text('A New Journey'), findsOneWidget);
     expect(find.text('Completed'), findsOneWidget);
   });
 }

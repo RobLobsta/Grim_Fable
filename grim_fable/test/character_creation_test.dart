@@ -17,6 +17,7 @@ void main() {
     when(mockAiService.validateIdentity(any, any)).thenAnswer((_) async => ValidationResult.valid());
     when(mockAiService.generateBackstory(any, any, description: anyNamed('description')))
         .thenAnswer((_) async => "Test Hero was born in a storm. [ITEM_GAINED: Rusty Sword]");
+    when(mockAiService.verifyItems(any, any)).thenAnswer((_) async => {'Rusty Sword': 'A rusted old blade.'});
     when(mockSettingsService.getHfApiKey()).thenReturn('fake-key');
 
     final router = GoRouter(
