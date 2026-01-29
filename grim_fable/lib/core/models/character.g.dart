@@ -26,13 +26,14 @@ class CharacterAdapter extends TypeAdapter<Character> {
       cachedSuggestions:
           fields[6] == null ? [] : (fields[6] as List).cast<String>(),
       occupation: fields[7] == null ? '' : fields[7] as String,
+      gold: fields[8] == null ? 0 : fields[8] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, Character obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -48,7 +49,9 @@ class CharacterAdapter extends TypeAdapter<Character> {
       ..writeByte(6)
       ..write(obj.cachedSuggestions)
       ..writeByte(7)
-      ..write(obj.occupation);
+      ..write(obj.occupation)
+      ..writeByte(8)
+      ..write(obj.gold);
   }
 
   @override

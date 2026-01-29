@@ -12,4 +12,5 @@ abstract class AIService {
   Future<String> generateBackstoryAppend(String currentBackstory, String adventureSummary, int sentences);
   Future<String> generateOccupationEvolution(String currentOccupation, String adventureSummary);
   Future<List<String>> generateAdventureSuggestions(String characterName, String backstory, List<String> pastAdventureSummaries);
+  Future<int> clarifyGoldAmount(String context);
 }

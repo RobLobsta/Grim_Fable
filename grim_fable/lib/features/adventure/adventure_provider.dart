@@ -133,15 +133,18 @@ Character: ${activeCharacter.name}
 Occupation: ${activeCharacter.occupation}
 Backstory: ${activeCharacter.backstory}
 Inventory: $inventoryList
+Gold: ${activeCharacter.gold}
 
 Keep your responses short, exactly 1 paragraph (3-5 sentences).
 Maintain a dark fantasy, gritty, and realistic tone.
 Use third person exclusively (e.g., "${activeCharacter.name} enters the room" NOT "I enter the room").
 
-You can grant or remove items from the player's inventory using these tags at the end of your response:
+You can grant or remove items or gold from the player using these tags at the end of your response:
 [ITEM_GAINED: Item Name]
 [ITEM_REMOVED: Item Name]
-Do not constantly remind the player of their inventory.
+[GOLD_GAINED: Number]
+[GOLD_REMOVED: Number]
+Do not constantly remind the player of their inventory or gold.
 """;
 
     final history = state!.storyHistory.takeLast(5).expand((s) => [
@@ -213,16 +216,19 @@ Character: ${activeCharacter.name}
 Occupation: ${activeCharacter.occupation}
 Backstory: ${activeCharacter.backstory}
 Inventory: $inventoryList
+Gold: ${activeCharacter.gold}
 
 Continue the story naturally from the last point.
 Keep your responses short, exactly 1 paragraph (3-5 sentences).
 Maintain a dark fantasy, gritty, and realistic tone.
 Use third person exclusively.
 
-You can grant or remove items from the player's inventory using these tags at the end of your response:
+You can grant or remove items or gold from the player using these tags at the end of your response:
 [ITEM_GAINED: Item Name]
 [ITEM_REMOVED: Item Name]
-Do not constantly remind the player of their inventory.
+[GOLD_GAINED: Number]
+[GOLD_REMOVED: Number]
+Do not constantly remind the player of their inventory or gold.
 """;
 
     final history = state!.storyHistory.takeLast(5).expand((s) => [
@@ -333,8 +339,15 @@ Do not constantly remind the player of their inventory.
 
     final gainedItems = ItemParser.parseGainedItems(response);
     final removedItems = ItemParser.parseRemovedItems(response);
+    int goldDelta = GoldParser.parseGoldDelta(response);
 
-    if (gainedItems.isEmpty && removedItems.isEmpty) return response;
+    // Check for ambiguous gold if no specific delta was found
+    if (goldDelta == 0 && GoldParser.isAmbiguous(response)) {
+      // Trigger silent background call
+      goldDelta = await _aiService.clarifyGoldAmount(response);
+    }
+
+    if (gainedItems.isEmpty && removedItems.isEmpty && goldDelta == 0) return response;
 
     List<String> newInventory = List<String>.from(activeCharacter.inventory);
 
@@ -348,7 +361,12 @@ Do not constantly remind the player of their inventory.
       newInventory.removeWhere((i) => i.toLowerCase() == item.toLowerCase());
     }
 
-    await _characterNotifier.updateCharacter(activeCharacter.copyWith(inventory: newInventory));
+    final updatedCharacter = activeCharacter.copyWith(
+      inventory: newInventory,
+      gold: activeCharacter.gold + goldDelta,
+    );
+
+    await _characterNotifier.updateCharacter(updatedCharacter);
 
     // Strip tags from response
     return ItemParser.cleanText(response);
@@ -366,11 +384,18 @@ Character: ${activeCharacter.name}
 Occupation: ${activeCharacter.occupation}
 Backstory: ${activeCharacter.backstory}
 Inventory: $inventoryList
+Gold: ${activeCharacter.gold}
 
 Your response must include a thematic title for this adventure and the first story segment.
 The story segment must be exactly 1 paragraph (3-5 sentences).
 Maintain a gritty and realistic dark fantasy tone.
 Use third person exclusively.
+
+You can grant or remove items or gold from the player using these tags at the end of your story:
+[ITEM_GAINED: Item Name]
+[ITEM_REMOVED: Item Name]
+[GOLD_GAINED: Number]
+[GOLD_REMOVED: Number]
 
 Format your response exactly as follows:
 Title: [Thematic Title]

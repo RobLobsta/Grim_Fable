@@ -58,7 +58,11 @@ class ItemParser {
   }
 
   static String cleanText(String text) {
-    return text.replaceAll(_gainedTagRegex, '').replaceAll(_removedTagRegex, '').trim();
+    String cleaned = text.replaceAll(_gainedTagRegex, '').replaceAll(_removedTagRegex, '');
+    cleaned = cleaned.replaceAll(GoldParser._goldTagRegex, '');
+    cleaned = cleaned.replaceAll(GoldParser._goldGainedTagRegex, '');
+    cleaned = cleaned.replaceAll(GoldParser._goldRemovedTagRegex, '');
+    return cleaned.trim();
   }
 
   static bool _isProbablyAnItem(String text) {
@@ -76,6 +80,14 @@ class ItemParser {
 
     if (nonItems.contains(lower)) return false;
 
+    // Filter out gold/coins that should be currency
+    if (lower.contains('gold') || lower.contains('coin')) {
+      // If it's just "gold", "coins", or "[number] gold/coins", it's currency
+      if (RegExp(r'^(\d+\s+)?(gold|coins?|gold\s+coins?)$').hasMatch(lower)) {
+        return false;
+      }
+    }
+
     // Avoid verbs or complex phrases starting with common prepositions/conjunctions
     if (lower.startsWith('that ') || lower.startsWith('how ') || lower.startsWith('to ') || lower.startsWith('why ')) return false;
 
@@ -89,5 +101,79 @@ class ItemParser {
     if (lower.contains(' that ') || lower.contains(' which ')) return false;
 
     return true;
+  }
+}
+
+class GoldParser {
+  static final RegExp _goldTagRegex = RegExp(r'\[GOLD:\s*(-?\d+)\]', caseSensitive: false);
+  static final RegExp _goldGainedTagRegex = RegExp(r'\[GOLD_GAINED:\s*(\d+)\]', caseSensitive: false);
+  static final RegExp _goldRemovedTagRegex = RegExp(r'\[GOLD_REMOVED:\s*(\d+)\]', caseSensitive: false);
+
+  // NLP Patterns
+  static final RegExp _goldGainedPattern = RegExp(r'(?:find|receive|get|acquire|gain|pocket|collect|pick up)\s+(?:a|an|the|some)?\s*(\d+)\s+(?:gold|coins?|pieces? of gold)', caseSensitive: false);
+  static final RegExp _goldLostPattern = RegExp(r'(?:lose|drop|give|pay|spend|discard)\s+(?:a|an|the|some)?\s*(\d+)\s+(?:gold|coins?|pieces? of gold)', caseSensitive: false);
+
+  // Ambiguous patterns (no number)
+  static final RegExp _ambiguousGoldPattern = RegExp(r'(?:the|some|those|thy|thy|all the)\s+(?:gold|coins?|pieces? of gold)', caseSensitive: false);
+  // Simple mentions like "pick up the gold"
+  static final RegExp _simpleGoldMention = RegExp(r'\b(?:gold|coins)\b', caseSensitive: false);
+
+  static int parseGoldDelta(String text) {
+    int delta = 0;
+
+    // 1. Check [GOLD: X] - this usually sets the absolute value or is used as a delta in some contexts
+    // For our purposes, we'll treat [GOLD: X] as an absolute setter if X is positive and no other delta is found,
+    // OR as a delta if it's explicitly gained/removed.
+    // Actually, let's treat [GOLD: X] as "total starting gold" in backstory, and [GOLD_GAINED/REMOVED] for delta.
+
+    // In adventure, we mostly care about deltas.
+    for (final match in _goldGainedTagRegex.allMatches(text)) {
+      delta += int.tryParse(match.group(1)!) ?? 0;
+    }
+    for (final match in _goldRemovedTagRegex.allMatches(text)) {
+      delta -= int.tryParse(match.group(1)!) ?? 0;
+    }
+
+    // If no tags, try NLP
+    if (delta == 0) {
+      for (final match in _goldGainedPattern.allMatches(text)) {
+        delta += int.tryParse(match.group(1)!) ?? 0;
+      }
+      for (final match in _goldLostPattern.allMatches(text)) {
+        delta -= int.tryParse(match.group(1)!) ?? 0;
+      }
+    }
+
+    return delta;
+  }
+
+  /// Used specifically for backstory generation where [GOLD: X] sets the initial amount.
+  static int parseInitialGold(String text) {
+    final match = _goldTagRegex.firstMatch(text);
+    if (match != null) {
+      return int.tryParse(match.group(1)!) ?? 0;
+    }
+    // Fallback to NLP if no tag
+    for (final match in _goldGainedPattern.allMatches(text)) {
+      return int.tryParse(match.group(1)!) ?? 0;
+    }
+    return 0;
+  }
+
+  static bool isAmbiguous(String text) {
+    // If we already found a specific delta, it's not ambiguous (or at least we have a number)
+    if (parseGoldDelta(text) != 0) return false;
+
+    // Check if gold/coins mentioned with ambiguous quantifiers
+    if (_ambiguousGoldPattern.hasMatch(text)) return true;
+
+    // Check if gold/coins mentioned at all without a number nearby
+    if (_simpleGoldMention.hasMatch(text)) {
+      // If there's a number followed by gold/coins, it's NOT ambiguous (should have been caught by parseGoldDelta)
+      // Since parseGoldDelta returned 0, any mention of gold/coins here is likely ambiguous
+      return true;
+    }
+
+    return false;
   }
 }

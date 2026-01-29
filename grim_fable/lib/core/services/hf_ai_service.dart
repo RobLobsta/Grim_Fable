@@ -129,10 +129,15 @@ The backstory must be exactly 3-4 SHORTER sentences total, covering:
 Use third person exclusively. Do NOT use "I" or "my".
 
 Also, provide a list of 2-4 starting items that this character would realistically possess based on their occupation and backstory.
-Format the items using tags at the end of the backstory: [ITEM_GAINED: Item Name]
+Starting items should be simple and grounded (e.g., "Leather Armor", "Crude Dagger", "Bag of Bones", "Rotten Apple").
+Also include a plausible number of gold coins they start with (typically 1-10).
+
+Format the items and gold using tags at the end of the backstory:
+[ITEM_GAINED: Item Name]
+[GOLD: Number]
 
 Maintain a gritty, grounded dark fantasy tone. Avoid naming specific locations.
-Do NOT use multiple paragraphs. Return ONLY the 3-4 sentences followed by the item tags.
+Do NOT use multiple paragraphs. Return ONLY the 3-4 sentences followed by the tags.
 """;
 
     return generateResponse(prompt, systemMessage: systemMessage, maxTokens: 500);
@@ -222,5 +227,23 @@ Content 1 | Content 2 | Content 3 | Content 4
         .map((s) => s.replaceFirst(RegExp(r'^(Suggestion\s+\d+[:\.\s]*|\d+[:\.\s]+|[-*]\s+)', caseSensitive: false), ''))
         .where((s) => s.isNotEmpty)
         .toList();
+  }
+
+  @override
+  Future<int> clarifyGoldAmount(String context) async {
+    const systemMessage = "You are a precise assistant for a dark fantasy RPG. Your job is to quantify ambiguous gold amounts.";
+    final prompt = """
+In the following story context, the character has gained or lost an unspecified amount of "gold" or "coins".
+Based on the situation, determine a plausible, small number of gold coins that fits the narrative (typically 1-10).
+
+Story Context:
+$context
+
+Return ONLY the numerical value of the gold (e.g., '5' or '-3' if lost). Do not include any other text.
+""";
+
+    final response = await generateResponse(prompt, systemMessage: systemMessage, maxTokens: 10, temperature: 0.3);
+    final cleanResponse = response.trim().replaceAll(RegExp(r'[^0-9-]'), '');
+    return int.tryParse(cleanResponse) ?? 0;
   }
 }
