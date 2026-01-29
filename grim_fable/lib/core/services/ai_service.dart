@@ -6,10 +6,10 @@ abstract class AIService {
     double? temperature,
     int? maxTokens,
   });
-  Future<bool> validateOccupation(String occupation);
+  Future<bool> validateIdentity(String name, String occupation);
   Future<String> generateBackstory(String characterName, String occupation, {String? description});
   Future<String> generateBackstoryUpdate(String currentBackstory, String adventureSummary);
-  Future<String> generateBackstoryAppend(String currentBackstory, String adventureSummary, int paragraphs);
+  Future<String> generateBackstoryAppend(String currentBackstory, String adventureSummary, int sentences);
   Future<String> generateOccupationEvolution(String currentOccupation, String adventureSummary);
   Future<List<String>> generateAdventureSuggestions(String characterName, String backstory, List<String> pastAdventureSummaries);
 }

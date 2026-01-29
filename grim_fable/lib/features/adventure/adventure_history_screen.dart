@@ -39,7 +39,7 @@ class AdventureHistoryScreen extends ConsumerWidget {
               itemCount: adventures.length,
               itemBuilder: (context, index) {
                 final adventure = adventures[index];
-                final date = DateFormat('MMM dd, yyyy HH:mm').format(adventure.lastPlayedAt);
+                final date = DateFormat('MMM dd, yyyy').format(adventure.lastPlayedAt);
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 20),

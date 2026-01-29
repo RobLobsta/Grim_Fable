@@ -72,15 +72,28 @@ class HuggingFaceAIService implements AIService {
   }
 
   @override
-  Future<bool> validateOccupation(String occupation) async {
+  Future<bool> validateIdentity(String name, String occupation) async {
     const systemMessage = "You are a validator for a dark fantasy RPG called Grim Fable.";
     final prompt = """
-Determine if the following occupation is valid for a dark fantasy setting (similar to medieval/renaissance fantasy).
-Valid occupations include common trades (chef, blacksmith, farmer) and fantasy roles (fighter, cleric, necromancer).
-Invalid occupations include modern ones (scientist, pilot, mechanic, modern soldier) or nonsensical gibberish (gx7kilr).
+Determine if the following name and occupation are valid for a dark fantasy setting.
 
+Character Name: $name
 Occupation: $occupation
 
+Rules for Name:
+- Must be natural sounding for a dark fantasy setting.
+- Must be capitalized.
+- Must NOT include numbers or special characters (except apostrophes or hyphens for names like Mal'Lo).
+- Must NOT be offensive or modern.
+- Accept: Jan, Mal'Lo, Fanglehorn.
+- Reject: 89, J8+>, Pussy Fucker, Elon Musk.
+
+Rules for Occupation:
+- Must be valid for a dark fantasy setting (similar to medieval/renaissance fantasy).
+- Valid: chef, blacksmith, farmer, fighter, cleric, necromancer.
+- Invalid: scientist, pilot, mechanic, modern soldier, or nonsensical gibberish (gx7kilr).
+
+Return 'VALID' ONLY if BOTH are valid. Otherwise return 'INVALID'.
 Return ONLY 'VALID' or 'INVALID'.
 """;
 
@@ -91,7 +104,7 @@ Return ONLY 'VALID' or 'INVALID'.
 
   @override
   Future<String> generateBackstory(String characterName, String occupation, {String? description}) async {
-    const systemMessage = "You are a creative storyteller for a dark fantasy adventure called Grim Fable.";
+    const systemMessage = "You are a creative storyteller for a dark fantasy adventure called Grim Fable. Always write in the third person.";
 
     String descriptionPart = "";
     if (description != null && description.trim().isNotEmpty) {
@@ -108,10 +121,12 @@ $descriptionPart
 
 Pay approximately 30% attention to the optional description—you may incorporate it or ignore it at your discretion.
 
-The backstory must be exactly 3-4 sentences total, covering:
+The backstory must be exactly 3-4 SHORTER sentences total, covering:
 - Origin: Their humble beginnings and how they became a $occupation.
 - Conflict: A realistic struggle they faced in their daily life.
 - Current State: Why they are setting out on an adventure now.
+
+Use third person exclusively. Do NOT use "I" or "my".
 
 Also, provide a list of 2-4 starting items that this character would realistically possess based on their occupation and backstory.
 Format the items using tags at the end of the backstory: [ITEM_GAINED: Item Name]
@@ -125,14 +140,14 @@ Do NOT use multiple paragraphs. Return ONLY the 3-4 sentences followed by the it
 
   @override
   Future<String> generateBackstoryUpdate(String currentBackstory, String adventureSummary) async {
-    // Repurpose to default to 1 paragraph append for backward compatibility if needed,
+    // Repurpose to default to 2 sentences append for backward compatibility if needed,
     // but preferred way is generateBackstoryAppend.
-    return generateBackstoryAppend(currentBackstory, adventureSummary, 1);
+    return generateBackstoryAppend(currentBackstory, adventureSummary, 2);
   }
 
   @override
-  Future<String> generateBackstoryAppend(String currentBackstory, String adventureSummary, int paragraphs) async {
-    const systemMessage = "You are a creative storyteller for Grim Fable.";
+  Future<String> generateBackstoryAppend(String currentBackstory, String adventureSummary, int sentences) async {
+    const systemMessage = "You are a creative storyteller for Grim Fable. Always write in the third person.";
     final prompt = """
 Current Character Backstory:
 $currentBackstory
@@ -140,9 +155,11 @@ $currentBackstory
 Recent Adventure Summary:
 $adventureSummary
 
-Based on the recent adventure, write exactly $paragraphs paragraph(s) of new backstory to be appended to the character's history.
+Based on the recent adventure, write exactly $sentences short sentences of new backstory to be appended to the character's history.
+The sentences should briefly summarize the adventure and its impact on the character.
 Maintain a dark fantasy, gritty tone and keep it realistic.
-Return ONLY the new paragraph(s).
+Use third person exclusively.
+Return ONLY the new sentences.
 """;
 
     return generateResponse(prompt, systemMessage: systemMessage, maxTokens: 1000);
@@ -169,7 +186,7 @@ Return ONLY the occupation name. If it hasn't changed, return the current one.
 
   @override
   Future<List<String>> generateAdventureSuggestions(String characterName, String backstory, List<String> pastAdventureSummaries) async {
-    const systemMessage = "You are a creative storyteller for Grim Fable.";
+    const systemMessage = "You are a creative storyteller for Grim Fable. Always write in the third person.";
 
     String historyContext = "";
     if (pastAdventureSummaries.isNotEmpty) {
