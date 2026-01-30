@@ -64,18 +64,35 @@ class SagaNotifier extends StateNotifier<Adventure?> {
   ) : super(null);
 
   Future<void> startSaga(Saga saga) async {
-    if (_activeCharacter == null) return;
+    try {
+      if (saga.id == 'legacy_of_blood' && (_activeCharacter == null || _activeCharacter!.name != "Norrec Vizharan")) {
+        await _ensureNorrec();
+        // Wait for a microtask to allow the provider to be recreated with the new character
+        await Future.microtask(() {});
+        await _ref.read(activeSagaAdventureProvider.notifier).startSaga(saga);
+        return;
+      }
 
-    final existingProgress = _repository.getProgress(saga.id);
-    if (existingProgress != null) {
-      final adventure = _advRepository.getAdventuresForCharacter(_activeCharacter!.id)
-          .firstWhere((a) => a.id == existingProgress.adventureId);
-      state = adventure;
-      _ref.read(sagaProgressProvider.notifier).state = existingProgress;
-      return;
-    }
+      if (_activeCharacter == null) {
+        throw Exception("Please create or select a character before beginning a Saga.");
+      }
 
-    // Start New Saga Adventure
+      final existingProgress = _repository.getProgress(saga.id);
+      if (existingProgress != null) {
+        final characterAdventures = _advRepository.getAdventuresForCharacter(_activeCharacter!.id);
+        final adventure = characterAdventures.where((a) => a.id == existingProgress.adventureId).firstOrNull;
+
+        if (adventure != null) {
+          state = adventure;
+          _ref.read(sagaProgressProvider.notifier).state = existingProgress;
+          return;
+        } else {
+          // Progress exists but adventure is missing for this character (e.g. character was re-created)
+          await _repository.deleteProgress(saga.id);
+        }
+      }
+
+      // Start New Saga Adventure
     final firstChapter = saga.chapters.first;
 
     final adventure = Adventure.create(
@@ -107,10 +124,35 @@ class SagaNotifier extends StateNotifier<Adventure?> {
     state = updatedAdventure;
     _ref.read(sagaProgressProvider.notifier).state = progress;
 
-    // Update character last played
-    await _characterNotifier.updateCharacter(
-      _activeCharacter!.copyWith(lastPlayedAt: DateTime.now()),
-    );
+      // Update character last played
+      await _characterNotifier.updateCharacter(
+        _activeCharacter!.copyWith(lastPlayedAt: DateTime.now()),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> _ensureNorrec() async {
+    final characters = _ref.read(charactersProvider);
+    Character? norrec = characters.where((c) => c.name == "Norrec Vizharan").firstOrNull;
+
+    if (norrec == null) {
+      norrec = Character.create(
+        name: "Norrec Vizharan",
+        occupation: "Wandering Knight",
+        backstory: "A former soldier of Westmarch, now bound to a cursed suit of blood-red armor.",
+        itemDescriptions: {
+          "Cursed Plate Armor": "A heavy, crimson suit of plate that seems to pulse with a life of its own.",
+          "Soldier's Blade": "A well-worn but sharp sword from his time in Westmarch."
+        },
+      ).copyWith(
+        inventory: ["Cursed Plate Armor", "Soldier's Blade"],
+      );
+      await _characterNotifier.addCharacter(norrec);
+    }
+
+    _ref.read(selectedCharacterIdProvider.notifier).state = norrec.id;
   }
 
   Future<void> submitSagaAction(String action) async {

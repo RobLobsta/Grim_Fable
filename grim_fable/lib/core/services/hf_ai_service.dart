@@ -325,6 +325,45 @@ Return ONLY the list. Do not include any introductory or concluding text.
   }
 
   @override
+  Future<({String name, String explanation})> parseReplacedItem(String rawReplacement) async {
+    const systemMessage = "You are a precise data extractor for a dark fantasy RPG.";
+    final prompt = """
+A story segment contained a tag indicating an item was replaced because it was invalid for the setting.
+Raw Tag Content: $rawReplacement
+
+Extract:
+1. The Clean Item Name: The name of the valid, grounded item that was actually added.
+2. The Explanation: A short sentence explaining what was replaced and why (including the new item).
+
+Example Input: REPLACED: Modern Flashlight because it's too high tech. You found a Torch instead.
+Example Output:
+Name: Torch
+Explanation: A modern flashlight was replaced with a torch to fit the dark fantasy setting.
+
+Return ONLY the following format:
+Name: [Clean Name]
+Explanation: [Short Explanation]
+""";
+
+    final response = await generateResponse(prompt, systemMessage: systemMessage, maxTokens: 100, temperature: 0.0);
+
+    String name = "New Item";
+    String explanation = rawReplacement;
+
+    final nameMatch = RegExp(r"Name:\s*(.+)", caseSensitive: false).firstMatch(response);
+    final explanationMatch = RegExp(r"Explanation:\s*(.+)", caseSensitive: false).firstMatch(response);
+
+    if (nameMatch != null) {
+      name = nameMatch.group(1)!.trim();
+    }
+    if (explanationMatch != null) {
+      explanation = explanationMatch.group(1)!.trim();
+    }
+
+    return (name: name, explanation: explanation);
+  }
+
+  @override
   Future<({String title, String mainGoal})> generateAdventureTitleAndGoal(String characterName, String backstory, String startingPrompt) async {
     const systemMessage = "You are a creative storyteller for Grim Fable.";
     final prompt = """
