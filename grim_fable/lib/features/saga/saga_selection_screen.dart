@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'saga_provider.dart';
 import '../../core/models/saga.dart';
 
@@ -46,80 +48,119 @@ class SagaSelectionScreen extends ConsumerWidget {
             context.push('/saga-adventure');
           }
         },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 120,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(context).colorScheme.surface,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+        child: SizedBox(
+          height: 180,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Cover Art
+              SizedBox(
+                width: 140,
+                child: saga.coverArtUrl != null
+                    ? Image.network(
+                        saga.coverArtUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => _buildPlaceholderCover(context, saga),
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            color: Colors.black26,
+                            child: const Center(child: CircularProgressIndicator()),
+                          );
+                        },
+                      )
+                    : _buildPlaceholderCover(context, saga),
               ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      saga.series.toUpperCase(),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        letterSpacing: 4,
-                        color: Colors.white70,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      saga.title.toUpperCase(),
-                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                            color: Colors.white,
-                            letterSpacing: 2,
-                          ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    saga.description,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // Saga Details
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${saga.chapters.length} CHAPTERS',
-                        style: const TextStyle(
+                        saga.series.toUpperCase(),
+                        style: GoogleFonts.crimsonPro(
                           fontSize: 10,
+                          letterSpacing: 2,
+                          color: Theme.of(context).colorScheme.tertiary,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
                         ),
                       ),
-                      const Text(
-                        'RELIVE THE STORY',
-                        style: TextStyle(
-                          color: Colors.amber,
-                          fontSize: 12,
+                      const SizedBox(height: 4),
+                      AutoSizeText(
+                        saga.title.toUpperCase(),
+                        style: GoogleFonts.grenze(
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          height: 1.1,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: Text(
+                          saga.description,
+                          style: GoogleFonts.crimsonPro(
+                            fontSize: 14,
+                            color: Colors.white70,
+                          ),
+                          maxLines: 4,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${saga.chapters.length} CHAPTERS',
+                            style: GoogleFonts.crimsonPro(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                              color: Colors.white54,
+                            ),
+                          ),
+                          Text(
+                            'RELIVE THE STORY',
+                            style: GoogleFonts.grenze(
+                              color: Colors.amber,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderCover(BuildContext context, Saga saga) {
+    return Container(
+      color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.book, size: 40, color: Colors.white24),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                saga.title,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.grenze(fontSize: 12, color: Colors.white54),
               ),
             ),
           ],

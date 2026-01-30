@@ -377,13 +377,28 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                     ),
                   )
                 else if (_generatedBackstory.isEmpty || !_backstoryAccepted)
-                  ElevatedButton.icon(
-                    onPressed: hasApiKey ? _generateBackstory : null,
-                    icon: Icon(hasApiKey ? Icons.auto_awesome_outlined : Icons.lock_outline),
-                    label: Text(hasApiKey ? 'AI DIVINATION' : 'KEY REQUIRED'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: hasApiKey ? _generateBackstory : null,
+                        icon: Icon(hasApiKey ? Icons.auto_awesome_outlined : Icons.lock_outline),
+                        label: Text(hasApiKey ? 'AI DIVINATION' : 'KEY REQUIRED'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _generatedBackstory = 'A hero with a mysterious past.';
+                            _backstoryAccepted = true;
+                          });
+                        },
+                        child: const Text('DEBUG: SKIP AI'),
+                      ),
+                    ],
                   )
                 else
                   Column(
