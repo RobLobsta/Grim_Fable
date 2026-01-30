@@ -144,11 +144,11 @@ class SagaNotifier extends StateNotifier<Adventure?> {
         occupation: "Wandering Knight",
         backstory: "A former soldier of Westmarch, now bound to a cursed suit of blood-red armor.",
         itemDescriptions: {
-          "Cursed Plate Armor": "A heavy, crimson suit of plate that seems to pulse with a life of its own.",
           "Soldier's Blade": "A well-worn but sharp sword from his time in Westmarch."
         },
+        isSagaCharacter: true,
       ).copyWith(
-        inventory: ["Cursed Plate Armor", "Soldier's Blade"],
+        inventory: ["Soldier's Blade"],
       );
       await _characterNotifier.addCharacter(norrec);
     }

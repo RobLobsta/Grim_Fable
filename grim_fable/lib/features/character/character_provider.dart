@@ -52,6 +52,8 @@ final activeCharacterProvider = Provider<Character?>((ref) {
   }
 
   // Default: Sort by last played and return the first
+  // Note: We don't strictly filter here because Saga Mode needs to access its character,
+  // but selection UI filters for Adventure Mode.
   final sorted = [...characters];
   sorted.sort((a, b) => b.lastPlayedAt.compareTo(a.lastPlayedAt));
   return sorted.first;

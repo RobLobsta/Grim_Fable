@@ -35,6 +35,9 @@ class Character extends HiveObject {
   @HiveField(9, defaultValue: {})
   final Map<String, String> itemDescriptions;
 
+  @HiveField(10, defaultValue: false)
+  final bool isSagaCharacter;
+
   Character({
     required this.id,
     required this.name,
@@ -46,6 +49,7 @@ class Character extends HiveObject {
     this.occupation = '',
     this.gold = 0,
     this.itemDescriptions = const {},
+    this.isSagaCharacter = false,
   });
 
   factory Character.create({
@@ -54,6 +58,7 @@ class Character extends HiveObject {
     String occupation = '',
     int gold = 0,
     Map<String, String> itemDescriptions = const {},
+    bool isSagaCharacter = false,
   }) {
     final now = DateTime.now();
     return Character(
@@ -67,6 +72,7 @@ class Character extends HiveObject {
       occupation: occupation,
       gold: gold,
       itemDescriptions: itemDescriptions,
+      isSagaCharacter: isSagaCharacter,
     );
   }
 
@@ -79,6 +85,7 @@ class Character extends HiveObject {
     String? occupation,
     int? gold,
     Map<String, String>? itemDescriptions,
+    bool? isSagaCharacter,
   }) {
     return Character(
       id: id,
@@ -91,6 +98,7 @@ class Character extends HiveObject {
       occupation: occupation ?? this.occupation,
       gold: gold ?? this.gold,
       itemDescriptions: itemDescriptions ?? this.itemDescriptions,
+      isSagaCharacter: isSagaCharacter ?? this.isSagaCharacter,
     );
   }
 }
