@@ -1,0 +1,99 @@
+{
+  "id": "legacy_of_blood",
+  "title": "Legacy of Blood",
+  "series": "The Diablo Series",
+  "description": "Norrec Vizharan, a weary mercenary, seeks one last score in the deserts of Aranoch. What he finds is not gold, but the cursed armor of Bartuc, the Warlord of Blood. Now, he must survive the armor's thirst for slaughter while being hunted by demons and dark sorcerers alike.",
+  "chapters": [
+    {
+      "id": "ch1_the_tomb",
+      "title": "Chapter 1: The Blood Price",
+      "startingPrompt": "The air in the ancient tomb is thick with dust and the stench of decay. Norrec Vizharan stands before the ornate sarcophagus of Bartuc, his companions Sadun Tryst and Fauztin eagerly prying at the lid. They seek treasure, but Norrec feels a mounting sense of dread as the heavy stone shifts, revealing a suit of golden armor that seems to pulse with a faint, crimson light.",
+      "plotAnchors": [
+        "Sadun and Fauztin are killed by the tomb's traps or sudden revenants.",
+        "Norrec is forced to don the golden armor of Bartuc to survive.",
+        "Norrec escapes the collapsing tomb into the burning Aranoch desert."
+      ],
+      "importantNouns": ["Norrec Vizharan", "Sadun Tryst", "Fauztin", "Bartuc", "Warlord of Blood", "Aranoch"],
+      "hiddenGoal": "Escape the tomb alive while wearing the armor.",
+      "mechanics": {
+        "initial_corruption": 0.1
+      }
+    },
+    {
+      "id": "ch2_desert_whispers",
+      "title": "Chapter 2: Desert Shadows",
+      "startingPrompt": "The Aranoch desert is a relentless furnace, but Norrec does not feel the heat. The golden armor feels surprisingly light, almost like a second skin. As he treks toward the distant glimmer of Lut Gholein, he begins to hear whispers in the wind—the voices of Sadun and Fauztin, mocking him, and a deeper, darker voice that commands him to bleed.",
+      "plotAnchors": [
+        "Norrec is haunted by the ghosts of his fallen friends.",
+        "A group of desert bandits or monsters attacks, and the armor takes control of Norrec's body to slaughter them.",
+        "Norrec realizes he cannot remove the armor; it is bonded to his flesh."
+      ],
+      "importantNouns": ["Lut Gholein", "Sadun Tryst", "Fauztin", "Aranoch"],
+      "hiddenGoal": "Reach the outskirts of Lut Gholein while resisting the armor's bloodlust.",
+      "mechanics": {
+        "corruption_step": 0.1
+      }
+    },
+    {
+      "id": "ch3_city_of_the_sun",
+      "title": "Chapter 3: The City of the Sun",
+      "startingPrompt": "Lut Gholein, the Jewel of the Desert, rises before Norrec. He hides his armor under a tattered cloak, but the stench of blood follows him. In a dark tavern, he encounters a woman with pale skin and eyes like cold embers—Kara Nightshadow, a necromancer who senses the ancient evil clinging to him.",
+      "plotAnchors": [
+        "Meeting Kara Nightshadow and learning she is a Vizjerei necromancer.",
+        "Norrec is nearly discovered by the city guards or Malevolyn's spies.",
+        "Kara agrees to help Norrec find a way to remove the curse."
+      ],
+      "importantNouns": ["Lut Gholein", "Kara Nightshadow", "Vizjerei", "Augustus Malevolyn"],
+      "hiddenGoal": "Secure Kara's help without being arrested or killed.",
+      "mechanics": {
+        "corruption_step": 0.05
+      }
+    },
+    {
+      "id": "ch4_vizjerei_secrets",
+      "title": "Chapter 4: Whispers of the Vizjerei",
+      "startingPrompt": "Kara leads Norrec to a hidden archive within the city, or perhaps to the legendary mage Drognan. They seek the journals of Horazon, Bartuc's brother, hoping to find the secret of the armor's binding. But the armor grows restless, its golden surface turning a deeper shade of red as it hungers for the magic surrounding them.",
+      "plotAnchors": [
+        "Meeting the mage Drognan and discussing the history of Bartuc and Horazon.",
+        "Learning that the armor is sentient and seeks to resurrect the Warlord of Blood.",
+        "The archive is attacked by Malevolyn's demonic familiars."
+      ],
+      "importantNouns": ["Drognan", "Horazon", "Bartuc", "Vizjerei", "Malevolyn"],
+      "hiddenGoal": "Obtain the knowledge needed to confront the armor's spirit.",
+      "mechanics": {
+        "corruption_step": 0.1
+      }
+    },
+    {
+      "id": "ch5_the_gathering_storm",
+      "title": "Chapter 5: The Gathering Storm",
+      "startingPrompt": "General Augustus Malevolyn has arrived at the gates of Lut Gholein with a small but deadly army. He demands the armor, and with him is the sorceress Galeona and the bound demon Xazax. The city is in a panic, and Norrec finds himself trapped between the invaders and the growing madness within his own mind.",
+      "plotAnchors": [
+        "Malevolyn issues an ultimatum to the city.",
+        "Xazax the demon confronts Norrec and Kara.",
+        "Norrec must choose between fleeing the city or standing his ground."
+      ],
+      "importantNouns": ["Augustus Malevolyn", "Galeona", "Xazax", "Lut Gholein"],
+      "hiddenGoal": "Survive the initial assault by Malevolyn's forces.",
+      "mechanics": {
+        "corruption_step": 0.15
+      }
+    },
+    {
+      "id": "ch6_the_warlords_legacy",
+      "title": "Chapter 6: The Warlord's Legacy",
+      "startingPrompt": "The final confrontation takes place in the ruins outside Lut Gholein. Malevolyn's ambition has blinded him to the true power of the armor. As Norrec faces the General, the spirit of Bartuc threatens to completely submerge his identity. He must use the armor's power to defeat his enemies without losing his soul forever.",
+      "plotAnchors": [
+        "A final duel with General Malevolyn.",
+        "Kara Nightshadow performs a ritual to temporarily weaken the armor's hold.",
+        "The death of Malevolyn and the banishment of Xazax.",
+        "Norrec manages to retain a shred of his humanity as he walks away into the desert."
+      ],
+      "importantNouns": ["Augustus Malevolyn", "Xazax", "Kara Nightshadow", "Bartuc"],
+      "hiddenGoal": "Defeat Malevolyn and resist the final transformation into Bartuc.",
+      "mechanics": {
+        "corruption_final": 1.0
+      }
+    }
+  ]
+}

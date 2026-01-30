@@ -347,12 +347,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         const SizedBox(height: 60),
         ElevatedButton(
-          onPressed: null, // Disabled for now
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey.withOpacity(0.2),
-            foregroundColor: Colors.white38,
-          ),
-          child: const Text('SAGA MODE (COMING SOON)'),
+          onPressed: () => context.push('/saga-selection'),
+          child: const Text('SAGA MODE'),
         ),
         const SizedBox(height: 16),
         ElevatedButton(

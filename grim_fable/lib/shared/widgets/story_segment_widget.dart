@@ -8,6 +8,8 @@ class StorySegmentWidget extends StatefulWidget {
   final int animateFromIndex;
   final VoidCallback? onFinishedTyping;
   final VoidCallback? onProgress;
+  final TextStyle? textStyle;
+  final BoxDecoration? decoration;
 
   const StorySegmentWidget({
     super.key,
@@ -16,6 +18,8 @@ class StorySegmentWidget extends StatefulWidget {
     this.animateFromIndex = 0,
     this.onFinishedTyping,
     this.onProgress,
+    this.textStyle,
+    this.decoration,
   });
 
   @override
@@ -121,21 +125,24 @@ class StorySegmentWidgetState extends State<StorySegmentWidget> with SingleTicke
 
   @override
   Widget build(BuildContext context) {
+    final defaultDecoration = BoxDecoration(
+      color: Theme.of(context).colorScheme.surface,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.2)),
+    );
+
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.2)),
-      ),
+      decoration: widget.decoration ?? defaultDecoration,
       child: MarkdownBody(
         data: _displayResponse,
         styleSheet: MarkdownStyleSheet(
-          p: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                height: 1.8,
-                fontSize: 17,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
+          p: widget.textStyle ??
+              Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    height: 1.8,
+                    fontSize: 17,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
         ),
       ),
     );

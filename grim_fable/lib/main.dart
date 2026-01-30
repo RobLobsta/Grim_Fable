@@ -7,6 +7,8 @@ import 'features/character/character_repository.dart';
 import 'features/character/character_provider.dart';
 import 'features/adventure/adventure_repository.dart';
 import 'features/adventure/adventure_provider.dart';
+import 'features/saga/saga_repository.dart';
+import 'features/saga/saga_provider.dart';
 import 'core/services/settings_service.dart';
 
 void main() async {
@@ -19,6 +21,9 @@ void main() async {
   final adventureRepository = AdventureRepository();
   await adventureRepository.init();
 
+  final sagaRepository = SagaRepository();
+  await sagaRepository.init();
+
   final settingsService = SettingsService();
   await settingsService.init();
 
@@ -27,6 +32,7 @@ void main() async {
       overrides: [
         characterRepositoryProvider.overrideWithValue(characterRepository),
         adventureRepositoryProvider.overrideWithValue(adventureRepository),
+        sagaRepositoryProvider.overrideWithValue(sagaRepository),
         settingsServiceProvider.overrideWithValue(settingsService),
       ],
       child: const GrimFableApp(),

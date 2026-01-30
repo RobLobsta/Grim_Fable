@@ -7,6 +7,8 @@ import '../../features/character/character_creation_screen.dart';
 import '../../features/adventure/adventure_screen.dart';
 import '../../features/adventure/new_adventure_screen.dart';
 import '../../features/adventure/adventure_history_screen.dart';
+import '../../features/saga/saga_selection_screen.dart';
+import '../../features/saga/saga_adventure_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -33,6 +35,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/history',
         builder: (context, state) => const AdventureHistoryScreen(),
+      ),
+      GoRoute(
+        path: '/saga-selection',
+        builder: (context, state) => const SagaSelectionScreen(),
+      ),
+      GoRoute(
+        path: '/saga-adventure',
+        builder: (context, state) => const SagaAdventureScreen(),
       ),
     ],
   );
