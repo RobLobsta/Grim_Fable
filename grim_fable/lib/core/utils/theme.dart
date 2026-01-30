@@ -65,7 +65,6 @@ class GrimFableTheme {
         primary: primaryColor,
         secondary: secondaryColor,
         surface: surfaceColor,
-        background: backgroundColor,
         onPrimary: secondaryColor,
         onSecondary: primaryColor,
         tertiary: accentColor,
@@ -76,7 +75,7 @@ class GrimFableTheme {
         elevation: 8,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: primaryColor.withOpacity(0.5), width: 1),
+          side: BorderSide(color: primaryColor.withValues(alpha: 0.5), width: 1),
         ),
       ),
       textTheme: TextTheme(
@@ -118,21 +117,21 @@ class GrimFableTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white.withOpacity(0.03),
+        fillColor: Colors.white.withValues(alpha: 0.03),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: primaryColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: primaryColor.withOpacity(0.5)),
+          borderSide: BorderSide(color: primaryColor.withValues(alpha: 0.5)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: secondaryColor, width: 2),
         ),
         labelStyle: GoogleFonts.getFont(bodyFont, color: secondaryColor),
-        hintStyle: GoogleFonts.getFont(bodyFont, color: secondaryColor.withOpacity(0.4)),
+        hintStyle: GoogleFonts.getFont(bodyFont, color: secondaryColor.withValues(alpha: 0.4)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(

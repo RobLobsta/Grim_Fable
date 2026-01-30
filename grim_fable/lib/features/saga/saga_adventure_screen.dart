@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'saga_provider.dart';
 import '../character/character_provider.dart';
 import '../../shared/widgets/story_segment_widget.dart';
-import '../../shared/widgets/player_action_widget.dart';
 import '../../shared/widgets/inventory_dialog.dart';
 
 class SagaAdventureScreen extends ConsumerStatefulWidget {
@@ -187,7 +187,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
     return BoxDecoration(
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.5),
+          color: Colors.black.withValues(alpha: 0.5),
           blurRadius: 10,
           spreadRadius: 2,
         ),
@@ -211,7 +211,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFF1A1510),
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1))),
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
       ),
       child: SafeArea(
         child: Row(
@@ -230,7 +230,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                 controller: _controller,
                 decoration: InputDecoration(
                   hintText: "What will Norrec do?",
-                  fillColor: Colors.white.withOpacity(0.05),
+                  fillColor: Colors.white.withValues(alpha: 0.05),
                 ),
                 style: GoogleFonts.crimsonPro(),
                 onSubmitted: (_) => _submitAction(),

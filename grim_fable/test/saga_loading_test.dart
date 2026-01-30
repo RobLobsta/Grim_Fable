@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grim_fable/features/saga/saga_selection_screen.dart';
-import 'package:grim_fable/features/saga/saga_repository.dart';
 import 'package:grim_fable/features/saga/saga_provider.dart';
 import 'package:grim_fable/core/models/saga.dart';
 import 'package:mockito/mockito.dart';
@@ -50,7 +49,5 @@ void main() {
     // Verify saga card is displayed
     expect(find.text('THE ETERNAL FROST'), findsOneWidget);
     expect(find.text('TALES OF THE NORTH'), findsOneWidget);
-
-    print('Widget tree verified: THE LIBRARY and THE ETERNAL FROST found.');
   });
 }

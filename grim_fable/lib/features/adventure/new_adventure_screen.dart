@@ -119,7 +119,7 @@ class _NewAdventureScreenState extends ConsumerState<NewAdventureScreen> {
             end: Alignment.bottomCenter,
             colors: [
               const Color(0xFF0D1117),
-              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             ],
           ),
         ),

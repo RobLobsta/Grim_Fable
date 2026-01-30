@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/character.dart';
 import '../../features/home/home_screen.dart';
 import '../../features/character/character_creation_screen.dart';
 import '../../features/adventure/adventure_screen.dart';

@@ -47,7 +47,7 @@ class InventoryDialog extends StatelessWidget {
                   child: ListView.separated(
                     shrinkWrap: true,
                     itemCount: items.length,
-                    separatorBuilder: (context, index) => Divider(color: Colors.white.withOpacity(0.1)),
+                    separatorBuilder: (context, index) => Divider(color: Colors.white.withValues(alpha: 0.1)),
                     itemBuilder: (context, index) {
                       final itemName = items[index];
                       final description = itemDescriptions[itemName];
@@ -69,7 +69,7 @@ class InventoryDialog extends StatelessWidget {
                         ),
                         subtitle: description != null ? Text(
                           'Tap for details',
-                          style: TextStyle(fontSize: 10, color: Colors.white.withOpacity(0.3), fontStyle: FontStyle.italic),
+                          style: TextStyle(fontSize: 10, color: Colors.white.withValues(alpha: 0.3), fontStyle: FontStyle.italic),
                         ) : null,
                         onTap: description != null ? () {
                           showDialog(
@@ -86,7 +86,7 @@ class InventoryDialog extends StatelessWidget {
                   ),
                 ),
               if (items.isNotEmpty && gold > 0)
-                Divider(color: Colors.white.withOpacity(0.2), height: 32),
+                Divider(color: Colors.white.withValues(alpha: 0.2), height: 32),
               if (gold > 0)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),

@@ -34,7 +34,7 @@ class BackstoryDialog extends StatelessWidget {
           border: Border.all(color: Theme.of(context).colorScheme.primary, width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.6),
+              color: Colors.black.withValues(alpha: 0.6),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),

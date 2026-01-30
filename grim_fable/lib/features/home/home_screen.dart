@@ -33,33 +33,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
-  Future<void> _startNewAdventure() async {
-    setState(() {
-      _isStarting = true;
-    });
-    try {
-      await ref.read(activeAdventureProvider.notifier).startNewAdventure();
-      if (mounted) {
-        _navigateToAdventure(context);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isStarting = false;
-        });
-      }
-    }
-  }
-
   Future<void> _continueAdventure() async {
     setState(() {
       _isStarting = true;
@@ -181,8 +154,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           center: Alignment.center,
           radius: 1.5,
           colors: [
-            Theme.of(context).colorScheme.primary.withOpacity(0.1),
-            Theme.of(context).colorScheme.background,
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            Theme.of(context).colorScheme.surface,
           ],
         ),
       ),
@@ -252,7 +225,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               shape: BoxShape.circle,
               color: activeCharacter.id == characters[index].id
                   ? Theme.of(context).colorScheme.secondary
-                  : Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                  : Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
             ),
           ),
         ),
@@ -315,10 +288,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.5), width: 2),
+        border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5), width: 2),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
             blurRadius: 30,
             spreadRadius: 10,
           ),

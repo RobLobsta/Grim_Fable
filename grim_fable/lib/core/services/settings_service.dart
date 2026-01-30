@@ -140,11 +140,9 @@ class SettingsService {
 }
 
 class SettingsNotifier<T> extends StateNotifier<T> {
-  final SettingsService _service;
-  final T Function() _getter;
   final Future<void> Function(T) _setter;
 
-  SettingsNotifier(this._service, this._getter, this._setter) : super(_getter());
+  SettingsNotifier(SettingsService service, T Function() getter, this._setter) : super(getter());
 
   Future<void> updateValue(T value) async {
     await _setter(value);

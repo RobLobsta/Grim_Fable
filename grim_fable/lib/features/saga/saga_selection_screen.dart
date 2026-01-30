@@ -182,7 +182,7 @@ class SagaSelectionScreen extends ConsumerWidget {
 
   Widget _buildPlaceholderCover(BuildContext context, Saga saga) {
     return Container(
-      color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

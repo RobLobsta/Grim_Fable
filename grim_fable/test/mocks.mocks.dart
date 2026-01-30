@@ -449,6 +449,32 @@ class MockAIService extends _i1.Mock implements _i2.AIService {
       ) as _i4.Future<Map<String, String>>);
 
   @override
+  _i4.Future<({String explanation, String name})> parseReplacedItem(
+          String? rawReplacement) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #parseReplacedItem,
+          [rawReplacement],
+        ),
+        returnValue: _i4.Future<({String explanation, String name})>.value((
+          explanation: _i11.dummyValue<String>(
+            this,
+            Invocation.method(
+              #parseReplacedItem,
+              [rawReplacement],
+            ),
+          ),
+          name: _i11.dummyValue<String>(
+            this,
+            Invocation.method(
+              #parseReplacedItem,
+              [rawReplacement],
+            ),
+          )
+        )),
+      ) as _i4.Future<({String explanation, String name})>);
+
+  @override
   _i4.Future<({String mainGoal, String title})> generateAdventureTitleAndGoal(
     String? characterName,
     String? backstory,
