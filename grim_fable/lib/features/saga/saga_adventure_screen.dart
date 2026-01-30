@@ -271,13 +271,16 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
               ),
               const Divider(color: Color(0xFF4A0000)),
               const SizedBox(height: 16),
-              Text(
-                "CHAPTER: ${saga.chapters[progress.currentChapterIndex].title}",
+              AutoSizeText(
+                "CHAPTER: ${saga.chapters[progress.currentChapterIndex].title.toUpperCase()}",
                 style: GoogleFonts.grenze(
                   color: const Color(0xFF2C2C2C),
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
+                maxLines: 1,
+                minFontSize: 14,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8),
               if (saga.id == 'legacy_of_blood') ...[

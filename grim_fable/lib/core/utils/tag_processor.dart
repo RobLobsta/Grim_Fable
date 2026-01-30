@@ -24,10 +24,20 @@ class TagProcessor {
     }
 
     List<String> newInventory = List<String>.from(character.inventory);
+    Map<String, String> newItemDescriptions = Map<String, String>.from(character.itemDescriptions);
+    bool changedDescriptions = false;
 
-    for (final item in gainedItems) {
-      if (!newInventory.any((i) => i.toLowerCase() == item.toLowerCase())) {
-        newInventory.add(item);
+    for (String item in gainedItems) {
+      String itemName = item;
+      if (item.toUpperCase().startsWith('REPLACED:')) {
+        final parsed = await aiService.parseReplacedItem(item);
+        itemName = parsed.name;
+        newItemDescriptions[itemName] = parsed.explanation;
+        changedDescriptions = true;
+      }
+
+      if (!newInventory.any((i) => i.toLowerCase() == itemName.toLowerCase())) {
+        newInventory.add(itemName);
       }
     }
 
@@ -38,6 +48,7 @@ class TagProcessor {
     final updatedCharacter = character.copyWith(
       inventory: newInventory,
       gold: character.gold + goldDelta,
+      itemDescriptions: changedDescriptions ? newItemDescriptions : null,
     );
 
     await characterNotifier.updateCharacter(updatedCharacter);

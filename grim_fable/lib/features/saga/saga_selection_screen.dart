@@ -42,34 +42,29 @@ class SagaSelectionScreen extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () async {
-          ref.read(selectedSagaIdProvider.notifier).state = saga.id;
-          await ref.read(activeSagaAdventureProvider.notifier).startSaga(saga);
-          if (context.mounted) {
-            context.push('/saga-adventure');
+          try {
+            ref.read(selectedSagaIdProvider.notifier).state = saga.id;
+            await ref.read(activeSagaAdventureProvider.notifier).startSaga(saga);
+            if (context.mounted) {
+              context.push('/saga-adventure');
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(e.toString()), backgroundColor: Colors.red.shade900),
+              );
+            }
           }
         },
-        child: SizedBox(
-          height: 180,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 180, maxHeight: 220),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Cover Art
               SizedBox(
                 width: 140,
-                child: saga.coverArtUrl != null
-                    ? Image.network(
-                        saga.coverArtUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => _buildPlaceholderCover(context, saga),
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            color: Colors.black26,
-                            child: const Center(child: CircularProgressIndicator()),
-                          );
-                        },
-                      )
-                    : _buildPlaceholderCover(context, saga),
+                child: _buildCoverArt(context, saga),
               ),
               // Saga Details
               Expanded(
@@ -115,22 +110,34 @@ class SagaSelectionScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            '${saga.chapters.length} CHAPTERS',
-                            style: GoogleFonts.crimsonPro(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
-                              color: Colors.white54,
+                          Expanded(
+                            child: AutoSizeText(
+                              '${saga.chapters.length} CHAPTERS',
+                              style: GoogleFonts.crimsonPro(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1,
+                                color: Colors.white54,
+                              ),
+                              maxLines: 1,
+                              minFontSize: 8,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          Text(
-                            'RELIVE THE STORY',
-                            style: GoogleFonts.grenze(
-                              color: Colors.amber,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: AutoSizeText(
+                              'RELIVE THE STORY',
+                              style: GoogleFonts.grenze(
+                                color: Colors.amber,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1,
+                              ),
+                              maxLines: 1,
+                              minFontSize: 10,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.end,
                             ),
                           ),
                         ],
@@ -143,6 +150,33 @@ class SagaSelectionScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCoverArt(BuildContext context, Saga saga) {
+    if (saga.coverArtUrl == null) {
+      return _buildPlaceholderCover(context, saga);
+    }
+
+    if (saga.coverArtUrl!.startsWith('assets/')) {
+      return Image.asset(
+        saga.coverArtUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildPlaceholderCover(context, saga),
+      );
+    }
+
+    return Image.network(
+      saga.coverArtUrl!,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => _buildPlaceholderCover(context, saga),
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          color: Colors.black26,
+          child: const Center(child: CircularProgressIndicator()),
+        );
+      },
     );
   }
 
