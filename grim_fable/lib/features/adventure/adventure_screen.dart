@@ -34,29 +34,25 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize animated texts with existing history so they don't re-type on load
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final adventure = ref.read(activeAdventureProvider);
-      if (adventure != null) {
-        setState(() {
-          // Only animate the very first prompt if coming from the New Adventure flow.
-          // Resuming (Continue Adventure) is always instant.
-          final shouldAnimateLast = widget.animateFirst && adventure.storyHistory.length == 1;
+    // Initialize animated texts with existing history immediately to prevent re-typing animation on load
+    final adventure = ref.read(activeAdventureProvider);
+    if (adventure != null) {
+      // Only animate the very first prompt if coming from the New Adventure flow.
+      // Resuming (Continue Adventure) is always instant.
+      final shouldAnimateLast = widget.animateFirst && adventure.storyHistory.length == 1;
 
-          for (int i = 0; i < adventure.storyHistory.length; i++) {
-            if (shouldAnimateLast && i == adventure.storyHistory.length - 1) {
-              _isTyping = true;
-              continue;
-            }
-            _animatedTexts[i] = adventure.storyHistory[i].aiResponse;
-          }
-          if (!shouldAnimateLast) {
-            _isTyping = false;
-          }
-        });
-        _jumpToBottom();
+      for (int i = 0; i < adventure.storyHistory.length; i++) {
+        if (shouldAnimateLast && i == adventure.storyHistory.length - 1) {
+          _isTyping = true;
+          continue;
+        }
+        _animatedTexts[i] = adventure.storyHistory[i].aiResponse;
       }
-    });
+      if (!shouldAnimateLast) {
+        _isTyping = false;
+      }
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) => _jumpToBottom());
   }
 
   @override
@@ -205,11 +201,11 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
     return Scaffold(
       appBar: AppBar(
         title: AutoSizeText(
-          adventure.title,
+          adventure.title.replaceAll(RegExp(r'''^["']|["']$'''), ''),
           maxLines: 2,
-          minFontSize: 12,
+          minFontSize: 18,
           stepGranularity: 1,
-          style: const TextStyle(fontFamily: 'Serif'),
+          style: const TextStyle(fontFamily: 'Serif', fontSize: 24),
           overflow: TextOverflow.ellipsis,
         ),
       ),
@@ -239,7 +235,10 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                 child: ListView.builder(
                   controller: _scrollController,
                 padding: const EdgeInsets.all(16.0),
-                itemCount: adventure.storyHistory.length + (_isLoading ? 1 : 0) + (_errorMessage != null ? 1 : 0),
+                itemCount: adventure.storyHistory.length +
+                    (_isLoading ? 1 : 0) +
+                    (_errorMessage != null ? 1 : 0) +
+                    (_isTyping ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index < adventure.storyHistory.length) {
                     final segment = adventure.storyHistory[index];
@@ -370,6 +369,10 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                       ],
                     ),
                   );
+                }
+
+                if (_isTyping && index == (adventure.storyHistory.length + (_isLoading ? 1 : 0) + (_errorMessage != null ? 1 : 0))) {
+                  return SizedBox(height: MediaQuery.of(context).size.height * 0.4);
                 }
 
                 return const SizedBox.shrink();
