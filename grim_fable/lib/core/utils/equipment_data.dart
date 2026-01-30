@@ -54,42 +54,49 @@ class EquipmentData {
     final lowerItem = itemName.toLowerCase();
 
     // Weaponry
-    if (lowerItem.contains('sword')) return FontAwesomeIcons.khanda; // Free alternative
-    if (lowerItem.contains('dagger') || lowerItem.contains('knife')) return null; // Fallback to emoji
-    if (lowerItem.contains('axe')) return null; // Fallback to emoji
-    if (lowerItem.contains('hammer') || lowerItem.contains('mace') || lowerItem.contains('warhammer')) return FontAwesomeIcons.hammer;
-    if (lowerItem.contains('bow')) return FontAwesomeIcons.bullseye; // Free alternative
-    if (lowerItem.contains('spear')) return FontAwesomeIcons.locationArrow; // Fallback
-    if (lowerItem.contains('staff') || lowerItem.contains('wand')) return FontAwesomeIcons.wandMagicSparkles; // Check if free
+    if (lowerItem.contains('sword') || lowerItem.contains('scimitar') || lowerItem.contains('cutlass') || lowerItem.contains('rapier')) return FontAwesomeIcons.khanda;
+    if (lowerItem.contains('dagger') || lowerItem.contains('knife') || lowerItem.contains('blade') || lowerItem.contains('dirk')) return null; // Fallback to emoji
+    if (lowerItem.contains('axe') || lowerItem.contains('hatchet')) return null; // Fallback to emoji
+    if (lowerItem.contains('hammer') || lowerItem.contains('mace') || lowerItem.contains('warhammer') || lowerItem.contains('club') || lowerItem.contains('morning star')) return FontAwesomeIcons.hammer;
+    if (lowerItem.contains('bow')) return FontAwesomeIcons.bullseye;
+    if (lowerItem.contains('arrow') || lowerItem.contains('quiver') || lowerItem.contains('bolt')) return FontAwesomeIcons.locationArrow;
+    if (lowerItem.contains('spear') || lowerItem.contains('javelin') || lowerItem.contains('halberd')) return FontAwesomeIcons.locationArrow;
+    if (lowerItem.contains('staff') || lowerItem.contains('wand') || lowerItem.contains('rod')) return FontAwesomeIcons.wandMagicSparkles;
     if (lowerItem.contains('shield')) return FontAwesomeIcons.shieldHalved;
 
     // Armor & Clothing
-    if (lowerItem.contains('armor') || lowerItem.contains('chainmail') || lowerItem.contains('plate')) return FontAwesomeIcons.vest;
-    if (lowerItem.contains('cloak') || lowerItem.contains('robe') || lowerItem.contains('hood') || lowerItem.contains('tunic') || lowerItem.contains('shroud') || lowerItem.contains('clothes') || lowerItem.contains('wraps') || lowerItem.contains('apron')) return FontAwesomeIcons.shirt;
-    if (lowerItem.contains('helmet') || lowerItem.contains('hat') || lowerItem.contains('cap')) return FontAwesomeIcons.helmetSafety; // Free
-    if (lowerItem.contains('boots') || lowerItem.contains('shoes')) return FontAwesomeIcons.shoePrints;
+    if (lowerItem.contains('armor') || lowerItem.contains('chainmail') || lowerItem.contains('plate') || lowerItem.contains('gambeson')) return FontAwesomeIcons.vest;
+    if (lowerItem.contains('cloak') || lowerItem.contains('robe') || lowerItem.contains('hood') || lowerItem.contains('tunic') || lowerItem.contains('shroud') || lowerItem.contains('clothes') || lowerItem.contains('wraps') || lowerItem.contains('apron') || lowerItem.contains('cape') || lowerItem.contains('tabard')) return FontAwesomeIcons.shirt;
+    if (lowerItem.contains('helmet') || lowerItem.contains('hat') || lowerItem.contains('cap') || lowerItem.contains('cowl')) return FontAwesomeIcons.helmetSafety;
+    if (lowerItem.contains('boots') || lowerItem.contains('shoes') || lowerItem.contains('sandals')) return FontAwesomeIcons.shoePrints;
     if (lowerItem.contains('gloves') || lowerItem.contains('bracers') || lowerItem.contains('gauntlets')) return FontAwesomeIcons.mitten;
 
     // Tools & Utilities
-    if (lowerItem.contains('potion') || lowerItem.contains('flask') || lowerItem.contains('vial')) return FontAwesomeIcons.flask;
-    if (lowerItem.contains('herb') || lowerItem.contains('seed') || lowerItem.contains('powder')) return FontAwesomeIcons.leaf;
-    if (lowerItem.contains('scroll') || lowerItem.contains('grimoire') || lowerItem.contains('book') || lowerItem.contains('ledger')) return FontAwesomeIcons.book;
-    if (lowerItem.contains('map')) return FontAwesomeIcons.map;
-    if (lowerItem.contains('key') || lowerItem.contains('lockpick')) return FontAwesomeIcons.key;
-    if (lowerItem.contains('torch') || lowerItem.contains('lantern') || lowerItem.contains('candle')) return FontAwesomeIcons.fire;
-    if (lowerItem.contains('rope')) return FontAwesomeIcons.bezierCurve; // Fallback
-    if (lowerItem.contains('bag') || lowerItem.contains('pouch') || lowerItem.contains('sack') || lowerItem.contains('quiver') || lowerItem.contains('satchel')) return FontAwesomeIcons.bagShopping;
+    if (lowerItem.contains('potion') || lowerItem.contains('flask') || lowerItem.contains('vial') || lowerItem.contains('elixir') || lowerItem.contains('tonic')) return FontAwesomeIcons.flask;
+    if (lowerItem.contains('herb') || lowerItem.contains('seed') || lowerItem.contains('powder') || lowerItem.contains('flower') || lowerItem.contains('moss') || lowerItem.contains('leaf') || lowerItem.contains('sickle')) return FontAwesomeIcons.leaf;
+    if (lowerItem.contains('scroll') || lowerItem.contains('grimoire') || lowerItem.contains('book') || lowerItem.contains('ledger') || lowerItem.contains('journal') || lowerItem.contains('tome') || lowerItem.contains('parchment')) return FontAwesomeIcons.book;
+    if (lowerItem.contains('map') || lowerItem.contains('chart')) return FontAwesomeIcons.map;
+    if (lowerItem.contains('key') || lowerItem.contains('lockpick') || lowerItem.contains('pick')) return FontAwesomeIcons.key;
+    if (lowerItem.contains('torch') || lowerItem.contains('lantern') || lowerItem.contains('candle') || lowerItem.contains('lamp')) return FontAwesomeIcons.fire;
+    if (lowerItem.contains('rope') || lowerItem.contains('chain')) return FontAwesomeIcons.bezierCurve;
+    if (lowerItem.contains('bag') || lowerItem.contains('pouch') || lowerItem.contains('sack') || lowerItem.contains('satchel') || lowerItem.contains('backpack') || lowerItem.contains('pack')) return FontAwesomeIcons.bagShopping;
+    if (lowerItem.contains('mortar') || lowerItem.contains('pestle')) return FontAwesomeIcons.mortarPestle;
+    if (lowerItem.contains('bandage') || lowerItem.contains('dressing') || lowerItem.contains('suture') || lowerItem.contains('salve')) return FontAwesomeIcons.bandAid;
+    if (lowerItem.contains('trap')) return FontAwesomeIcons.toolbox;
+    if (lowerItem.contains('censer') || lowerItem.contains('incense') || lowerItem.contains('relic') || lowerItem.contains('holy symbol') || lowerItem.contains('totem') || lowerItem.contains('idol')) return FontAwesomeIcons.cross;
 
     // Food & Drink
-    if (lowerItem.contains('bread') || lowerItem.contains('apple') || lowerItem.contains('rations') || lowerItem.contains('meat') || lowerItem.contains('pot')) return FontAwesomeIcons.utensils;
-    if (lowerItem.contains('wine') || lowerItem.contains('ale') || lowerItem.contains('water') || lowerItem.contains('cup') || lowerItem.contains('mug')) return FontAwesomeIcons.glassWater;
+    if (lowerItem.contains('bread') || lowerItem.contains('apple') || lowerItem.contains('rations') || lowerItem.contains('meat') || lowerItem.contains('pot') || lowerItem.contains('food') || lowerItem.contains('berry') || lowerItem.contains('jerky')) return FontAwesomeIcons.utensils;
+    if (lowerItem.contains('wine') || lowerItem.contains('ale') || lowerItem.contains('water') || lowerItem.contains('cup') || lowerItem.contains('mug') || lowerItem.contains('skin')) return FontAwesomeIcons.glassWater;
 
     // Miscellaneous
-    if (lowerItem.contains('gold') || lowerItem.contains('coin')) return FontAwesomeIcons.coins;
-    if (lowerItem.contains('gem') || lowerItem.contains('jewel') || lowerItem.contains('ring') || lowerItem.contains('amulet') || lowerItem.contains('necklace')) return FontAwesomeIcons.gem;
+    if (lowerItem.contains('gold') || lowerItem.contains('coin') || lowerItem.contains('silver') || lowerItem.contains('copper')) return FontAwesomeIcons.coins;
+    if (lowerItem.contains('gem') || lowerItem.contains('jewel') || lowerItem.contains('ring') || lowerItem.contains('amulet') || lowerItem.contains('necklace') || lowerItem.contains('crystal') || lowerItem.contains('pendant')) return FontAwesomeIcons.gem;
     if (lowerItem.contains('skull') || lowerItem.contains('bone')) return FontAwesomeIcons.skull;
     if (lowerItem.contains('compass')) return FontAwesomeIcons.compass;
-    if (lowerItem.contains('ink') || lowerItem.contains('quill')) return FontAwesomeIcons.penNib;
+    if (lowerItem.contains('ink') || lowerItem.contains('quill') || lowerItem.contains('pen')) return FontAwesomeIcons.penNib;
+    if (lowerItem.contains('token') || lowerItem.contains('charm') || lowerItem.contains('sigil')) return FontAwesomeIcons.certificate;
+    if (lowerItem.contains('instrument') || lowerItem.contains('lute') || lowerItem.contains('flute') || lowerItem.contains('harp') || lowerItem.contains('drum')) return FontAwesomeIcons.music;
 
     return null;
   }
@@ -97,26 +104,31 @@ class EquipmentData {
   static String? getEmojiForItem(String itemName) {
     final lowerItem = itemName.toLowerCase();
 
-    if (lowerItem.contains('sword')) return '🗡️';
-    if (lowerItem.contains('dagger') || lowerItem.contains('knife')) return '🔪';
-    if (lowerItem.contains('axe')) return '🪓';
-    if (lowerItem.contains('hammer') || lowerItem.contains('mace')) return '🔨';
+    if (lowerItem.contains('sword') || lowerItem.contains('scimitar') || lowerItem.contains('cutlass')) return '🗡️';
+    if (lowerItem.contains('dagger') || lowerItem.contains('knife') || lowerItem.contains('blade')) return '🔪';
+    if (lowerItem.contains('axe') || lowerItem.contains('hatchet')) return '🪓';
+    if (lowerItem.contains('hammer') || lowerItem.contains('mace') || lowerItem.contains('warhammer') || lowerItem.contains('club')) return '🔨';
     if (lowerItem.contains('bow')) return '🏹';
     if (lowerItem.contains('staff') || lowerItem.contains('wand')) return '🪄';
     if (lowerItem.contains('shield')) return '🛡️';
-    if (lowerItem.contains('armor')) return '🛡️';
-    if (lowerItem.contains('helmet')) return '🪖';
-    if (lowerItem.contains('potion') || lowerItem.contains('flask')) return '🧪';
-    if (lowerItem.contains('herb')) return '🌿';
-    if (lowerItem.contains('scroll') || lowerItem.contains('book')) return '📜';
-    if (lowerItem.contains('map')) return '🗺️';
+    if (lowerItem.contains('armor') || lowerItem.contains('plate') || lowerItem.contains('chainmail')) return '🛡️';
+    if (lowerItem.contains('helmet') || lowerItem.contains('hat')) return '🪖';
+    if (lowerItem.contains('potion') || lowerItem.contains('flask') || lowerItem.contains('vial')) return '🧪';
+    if (lowerItem.contains('herb') || lowerItem.contains('flower') || lowerItem.contains('leaf') || lowerItem.contains('moss')) return '🌿';
+    if (lowerItem.contains('scroll') || lowerItem.contains('book') || lowerItem.contains('journal') || lowerItem.contains('ledger') || lowerItem.contains('tome')) return '📜';
+    if (lowerItem.contains('map') || lowerItem.contains('chart')) return '🗺️';
     if (lowerItem.contains('key') || lowerItem.contains('lockpick')) return '🔑';
-    if (lowerItem.contains('torch') || lowerItem.contains('lantern')) return '🔦';
-    if (lowerItem.contains('bag') || lowerItem.contains('pouch') || lowerItem.contains('satchel')) return '💰';
-    if (lowerItem.contains('bread') || lowerItem.contains('rations')) return '🍞';
-    if (lowerItem.contains('gold') || lowerItem.contains('coin')) return '🪙';
-    if (lowerItem.contains('gem') || lowerItem.contains('ring')) return '💎';
+    if (lowerItem.contains('torch') || lowerItem.contains('lantern') || lowerItem.contains('candle')) return '🕯️';
+    if (lowerItem.contains('bag') || lowerItem.contains('pouch') || lowerItem.contains('satchel') || lowerItem.contains('backpack')) return '🎒';
+    if (lowerItem.contains('bread') || lowerItem.contains('rations') || lowerItem.contains('meat') || lowerItem.contains('food')) return '🍞';
+    if (lowerItem.contains('gold') || lowerItem.contains('coin') || lowerItem.contains('silver')) return '🪙';
+    if (lowerItem.contains('gem') || lowerItem.contains('ring') || lowerItem.contains('crystal') || lowerItem.contains('amulet')) return '💎';
     if (lowerItem.contains('skull') || lowerItem.contains('bone')) return '💀';
+    if (lowerItem.contains('bandage') || lowerItem.contains('dressing') || lowerItem.contains('suture')) return '🩹';
+    if (lowerItem.contains('instrument') || lowerItem.contains('lute') || lowerItem.contains('flute') || lowerItem.contains('harp')) return '🪕';
+    if (lowerItem.contains('holy') || lowerItem.contains('ritual') || lowerItem.contains('censer')) return '✨';
+    if (lowerItem.contains('trap')) return '🪤';
+    if (lowerItem.contains('sickle')) return '🌙';
 
     return null;
   }
