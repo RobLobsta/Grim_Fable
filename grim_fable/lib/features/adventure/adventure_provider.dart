@@ -7,6 +7,8 @@ import '../../core/services/ai_provider.dart';
 import '../../core/services/ai_service.dart';
 import '../../core/services/settings_service.dart';
 import '../../core/utils/item_parser.dart';
+import '../../core/utils/tag_processor.dart';
+import '../../core/utils/extensions.dart';
 
 final adventureRepositoryProvider = Provider((ref) => AdventureRepository());
 
@@ -422,39 +424,12 @@ Return ONLY 'YES' or 'NO'.
     final activeCharacter = _ref.read(activeCharacterProvider);
     if (activeCharacter == null) return response;
 
-    final gainedItems = ItemParser.parseGainedItems(response);
-    final removedItems = ItemParser.parseRemovedItems(response);
-    int goldDelta = GoldParser.parseGoldDelta(response);
-
-    // Check for ambiguous gold if no specific delta was found
-    if (goldDelta == 0 && GoldParser.isAmbiguous(response)) {
-      // Trigger silent background call
-      goldDelta = await _aiService.clarifyGoldAmount(response);
-    }
-
-    if (gainedItems.isEmpty && removedItems.isEmpty && goldDelta == 0) return response;
-
-    List<String> newInventory = List<String>.from(activeCharacter.inventory);
-
-    for (final item in gainedItems) {
-      if (!newInventory.any((i) => i.toLowerCase() == item.toLowerCase())) {
-        newInventory.add(item);
-      }
-    }
-
-    for (final item in removedItems) {
-      newInventory.removeWhere((i) => i.toLowerCase() == item.toLowerCase());
-    }
-
-    final updatedCharacter = activeCharacter.copyWith(
-      inventory: newInventory,
-      gold: activeCharacter.gold + goldDelta,
+    return TagProcessor.processInventoryTags(
+      response: response,
+      character: activeCharacter,
+      characterNotifier: _characterNotifier,
+      aiService: _aiService,
     );
-
-    await _characterNotifier.updateCharacter(updatedCharacter);
-
-    // Strip tags from response
-    return ItemParser.cleanText(response);
   }
 
   Future<String> _generateFirstStory({String? customPrompt}) async {
@@ -571,11 +546,4 @@ class _ParsedResponse {
   final List<String>? choices;
 
   _ParsedResponse(this.text, this.choices);
-}
-
-extension ListTakeLast<T> on List<T> {
-  List<T> takeLast(int n) {
-    if (length <= n) return this;
-    return sublist(length - n);
-  }
 }
