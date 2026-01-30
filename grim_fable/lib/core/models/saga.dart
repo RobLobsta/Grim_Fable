@@ -3,6 +3,7 @@ class Saga {
   final String title;
   final String series;
   final String description;
+  final String? coverArtUrl;
   final List<SagaChapter> chapters;
   final Map<String, dynamic> metadata;
 
@@ -11,6 +12,7 @@ class Saga {
     required this.title,
     required this.series,
     required this.description,
+    this.coverArtUrl,
     required this.chapters,
     this.metadata = const {},
   });
@@ -21,6 +23,7 @@ class Saga {
       title: json['title'] as String,
       series: json['series'] as String,
       description: json['description'] as String,
+      coverArtUrl: json['coverArtUrl'] as String?,
       chapters: (json['chapters'] as List<dynamic>)
           .map((e) => SagaChapter.fromJson(e as Map<String, dynamic>))
           .toList(),
