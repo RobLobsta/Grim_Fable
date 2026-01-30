@@ -13,7 +13,7 @@ class SagaSelectionScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('THE CHRONICLES'),
+        title: const Text('THE LIBRARY'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),

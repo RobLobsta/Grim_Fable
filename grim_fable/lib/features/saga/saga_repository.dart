@@ -17,9 +17,8 @@ class SagaRepository {
   Box<SagaProgress> get _progressBox => Hive.box<SagaProgress>(_progressBoxName);
 
   Future<List<Saga>> loadSagas() async {
-    final manifestContent = await rootBundle.loadString('AssetManifest.json');
-    final Map<String, dynamic> manifestMap = json.decode(manifestContent);
-    final sagaPaths = manifestMap.keys
+    final AssetManifest manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+    final sagaPaths = manifest.listAssets()
         .where((String key) => key.startsWith('assets/sagas/') && key.endsWith('.json'))
         .toList();
 

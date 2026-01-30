@@ -7,12 +7,15 @@ import 'dart:async' as _i4;
 
 import 'package:grim_fable/core/models/adventure.dart' as _i7;
 import 'package:grim_fable/core/models/character.dart' as _i5;
+import 'package:grim_fable/core/models/saga.dart' as _i9;
+import 'package:grim_fable/core/models/saga_progress.dart' as _i10;
 import 'package:grim_fable/core/services/ai_service.dart' as _i2;
-import 'package:grim_fable/core/services/settings_service.dart' as _i9;
+import 'package:grim_fable/core/services/settings_service.dart' as _i12;
 import 'package:grim_fable/features/adventure/adventure_repository.dart' as _i6;
 import 'package:grim_fable/features/character/character_repository.dart' as _i3;
+import 'package:grim_fable/features/saga/saga_repository.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i8;
+import 'package:mockito/src/dummies.dart' as _i11;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -166,6 +169,62 @@ class MockAdventureRepository extends _i1.Mock
       ) as _i4.Future<void>);
 }
 
+/// A class which mocks [SagaRepository].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockSagaRepository extends _i1.Mock implements _i8.SagaRepository {
+  MockSagaRepository() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i4.Future<void> init() => (super.noSuchMethod(
+        Invocation.method(
+          #init,
+          [],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<List<_i9.Saga>> loadSagas() => (super.noSuchMethod(
+        Invocation.method(
+          #loadSagas,
+          [],
+        ),
+        returnValue: _i4.Future<List<_i9.Saga>>.value(<_i9.Saga>[]),
+      ) as _i4.Future<List<_i9.Saga>>);
+
+  @override
+  _i10.SagaProgress? getProgress(String? sagaId) =>
+      (super.noSuchMethod(Invocation.method(
+        #getProgress,
+        [sagaId],
+      )) as _i10.SagaProgress?);
+
+  @override
+  _i4.Future<void> saveProgress(_i10.SagaProgress? progress) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #saveProgress,
+          [progress],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<void> deleteProgress(String? sagaId) => (super.noSuchMethod(
+        Invocation.method(
+          #deleteProgress,
+          [sagaId],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+}
+
 /// A class which mocks [AIService].
 ///
 /// See the documentation for Mockito's code generation for more information.
@@ -197,7 +256,7 @@ class MockAIService extends _i1.Mock implements _i2.AIService {
             #frequencyPenalty: frequencyPenalty,
           },
         ),
-        returnValue: _i4.Future<String>.value(_i8.dummyValue<String>(
+        returnValue: _i4.Future<String>.value(_i11.dummyValue<String>(
           this,
           Invocation.method(
             #generateResponse,
@@ -255,7 +314,7 @@ class MockAIService extends _i1.Mock implements _i2.AIService {
           ],
           {#description: description},
         ),
-        returnValue: _i4.Future<String>.value(_i8.dummyValue<String>(
+        returnValue: _i4.Future<String>.value(_i11.dummyValue<String>(
           this,
           Invocation.method(
             #generateBackstory,
@@ -281,7 +340,7 @@ class MockAIService extends _i1.Mock implements _i2.AIService {
             adventureSummary,
           ],
         ),
-        returnValue: _i4.Future<String>.value(_i8.dummyValue<String>(
+        returnValue: _i4.Future<String>.value(_i11.dummyValue<String>(
           this,
           Invocation.method(
             #generateBackstoryUpdate,
@@ -308,7 +367,7 @@ class MockAIService extends _i1.Mock implements _i2.AIService {
             sentences,
           ],
         ),
-        returnValue: _i4.Future<String>.value(_i8.dummyValue<String>(
+        returnValue: _i4.Future<String>.value(_i11.dummyValue<String>(
           this,
           Invocation.method(
             #generateBackstoryAppend,
@@ -334,7 +393,7 @@ class MockAIService extends _i1.Mock implements _i2.AIService {
             adventureSummary,
           ],
         ),
-        returnValue: _i4.Future<String>.value(_i8.dummyValue<String>(
+        returnValue: _i4.Future<String>.value(_i11.dummyValue<String>(
           this,
           Invocation.method(
             #generateOccupationEvolution,
@@ -405,7 +464,7 @@ class MockAIService extends _i1.Mock implements _i2.AIService {
           ],
         ),
         returnValue: _i4.Future<({String mainGoal, String title})>.value((
-          mainGoal: _i8.dummyValue<String>(
+          mainGoal: _i11.dummyValue<String>(
             this,
             Invocation.method(
               #generateAdventureTitleAndGoal,
@@ -416,7 +475,7 @@ class MockAIService extends _i1.Mock implements _i2.AIService {
               ],
             ),
           ),
-          title: _i8.dummyValue<String>(
+          title: _i11.dummyValue<String>(
             this,
             Invocation.method(
               #generateAdventureTitleAndGoal,
@@ -434,7 +493,7 @@ class MockAIService extends _i1.Mock implements _i2.AIService {
 /// A class which mocks [SettingsService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockSettingsService extends _i1.Mock implements _i9.SettingsService {
+class MockSettingsService extends _i1.Mock implements _i12.SettingsService {
   MockSettingsService() {
     _i1.throwOnMissingStub(this);
   }
@@ -455,7 +514,7 @@ class MockSettingsService extends _i1.Mock implements _i9.SettingsService {
           #getHfApiKey,
           [],
         ),
-        returnValue: _i8.dummyValue<String>(
+        returnValue: _i11.dummyValue<String>(
           this,
           Invocation.method(
             #getHfApiKey,
@@ -556,7 +615,7 @@ class MockSettingsService extends _i1.Mock implements _i9.SettingsService {
           #getUiPreset,
           [],
         ),
-        returnValue: _i8.dummyValue<String>(
+        returnValue: _i11.dummyValue<String>(
           this,
           Invocation.method(
             #getUiPreset,
