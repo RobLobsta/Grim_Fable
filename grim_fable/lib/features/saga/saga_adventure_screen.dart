@@ -92,6 +92,14 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    // Subtle corruption effect: parchment turns slightly redder as corruption increases
+    final corruption = progress.mechanicsState['corruption'] ?? 0.0;
+    final parchmentColor = Color.lerp(
+      const Color(0xFFE5D3B3),
+      const Color(0xFF8B0000).withValues(alpha: 0.3),
+      corruption,
+    ) ?? const Color(0xFFE5D3B3);
+
     return Scaffold(
       backgroundColor: const Color(0xFF1A1510),
       appBar: AppBar(
@@ -113,7 +121,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
               child: ClipPath(
                 clipper: TatteredEdgeClipper(),
                 child: Container(
-                  color: const Color(0xFFE5D3B3),
+                  color: parchmentColor,
                   child: ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.all(24.0),

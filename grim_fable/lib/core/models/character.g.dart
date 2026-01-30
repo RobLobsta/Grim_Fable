@@ -29,13 +29,14 @@ class CharacterAdapter extends TypeAdapter<Character> {
       gold: fields[8] == null ? 0 : fields[8] as int,
       itemDescriptions:
           fields[9] == null ? {} : (fields[9] as Map).cast<String, String>(),
+      isSagaCharacter: fields[10] == null ? false : fields[10] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, Character obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -55,7 +56,9 @@ class CharacterAdapter extends TypeAdapter<Character> {
       ..writeByte(8)
       ..write(obj.gold)
       ..writeByte(9)
-      ..write(obj.itemDescriptions);
+      ..write(obj.itemDescriptions)
+      ..writeByte(10)
+      ..write(obj.isSagaCharacter);
   }
 
   @override

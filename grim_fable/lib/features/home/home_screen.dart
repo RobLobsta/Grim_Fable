@@ -126,8 +126,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildSelectionView(BuildContext context, dynamic activeCharacter) {
     final allCharacters = ref.watch(charactersProvider);
-    final sortedCharacters = [...allCharacters];
+    final sortedCharacters = allCharacters.where((c) => !c.isSagaCharacter).toList();
     sortedCharacters.sort((a, b) => b.lastPlayedAt.compareTo(a.lastPlayedAt));
+
+    // If current selection is a Saga character, switch to first available adventure character
+    if (activeCharacter != null && activeCharacter.isSagaCharacter && sortedCharacters.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(selectedCharacterIdProvider.notifier).state = sortedCharacters.first.id;
+      });
+    }
 
     return Scaffold(
       body: _buildBackgroundContainer(

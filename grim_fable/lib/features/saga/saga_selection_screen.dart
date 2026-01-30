@@ -38,116 +38,114 @@ class SagaSelectionScreen extends ConsumerWidget {
 
   Widget _buildSagaCard(BuildContext context, WidgetRef ref, Saga saga) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 24),
+      margin: const EdgeInsets.only(bottom: 32),
       clipBehavior: Clip.antiAlias,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
-        onTap: () async {
-          try {
-            ref.read(selectedSagaIdProvider.notifier).state = saga.id;
-            await ref.read(activeSagaAdventureProvider.notifier).startSaga(saga);
-            if (context.mounted) {
-              context.push('/saga-adventure');
-            }
-          } catch (e) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(e.toString()), backgroundColor: Colors.red.shade900),
-              );
-            }
-          }
+        onTap: () {
+          ref.read(selectedSagaIdProvider.notifier).state = saga.id;
+          context.push('/saga-chapters');
         },
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 180, maxHeight: 220),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Cover Art
-              SizedBox(
-                width: 140,
-                child: _buildCoverArt(context, saga),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Hero Image
+            AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _buildCoverArt(context, saga),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.8),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 16,
+                    left: 16,
+                    right: 16,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          saga.series.toUpperCase(),
+                          style: GoogleFonts.crimsonPro(
+                            fontSize: 12,
+                            letterSpacing: 2,
+                            color: Theme.of(context).colorScheme.tertiary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        AutoSizeText(
+                          saga.title.toUpperCase(),
+                          style: GoogleFonts.grenze(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            height: 1.1,
+                          ),
+                          maxLines: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              // Saga Details
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+            // Saga Details
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    saga.description,
+                    style: GoogleFonts.crimsonPro(
+                      fontSize: 16,
+                      color: Colors.white70,
+                      height: 1.4,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        saga.series.toUpperCase(),
+                        '${saga.chapters.length} CHAPTERS',
                         style: GoogleFonts.crimsonPro(
-                          fontSize: 10,
-                          letterSpacing: 2,
-                          color: Theme.of(context).colorScheme.tertiary,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                          color: Colors.white54,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      AutoSizeText(
-                        saga.title.toUpperCase(),
+                      Text(
+                        'ENTER THE SAGA',
                         style: GoogleFonts.grenze(
-                          fontSize: 24,
+                          color: Colors.amber,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          height: 1.1,
+                          letterSpacing: 1,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Expanded(
-                        child: Text(
-                          saga.description,
-                          style: GoogleFonts.crimsonPro(
-                            fontSize: 14,
-                            color: Colors.white70,
-                          ),
-                          maxLines: 4,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: AutoSizeText(
-                              '${saga.chapters.length} CHAPTERS',
-                              style: GoogleFonts.crimsonPro(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1,
-                                color: Colors.white54,
-                              ),
-                              maxLines: 1,
-                              minFontSize: 8,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: AutoSizeText(
-                              'RELIVE THE STORY',
-                              style: GoogleFonts.grenze(
-                                color: Colors.amber,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1,
-                              ),
-                              maxLines: 1,
-                              minFontSize: 10,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.end,
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
