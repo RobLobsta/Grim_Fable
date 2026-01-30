@@ -6,7 +6,6 @@ import '../character/character_provider.dart';
 import '../../core/services/ai_provider.dart';
 import '../../core/services/ai_service.dart';
 import '../../core/services/settings_service.dart';
-import '../../core/utils/item_parser.dart';
 import '../../core/utils/tag_processor.dart';
 import '../../core/utils/extensions.dart';
 
@@ -28,10 +27,10 @@ final hasActiveAdventureProvider = Provider.autoDispose<bool>((ref) {
 
   // Fallback to checking the repository for the active character
   final repository = ref.watch(adventureRepositoryProvider);
-  final characterId = ref.watch(activeCharacterProvider.select((c) => c?.id));
-  if (characterId == null) return false;
+  final charId = ref.watch(activeCharacterProvider.select((c) => c?.id));
+  if (charId == null) return false;
 
-  final latest = repository.getLatestAdventure(characterId);
+  final latest = repository.getLatestAdventure(charId);
   return latest != null && latest.isActive;
 });
 
@@ -39,7 +38,7 @@ final activeAdventureProvider = StateNotifierProvider<AdventureNotifier, Adventu
   final repository = ref.watch(adventureRepositoryProvider);
   final aiService = ref.watch(aiServiceProvider);
   // Watch only the character ID to prevent provider recreation when character's lastPlayedAt updates
-  final characterId = ref.watch(activeCharacterProvider.select((c) => c?.id));
+  ref.watch(activeCharacterProvider.select((c) => c?.id));
   final activeCharacter = ref.read(activeCharacterProvider);
   final characterNotifier = ref.read(charactersProvider.notifier);
 
@@ -62,20 +61,21 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
   ) : super(null);
 
   Future<void> startNewAdventure({String? customPrompt}) async {
-    if (_activeCharacter == null) return;
+    final activeChar = _activeCharacter;
+    if (activeChar == null) return;
 
     // Generate first story segment
     final story = await _generateFirstStory(customPrompt: customPrompt);
 
     // Generate thematic title and secret main goal separately
     final titleAndGoal = await _aiService.generateAdventureTitleAndGoal(
-      _activeCharacter!.name,
-      _activeCharacter!.backstory,
+      activeChar.name,
+      activeChar.backstory,
       story,
     );
 
     final adventure = Adventure.create(
-      characterId: _activeCharacter!.id,
+      characterId: activeChar.id,
       title: titleAndGoal.title,
       mainGoal: titleAndGoal.mainGoal,
     );
@@ -109,17 +109,15 @@ class AdventureNotifier extends StateNotifier<Adventure?> {
     }
 
     // Update last played time on character
-    if (_activeCharacter != null) {
-      await _characterNotifier.updateCharacter(
-        _activeCharacter!.copyWith(lastPlayedAt: DateTime.now()),
-      );
-    }
+    await _characterNotifier.updateCharacter(
+      activeChar.copyWith(lastPlayedAt: DateTime.now()),
+    );
   }
 
   Future<void> continueLatestAdventure() async {
     if (_activeCharacter == null) return;
 
-    final latest = _repository.getLatestAdventure(_activeCharacter!.id);
+    final latest = _repository.getLatestAdventure(_activeCharacter.id);
     if (latest != null) {
       state = latest;
     } else {
@@ -225,9 +223,10 @@ $nudge
     }
 
     // Update last played time on character
-    if (_activeCharacter != null) {
+    final activeChar = _ref.read(activeCharacterProvider);
+    if (activeChar != null) {
       await _characterNotifier.updateCharacter(
-        _activeCharacter!.copyWith(lastPlayedAt: DateTime.now()),
+        activeChar.copyWith(lastPlayedAt: DateTime.now()),
       );
     }
   }
@@ -334,15 +333,17 @@ $nudge
     }
 
     // Update last played time on character
-    if (_activeCharacter != null) {
+    final activeChar = _ref.read(activeCharacterProvider);
+    if (activeChar != null) {
       await _characterNotifier.updateCharacter(
-        _activeCharacter!.copyWith(lastPlayedAt: DateTime.now()),
+        activeChar.copyWith(lastPlayedAt: DateTime.now()),
       );
     }
   }
 
   Future<void> completeAdventure() async {
-    if (state == null || _activeCharacter == null) return;
+    final activeChar = _ref.read(activeCharacterProvider);
+    if (state == null || activeChar == null) return;
 
     final summary = state!.storyHistory.map((s) => s.aiResponse).join(" ");
 
@@ -351,21 +352,21 @@ $nudge
     int sentences = (aiResponseCount / 10).ceil().clamp(2, 6);
 
     final backstoryAppend = await _aiService.generateBackstoryAppend(
-      _activeCharacter!.backstory,
+      activeChar.backstory,
       summary,
       sentences,
     );
 
-    final newBackstory = "${_activeCharacter!.backstory}\n\n$backstoryAppend";
+    final newBackstory = "${activeChar.backstory}\n\n$backstoryAppend";
 
     // Evolve occupation
     final newOccupation = await _aiService.generateOccupationEvolution(
-      _activeCharacter!.occupation,
+      activeChar.occupation,
       summary,
     );
 
     await _characterNotifier.updateCharacter(
-      _activeCharacter!.copyWith(
+      activeChar.copyWith(
         backstory: newBackstory,
         occupation: newOccupation,
         lastPlayedAt: DateTime.now(),
@@ -484,7 +485,7 @@ Return ONLY the starting paragraph followed by any tags.
     final temperature = _ref.read(temperatureProvider);
     final topP = _ref.read(topPProvider);
     final frequencyPenalty = _ref.read(frequencyPenaltyProvider);
-    final prompt = "stop the story and recommend exactly 3 VERY short (max 8 words each), plausible choices for ${_activeCharacter!.name}. Don't reference these choices later.";
+    final prompt = "stop the story and recommend exactly 3 VERY short (max 8 words each), plausible choices for ${_activeCharacter?.name ?? 'the character'}. Don't reference these choices later.";
 
     // Include the immediate story response in the history
     final updatedHistory = [

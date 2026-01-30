@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'adventure_provider.dart';
-import '../../core/models/adventure.dart';
 
 class AdventureHistoryScreen extends ConsumerWidget {
   const AdventureHistoryScreen({super.key});
@@ -23,7 +22,7 @@ class AdventureHistoryScreen extends ConsumerWidget {
             end: Alignment.bottomCenter,
             colors: [
               const Color(0xFF0D1117),
-              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             ],
           ),
         ),

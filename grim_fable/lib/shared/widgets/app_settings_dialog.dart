@@ -17,7 +17,6 @@ class AppSettingsDialog extends ConsumerWidget {
     final uiPreset = ref.watch(uiPresetProvider);
     final recommendedResponses = ref.watch(recommendedResponsesProvider);
     final freeFormInput = ref.watch(freeFormInputProvider);
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     return AlertDialog(
       title: const Text('APP SETTINGS'),
@@ -32,7 +31,7 @@ class AppSettingsDialog extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
-              value: uiPreset,
+              initialValue: uiPreset,
               items: ['Default', 'Abyssal', 'Blood', 'Envy', 'Wrath', 'Void'].map((preset) {
                 return DropdownMenuItem(
                   value: preset,

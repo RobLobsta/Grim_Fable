@@ -9,7 +9,6 @@ import '../adventure/adventure_provider.dart';
 import '../character/character_provider.dart';
 import '../../core/services/ai_provider.dart';
 import '../../core/services/ai_service.dart';
-import '../../core/services/settings_service.dart';
 import '../../core/utils/tag_processor.dart';
 import '../../core/utils/extensions.dart';
 
@@ -65,7 +64,7 @@ class SagaNotifier extends StateNotifier<Adventure?> {
 
   Future<void> startSaga(Saga saga) async {
     try {
-      if (saga.id == 'legacy_of_blood' && (_activeCharacter == null || _activeCharacter!.name != "Norrec Vizharan")) {
+      if (saga.id == 'legacy_of_blood' && (_activeCharacter == null || _activeCharacter.name != "Norrec Vizharan")) {
         await _ensureNorrec();
         // Wait for a microtask to allow the provider to be recreated with the new character
         await Future.microtask(() {});
@@ -79,7 +78,8 @@ class SagaNotifier extends StateNotifier<Adventure?> {
 
       final existingProgress = _repository.getProgress(saga.id);
       if (existingProgress != null) {
-        final characterAdventures = _advRepository.getAdventuresForCharacter(_activeCharacter!.id);
+        final activeChar = _activeCharacter!;
+        final characterAdventures = _advRepository.getAdventuresForCharacter(activeChar.id);
         final adventure = characterAdventures.where((a) => a.id == existingProgress.adventureId).firstOrNull;
 
         if (adventure != null) {
@@ -94,9 +94,10 @@ class SagaNotifier extends StateNotifier<Adventure?> {
 
       // Start New Saga Adventure
     final firstChapter = saga.chapters.first;
+    final activeChar = _activeCharacter!;
 
     final adventure = Adventure.create(
-      characterId: _activeCharacter!.id,
+      characterId: activeChar.id,
       title: "${saga.title}: ${firstChapter.title}",
       mainGoal: firstChapter.hiddenGoal,
     );
@@ -126,7 +127,7 @@ class SagaNotifier extends StateNotifier<Adventure?> {
 
       // Update character last played
       await _characterNotifier.updateCharacter(
-        _activeCharacter!.copyWith(lastPlayedAt: DateTime.now()),
+        _activeCharacter.copyWith(lastPlayedAt: DateTime.now()),
       );
     } catch (e) {
       rethrow;
@@ -161,7 +162,8 @@ class SagaNotifier extends StateNotifier<Adventure?> {
     if (state == null || saga == null || progress == null || _activeCharacter == null) return;
 
     final currentChapter = saga.chapters[progress.currentChapterIndex];
-    final inventoryList = _activeCharacter!.inventory.isEmpty ? "None" : _activeCharacter!.inventory.join(", ");
+    final activeChar = _activeCharacter!;
+    final inventoryList = activeChar.inventory.isEmpty ? "None" : activeChar.inventory.join(", ");
 
     // Saga-specific system message
     String mechanicsContext = "";
@@ -180,7 +182,7 @@ Plot Anchors to weave in: ${currentChapter.plotAnchors.join(" | ")}
 $mechanicsContext
 
 Inventory: $inventoryList
-Gold: ${_activeCharacter!.gold}
+Gold: ${_activeCharacter.gold}
 
 Your task is to guide the story through the current chapter's plot anchors.
 Keep your responses short, exactly 1 paragraph (3-5 sentences).
@@ -193,7 +195,10 @@ If the chapter's hidden goal (${currentChapter.hiddenGoal}) is fully met, add th
 Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
 """;
 
-    final history = state!.storyHistory.takeLast(5).expand((s) => [
+    final activeAdventure = state;
+    if (activeAdventure == null) return;
+
+    final history = activeAdventure.storyHistory.takeLast(5).expand((s) => [
       {'role': 'user', 'content': s.playerInput},
       {'role': 'assistant', 'content': s.aiResponse},
     ]).toList();
@@ -227,7 +232,7 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
     }
 
     await _characterNotifier.updateCharacter(
-      _activeCharacter!.copyWith(lastPlayedAt: DateTime.now()),
+      _activeCharacter.copyWith(lastPlayedAt: DateTime.now()),
     );
   }
 
@@ -324,10 +329,10 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
     } else {
       // Auto-increment corruption slightly if it's Legacy of Blood
       final saga = _ref.read(activeSagaProvider);
-      if (saga?.id == 'legacy_of_blood') {
+      if (saga != null && saga.id == 'legacy_of_blood') {
          final progress = _ref.read(sagaProgressProvider);
          if (progress != null) {
-            final chapter = saga!.chapters[progress.currentChapterIndex];
+            final chapter = saga.chapters[progress.currentChapterIndex];
             final step = (chapter.mechanics['corruption_step'] ?? 0.02) as double;
             double current = progress.mechanicsState['corruption'] ?? progress.mechanicsState['initial_corruption'] ?? 0.1;
             double next = (current + step).clamp(0.0, 1.0);

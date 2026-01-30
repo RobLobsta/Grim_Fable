@@ -186,7 +186,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
     final recommendedEnabled = ref.watch(recommendedResponsesProvider);
 
     // Auto scroll when adventure updates
-    ref.listen(activeAdventureProvider, (_, __) => _scrollToBottom());
+    ref.listen(activeAdventureProvider, (prev, next) => _scrollToBottom());
 
     if (adventure == null) {
       return const Scaffold(
@@ -285,12 +285,12 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                               child: ElevatedButton(
                                 onPressed: (_isLoading || _isTyping) ? null : () => _submitAction(retryAction: choice),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                  backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                                   foregroundColor: Theme.of(context).colorScheme.secondary,
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    side: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.3)),
+                                    side: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
                                   ),
                                   elevation: 0,
                                 ),
@@ -319,9 +319,9 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                     margin: const EdgeInsets.symmetric(vertical: 16),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                     ),
                     child: Column(
                       children: [
@@ -388,13 +388,13 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                   color: Theme.of(context).colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       blurRadius: 20,
                       offset: const Offset(0, -5),
                     ),
                   ],
                   border: Border(
-                    top: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.3), width: 1),
+                    top: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3), width: 1),
                   ),
                 ),
                 child: SafeArea(
@@ -422,7 +422,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                                     ),
                                   ),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                                    backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                                     foregroundColor: Theme.of(context).colorScheme.secondary,
                                     padding: const EdgeInsets.symmetric(vertical: 12),
                                     shape: RoundedRectangleBorder(
@@ -465,7 +465,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                                 decoration: InputDecoration(
                                     hintText: _isTyping ? "OBSERVING..." : "WHAT IS THY WILL?",
                                   hintStyle: TextStyle(
-                                    color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
+                                    color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3),
                                     letterSpacing: 2,
                                     fontSize: 12,
                                   ),
@@ -474,7 +474,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                                     borderSide: BorderSide.none,
                                   ),
                                   filled: true,
-                                  fillColor: Colors.black.withOpacity(0.3),
+                                  fillColor: Colors.black.withValues(alpha: 0.3),
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                 ),
                                 style: const TextStyle(fontFamily: 'Serif', fontSize: 16),
@@ -510,7 +510,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
               width: double.infinity,
               decoration: BoxDecoration(
                 color: const Color(0xFF1A1A1A),
-                border: Border(top: BorderSide(color: Colors.grey.withOpacity(0.3), width: 2)),
+                border: Border(top: BorderSide(color: Colors.grey.withValues(alpha: 0.3), width: 2)),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -531,7 +531,7 @@ class _AdventureScreenState extends ConsumerState<AdventureScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       foregroundColor: Theme.of(context).colorScheme.tertiary,
-                      side: BorderSide(color: Theme.of(context).colorScheme.tertiary.withOpacity(0.5)),
+                      side: BorderSide(color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.5)),
                     ),
                     child: const Text("RETURN TO HOME", style: TextStyle(letterSpacing: 2, fontSize: 12)),
                   ),

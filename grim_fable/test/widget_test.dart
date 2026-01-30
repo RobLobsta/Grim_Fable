@@ -1,10 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grim_fable/main.dart';
-import 'package:grim_fable/features/character/character_repository.dart';
 import 'package:grim_fable/features/character/character_provider.dart';
-import 'package:grim_fable/features/adventure/adventure_repository.dart';
 import 'package:grim_fable/features/adventure/adventure_provider.dart';
 import 'package:grim_fable/core/services/settings_service.dart';
 import 'package:mockito/mockito.dart';
