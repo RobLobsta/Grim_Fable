@@ -52,6 +52,7 @@ class SagaNotifier extends StateNotifier<Adventure?> {
   final AIService _aiService;
   final Character? _activeCharacter;
   final CharacterNotifier _characterNotifier;
+  bool _isDisposed = false;
 
   SagaNotifier(
     this._ref,
@@ -62,17 +63,32 @@ class SagaNotifier extends StateNotifier<Adventure?> {
     this._characterNotifier,
   ) : super(null);
 
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
+
   Future<void> startSaga(Saga saga) async {
     try {
-      if (saga.id == 'legacy_of_blood' && (_activeCharacter == null || _activeCharacter.name != "Norrec Vizharan")) {
-        await _ensureNorrec();
-        // Wait for a microtask to allow the provider to be recreated with the new character
-        await Future.microtask(() {});
-        await _ref.read(activeSagaAdventureProvider.notifier).startSaga(saga);
-        return;
+      Character? effectiveCharacter = _activeCharacter;
+
+      if (saga.requiredCharacter != null) {
+        final reqChar = saga.requiredCharacter!;
+        final name = reqChar['name'] as String;
+
+        if (effectiveCharacter == null || effectiveCharacter.name != name) {
+          await _ensureCharacter(reqChar);
+          // Wait for a microtask to allow the provider to be recreated with the new character
+          await Future.microtask(() {});
+          if (!_isDisposed) {
+            await _ref.read(activeSagaAdventureProvider.notifier).startSaga(saga);
+          }
+          return;
+        }
       }
 
-      if (_activeCharacter == null) {
+      if (effectiveCharacter == null) {
         throw Exception("Please create or select a character before beginning a Saga.");
       }
 
@@ -134,26 +150,26 @@ class SagaNotifier extends StateNotifier<Adventure?> {
     }
   }
 
-  Future<void> _ensureNorrec() async {
+  Future<Character> _ensureCharacter(Map<String, dynamic> data) async {
+    final name = data['name'] as String;
     final characters = _ref.read(charactersProvider);
-    Character? norrec = characters.where((c) => c.name == "Norrec Vizharan").firstOrNull;
+    Character? character = characters.where((c) => c.name == name).firstOrNull;
 
-    if (norrec == null) {
-      norrec = Character.create(
-        name: "Norrec Vizharan",
-        occupation: "Wandering Knight",
-        backstory: "A former soldier of Westmarch, now bound to a cursed suit of blood-red armor.",
-        itemDescriptions: {
-          "Soldier's Blade": "A well-worn but sharp sword from his time in Westmarch."
-        },
+    if (character == null) {
+      character = Character.create(
+        name: name,
+        occupation: data['occupation'] as String? ?? "Adventurer",
+        backstory: data['backstory'] as String? ?? "",
+        itemDescriptions: Map<String, String>.from(data['itemDescriptions'] ?? {}),
         isSagaCharacter: true,
       ).copyWith(
-        inventory: ["Soldier's Blade"],
+        inventory: List<String>.from(data['inventory'] ?? []),
       );
-      await _characterNotifier.addCharacter(norrec);
+      await _characterNotifier.addCharacter(character);
     }
 
-    _ref.read(selectedCharacterIdProvider.notifier).state = norrec.id;
+    _ref.read(selectedCharacterIdProvider.notifier).state = character.id;
+    return character;
   }
 
   Future<void> submitSagaAction(String action) async {
@@ -162,7 +178,7 @@ class SagaNotifier extends StateNotifier<Adventure?> {
     if (state == null || saga == null || progress == null || _activeCharacter == null) return;
 
     final currentChapter = saga.chapters[progress.currentChapterIndex];
-    final activeChar = _activeCharacter!;
+    final activeChar = _activeCharacter;
     final inventoryList = activeChar.inventory.isEmpty ? "None" : activeChar.inventory.join(", ");
 
     // Saga-specific system message
@@ -172,13 +188,22 @@ class SagaNotifier extends StateNotifier<Adventure?> {
       mechanicsContext = "\nArmor's Influence (Corruption): $corruption (0.0 to 1.0). At higher levels, Norrec becomes more aggressive and bloodthirsty. The armor may take control of his actions.";
     }
 
+    final globalLore = saga.loreContext != null ? "\nWorld Lore: ${saga.loreContext}" : "";
+    final chapterLore = currentChapter.loreContext != null ? "\nChapter Lore: ${currentChapter.loreContext}" : "";
+    final knowledge = currentChapter.hiddenKnowledge != null ? "\nHidden Knowledge (Secret): ${currentChapter.hiddenKnowledge}" : "";
+
     final systemMessage = """
 You are a creative storyteller for Grim Fable, currently running a SAGA MODE adventure.
 Saga: ${saga.title}
 Chapter: ${currentChapter.title}
-Protagonist: Norrec Vizharan (Played by the player)
+Protagonist: ${activeChar.name} (Played by the player)
+
+CHAPTER OBJECTIVE (Hidden from player): ${currentChapter.hiddenGoal}
+IMPORTANT: When this objective is met, you MUST append the tag [CHAPTER_COMPLETE] to your response.
+
 Lore Lexicon (Important Nouns): ${currentChapter.importantNouns.join(", ")}
 Plot Anchors to weave in: ${currentChapter.plotAnchors.join(" | ")}
+$globalLore$chapterLore$knowledge
 $mechanicsContext
 
 Inventory: $inventoryList
@@ -186,12 +211,10 @@ Gold: ${_activeCharacter.gold}
 
 Your task is to guide the story through the current chapter's plot anchors.
 Keep your responses short, exactly 1 paragraph (3-5 sentences).
-Maintain a dark fantasy, gritty, and realistic tone consistent with the Diablo universe.
+Maintain a dark fantasy, gritty, and realistic tone consistent with the setting.
 Use third person exclusively.
 
 If a plot anchor is clearly achieved, add the tag [ANCHOR_WITNESSED: Description].
-If the chapter's hidden goal (${currentChapter.hiddenGoal}) is fully met, add the tag [CHAPTER_COMPLETE].
-
 Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
 """;
 
@@ -210,6 +233,8 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
       maxTokens: 300,
     );
 
+    if (_isDisposed) return;
+
     // Process Tags
     String processed = await _processSagaTags(fullResponse);
 
@@ -225,12 +250,15 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
     );
 
     await _advRepository.saveAdventure(updatedAdventure);
+
+    if (_isDisposed) return;
     state = updatedAdventure;
 
     if (fullResponse.contains("[CHAPTER_COMPLETE]")) {
       await _moveToNextChapter();
     }
 
+    if (_isDisposed) return;
     await _characterNotifier.updateCharacter(
       _activeCharacter.copyWith(lastPlayedAt: DateTime.now()),
     );
@@ -259,12 +287,13 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
     );
 
     await _repository.saveProgress(updatedProgress);
+    if (_isDisposed) return;
     _ref.read(sagaProgressProvider.notifier).state = updatedProgress;
 
     // Add a transition segment
     final transitionSegment = StorySegment(
       playerInput: "Transition to ${nextChapter.title}",
-      aiResponse: "--- ${nextChapter.title} ---\n\n${nextChapter.startingPrompt}",
+      aiResponse: "--- CHAPTER COMPLETE ---\n\n${nextChapter.startingPrompt}",
       timestamp: DateTime.now(),
     );
 

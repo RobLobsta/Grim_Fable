@@ -138,6 +138,9 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                             if (index > 0 && !isTransition)
                                _buildPlayerAction(segment.playerInput),
 
+                            if (isTransition)
+                               _buildChapterTransitionHeader(),
+
                             StorySegmentWidget(
                               response: segment.aiResponse,
                               animate: isLast && _animatedTexts[index] == null,
@@ -171,6 +174,44 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
             ),
           ),
           _buildInputArea(adventure.isActive),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChapterTransitionHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Expanded(child: Divider(color: Color(0xFF4A0000), thickness: 1.5)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  "CHAPTER COMPLETE",
+                  style: GoogleFonts.grenze(
+                    color: const Color(0xFF4A0000),
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 4,
+                  ),
+                ),
+              ),
+              const Expanded(child: Divider(color: Color(0xFF4A0000), thickness: 1.5)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "THE TALE CONTINUES...",
+            style: GoogleFonts.crimsonPro(
+              color: const Color(0xFF4A0000).withValues(alpha: 0.7),
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2,
+            ),
+          ),
         ],
       ),
     );
