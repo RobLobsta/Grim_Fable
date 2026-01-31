@@ -26,13 +26,6 @@ class SagaChaptersScreen extends ConsumerWidget {
             expandedHeight: 250,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                saga.title.toUpperCase(),
-                style: GoogleFonts.grenze(
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
-              ),
               background: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -117,27 +110,15 @@ class SagaChaptersScreen extends ConsumerWidget {
             : null,
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        title: Text(
-          "CHAPTER ${index + 1}",
-          style: GoogleFonts.crimsonPro(
-            fontSize: 12,
-            letterSpacing: 2,
-            color: Colors.amber,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        title: AutoSizeText(
+          chapter.title.toUpperCase(),
+          style: GoogleFonts.grenze(
+            fontSize: 22,
             fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4.0),
-          child: AutoSizeText(
-            chapter.title.toUpperCase(),
-            style: GoogleFonts.grenze(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-            maxLines: 1,
-          ),
+          maxLines: 1,
         ),
         trailing: isCompleted
             ? const Icon(Icons.check_circle, color: Colors.amber)

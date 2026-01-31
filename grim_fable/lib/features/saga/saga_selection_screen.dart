@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'saga_provider.dart';
 import '../../core/models/saga.dart';
@@ -69,35 +68,11 @@ class SagaSelectionScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  Positioned(
+                  const Positioned(
                     bottom: 16,
                     left: 16,
                     right: 16,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          saga.series.toUpperCase(),
-                          style: GoogleFonts.crimsonPro(
-                            fontSize: 12,
-                            letterSpacing: 2,
-                            color: Theme.of(context).colorScheme.tertiary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        AutoSizeText(
-                          saga.title.toUpperCase(),
-                          style: GoogleFonts.grenze(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            height: 1.1,
-                          ),
-                          maxLines: 1,
-                        ),
-                      ],
-                    ),
+                    child: SizedBox.shrink(),
                   ),
                 ],
               ),
