@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'saga_repository.dart';
 import '../../core/models/saga.dart';
@@ -200,11 +201,25 @@ class SagaNotifier extends StateNotifier<Adventure?> {
     final currentChapter = saga.chapters[progress.currentChapterIndex];
     final inventoryList = character.inventory.isEmpty ? "None" : character.inventory.join(", ");
 
+    // Influence / Override Logic
+    String finalAction = action;
+    if (saga.id == 'legacy_of_blood') {
+      final corruption = (progress.mechanicsState['corruption'] ?? progress.mechanicsState['initial_corruption'] ?? 0.1).toDouble();
+      if (Random().nextDouble() < corruption) {
+        finalAction = await _generateArmorWill(action, character, currentChapter);
+      }
+    }
+
     // Saga-specific system message
     String mechanicsContext = "";
     if (saga.id == 'legacy_of_blood') {
       final corruption = progress.mechanicsState['corruption'] ?? progress.mechanicsState['initial_corruption'] ?? 0.1;
-      mechanicsContext = "\nArmor's Influence (Corruption): $corruption (0.0 to 1.0). At higher levels, Norrec becomes more aggressive and bloodthirsty. The armor may take control of his actions.";
+      mechanicsContext = """
+Armor's Influence (Corruption): $corruption (0.0 to 1.0).
+The armor of Bartuc is sentient and malevolent. It craves slaughter and seeks to dominate Norrec's will.
+As corruption increases, Norrec's actions and the suggested choices MUST become darker, more violent, and impulsive.
+NEVER reveal this numerical value (e.g. $corruption) to the player in your narrative.
+""";
     }
 
     final globalLore = saga.loreContext != null ? "\nWorld Lore: ${saga.loreContext}" : "";
@@ -233,6 +248,12 @@ Keep your responses short, exactly 1 paragraph (3-5 sentences).
 Maintain a dark fantasy, gritty, and realistic tone consistent with the setting.
 Use third person exclusively.
 
+IMPORTANT: When Norrec first dons the armor (usually in Chapter 1), you MUST include the tag [ITEM_GAINED: Bartuc's Armor].
+
+At the end of your response, you MUST provide exactly 3 short suggested actions for Norrec, formatted as:
+[CHOICES: Choice 1 | Choice 2 | Choice 3]
+These choices should reflect the armor's growing influence (more violent/impulsive at high corruption).
+
 If a plot anchor is clearly achieved, add the tag [ANCHOR_WITNESSED: Description].
 Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
 """;
@@ -246,7 +267,7 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
     ]).toList();
 
     final fullResponse = await _aiService.generateResponse(
-      action,
+      finalAction,
       systemMessage: systemMessage,
       history: history,
       maxTokens: 300,
@@ -255,11 +276,13 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
     if (_isDisposed) return;
 
     // Process Tags
-    String processed = await _processSagaTags(fullResponse);
+    final parsed = _parseSagaResponse(fullResponse);
+    String processed = await _processSagaTags(parsed.text);
 
     final newSegment = StorySegment(
-      playerInput: action,
+      playerInput: finalAction,
       aiResponse: processed,
+      recommendedChoices: parsed.choices,
       timestamp: DateTime.now(),
     );
 
@@ -281,6 +304,18 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
     await _characterNotifier.updateCharacter(
       character.copyWith(lastPlayedAt: DateTime.now()),
     );
+  }
+
+  Future<String> _generateArmorWill(String originalAction, Character character, dynamic chapter) async {
+    final prompt = "The player wanted to: $originalAction. However, the cursed armor of Bartuc is taking control. Generate a short (max 12 words), impulsive, and bloodthirsty action that Norrec performs instead. Start the response with '[ARMOR'S WILL]: '";
+    final systemMessage = "You are the malevolent spirit of Bartuc's armor. Norrec Vizharan is your puppet. You crave blood, slaughter, and dominance. Chapter Context: ${chapter.title}";
+
+    try {
+      final response = await _aiService.generateResponse(prompt, systemMessage: systemMessage, maxTokens: 50);
+      return response.trim();
+    } catch (e) {
+      return "[ARMOR'S WILL]: Norrec's hand moves against his will, reaching for his blade with a murderous glint in his eyes.";
+    }
   }
 
   Future<void> _moveToNextChapter() async {
@@ -324,6 +359,51 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
 
     await _advRepository.saveAdventure(updatedAdventure);
     state = updatedAdventure;
+  }
+
+  _ParsedSagaResponse _parseSagaResponse(String response) {
+    final choicesRegex = RegExp(r'\[CHOICES:?\s*(.+?)\]', caseSensitive: false);
+    final match = choicesRegex.firstMatch(response);
+
+    if (match != null) {
+      final choicesPart = match.group(1)!;
+      final choices = _cleanChoices(choicesPart);
+      final textWithoutChoices = response.replaceFirst(match.group(0)!, '').trim();
+      return _ParsedSagaResponse(textWithoutChoices, choices);
+    }
+
+    // Fallback for [CHOICES] tag without colon
+    if (response.contains("[CHOICES]")) {
+      final parts = response.split("[CHOICES]");
+      final text = parts[0].trim();
+      final choicesPart = parts.length > 1 ? parts[1].trim() : "";
+      final choices = _cleanChoices(choicesPart);
+      return _ParsedSagaResponse(text, choices);
+    }
+
+    return _ParsedSagaResponse(response, null);
+  }
+
+  List<String> _cleanChoices(String response) {
+    // Remove introductory text like "Here are your choices:"
+    String cleaned = response.replaceFirst(RegExp(r'^.*?:', caseSensitive: false), '');
+
+    // Matches labels like: "Choice 1:", "1.", "1)", "A.", "A)", "- ", "* ", "• "
+    final labelPattern = RegExp(
+      r'^(?:Choice\s*\d+:?\s*|[a-z0-9][\.\)]\s*|[-*•]\s*)',
+      caseSensitive: false,
+    );
+
+    // Matches trailing numbers like: " (1)", " [1]", " 1"
+    final trailingPattern = RegExp(r'\s*[\(\[]?\s*\d+\s*[\)\]]?$');
+
+    return cleaned.split(RegExp(r'[|\n]'))
+        .map((e) => e.trim())
+        .map((e) => e.replaceFirst(labelPattern, ''))
+        .map((e) => e.replaceFirst(trailingPattern, ''))
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty && !RegExp(r'^\d+$').hasMatch(e) && e.length > 3)
+        .toList();
   }
 
   Future<String> _processSagaTags(String response) async {
@@ -399,4 +479,11 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
     // Clean up extra whitespace from removed tags
     return cleanResponse.trim();
   }
+}
+
+class _ParsedSagaResponse {
+  final String text;
+  final List<String>? choices;
+
+  _ParsedSagaResponse(this.text, this.choices);
 }

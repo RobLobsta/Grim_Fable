@@ -53,11 +53,13 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
     });
   }
 
-  Future<void> _submitAction() async {
-    final text = _controller.text.trim();
+  Future<void> _submitAction({String? action}) async {
+    final text = action ?? _controller.text.trim();
     if (text.isEmpty || _isLoading || _isTyping) return;
 
-    _controller.clear();
+    if (action == null) {
+      _controller.clear();
+    }
     setState(() {
       _isLoading = true;
       _isTyping = true;
@@ -93,7 +95,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
     }
 
     // Subtle corruption effect: parchment turns slightly redder as corruption increases
-    final corruption = progress.mechanicsState['corruption'] ?? 0.0;
+    final corruption = (progress.mechanicsState['corruption'] ?? 0.0).toDouble();
     final parchmentColor = Color.lerp(
       const Color(0xFFE5D3B3),
       const Color(0xFF8B0000).withValues(alpha: 0.3),
@@ -162,6 +164,37 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                               ),
                               decoration: const BoxDecoration(color: Colors.transparent),
                             ),
+                            // Recommended choices
+                            if (isLast &&
+                                segment.recommendedChoices != null &&
+                                segment.recommendedChoices!.isNotEmpty &&
+                                adventure.isActive &&
+                                !_isTyping) ...[
+                              const SizedBox(height: 16),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: segment.recommendedChoices!.map((choice) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: ElevatedButton(
+                                    onPressed: (_isLoading || _isTyping) ? null : () => _submitAction(action: choice),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF4A0000).withValues(alpha: 0.1),
+                                      foregroundColor: const Color(0xFF4A0000),
+                                      padding: const EdgeInsets.symmetric(vertical: 16),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        side: BorderSide(color: const Color(0xFF4A0000).withValues(alpha: 0.3)),
+                                      ),
+                                      elevation: 0,
+                                    ),
+                                    child: Text(
+                                      choice.toUpperCase(),
+                                      style: GoogleFonts.grenze(fontSize: 14, letterSpacing: 2, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                )).toList(),
+                              ),
+                            ],
                             const SizedBox(height: 24),
                           ],
                         );
@@ -173,7 +206,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
               ),
             ),
           ),
-          _buildInputArea(adventure.isActive),
+          _buildInputArea(adventure.isActive, corruption, saga.id),
         ],
       ),
     );
@@ -244,7 +277,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
     );
   }
 
-  Widget _buildInputArea(bool isActive) {
+  Widget _buildInputArea(bool isActive, double corruption, String sagaId) {
     if (!isActive) {
       return Container(
         padding: const EdgeInsets.all(24),
@@ -255,6 +288,8 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
         ),
       );
     }
+
+    final isOverridden = sagaId == 'legacy_of_blood' && corruption > 0.8;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -277,8 +312,11 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
             Expanded(
               child: TextField(
                 controller: _controller,
+                enabled: !isOverridden && !_isLoading && !_isTyping,
                 decoration: InputDecoration(
-                  hintText: "What will Norrec do?",
+                  hintText: isOverridden
+                      ? "The armor's whispers drown out your thoughts..."
+                      : "What will Norrec do?",
                   fillColor: Colors.white.withValues(alpha: 0.05),
                 ),
                 style: GoogleFonts.crimsonPro(),
@@ -288,8 +326,8 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
             const SizedBox(width: 8),
             IconButton(
               icon: const Icon(Icons.send_rounded),
-              onPressed: _submitAction,
-              color: Theme.of(context).colorScheme.tertiary,
+              onPressed: isOverridden ? null : _submitAction,
+              color: isOverridden ? Colors.grey : Theme.of(context).colorScheme.tertiary,
             ),
           ],
         ),
@@ -333,19 +371,31 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
               ),
               const SizedBox(height: 8),
               if (saga.id == 'legacy_of_blood') ...[
-                Text(
-                  "ARMOR'S INFLUENCE: ${(progress.mechanicsState['corruption'] ?? 0.1 * 100).toInt()}%",
-                  style: GoogleFonts.grenze(
-                    color: const Color(0xFF4A0000),
-                    fontSize: 18,
-                  ),
-                ),
-                LinearProgressIndicator(
-                  value: progress.mechanicsState['corruption'] ?? 0.1,
-                  backgroundColor: Colors.black12,
-                  color: const Color(0xFF4A0000),
-                ),
-                const SizedBox(height: 16),
+                Builder(builder: (context) {
+                  final corruption = (progress.mechanicsState['corruption'] ?? 0.0).toDouble();
+                  final displayColor = Color.lerp(Colors.orange, const Color(0xFF4A0000), corruption) ?? Colors.orange;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "ARMOR'S INFLUENCE: ${(corruption * 100).toInt()}%",
+                        style: GoogleFonts.grenze(
+                          color: displayColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      LinearProgressIndicator(
+                        value: corruption,
+                        backgroundColor: Colors.black12,
+                        color: displayColor,
+                        minHeight: 8,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                }),
               ],
               Text(
                 "WITNESSED ANCHORS:",
