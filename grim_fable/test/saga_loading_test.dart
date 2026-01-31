@@ -43,8 +43,8 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    // Verify title is changed to THE LIBRARY
-    expect(find.text('THE LIBRARY'), findsOneWidget);
+    // Verify title is changed to MY LIBRARY
+    expect(find.text('MY LIBRARY'), findsOneWidget);
 
     // Verify saga card is displayed
     expect(find.text('A cold adventure.'), findsOneWidget);

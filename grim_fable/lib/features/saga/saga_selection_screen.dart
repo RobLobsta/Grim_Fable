@@ -14,7 +14,7 @@ class SagaSelectionScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('THE LIBRARY'),
+        title: const Text('MY LIBRARY'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -90,7 +90,7 @@ class SagaSelectionScreen extends ConsumerWidget {
                       color: Colors.white70,
                       height: 1.4,
                     ),
-                    maxLines: 3,
+                    maxLines: 6,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 20),

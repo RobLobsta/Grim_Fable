@@ -39,10 +39,11 @@ final activeSagaAdventureProvider = StateNotifierProvider<SagaNotifier, Adventur
   final repository = ref.watch(sagaRepositoryProvider);
   final advRepository = ref.watch(adventureRepositoryProvider);
   final aiService = ref.watch(aiServiceProvider);
-  final activeCharacter = ref.watch(activeCharacterProvider);
+  // Watch only the character ID to prevent provider recreation when character's metadata updates
+  ref.watch(activeCharacterProvider.select((c) => c?.id));
   final characterNotifier = ref.read(charactersProvider.notifier);
 
-  return SagaNotifier(ref, repository, advRepository, aiService, activeCharacter, characterNotifier);
+  return SagaNotifier(ref, repository, advRepository, aiService, characterNotifier);
 });
 
 class SagaNotifier extends StateNotifier<Adventure?> {
@@ -50,7 +51,6 @@ class SagaNotifier extends StateNotifier<Adventure?> {
   final SagaRepository _repository;
   final AdventureRepository _advRepository;
   final AIService _aiService;
-  final Character? _activeCharacter;
   final CharacterNotifier _characterNotifier;
   bool _isDisposed = false;
 
@@ -59,9 +59,10 @@ class SagaNotifier extends StateNotifier<Adventure?> {
     this._repository,
     this._advRepository,
     this._aiService,
-    this._activeCharacter,
     this._characterNotifier,
-  ) : super(null);
+  ) : super(null) {
+    _recoverState();
+  }
 
   @override
   void dispose() {
@@ -69,81 +70,99 @@ class SagaNotifier extends StateNotifier<Adventure?> {
     super.dispose();
   }
 
+  Future<void> _recoverState() async {
+    // Wait a microtask to ensure all providers are initialized
+    await Future.microtask(() {});
+    if (_isDisposed) return;
+
+    final saga = _ref.read(activeSagaProvider);
+    final character = _ref.read(activeCharacterProvider);
+    if (saga == null || character == null) return;
+
+    final existingProgress = _repository.getProgress(saga.id);
+    if (existingProgress != null) {
+      final characterAdventures = _advRepository.getAdventuresForCharacter(character.id);
+      final adventure = characterAdventures.where((a) => a.id == existingProgress.adventureId).firstOrNull;
+
+      if (adventure != null) {
+        state = adventure;
+        _ref.read(sagaProgressProvider.notifier).state = existingProgress;
+      }
+    }
+  }
+
   Future<void> startSaga(Saga saga) async {
     try {
-      Character? effectiveCharacter = _activeCharacter;
-
+      final character = _ref.read(activeCharacterProvider);
       if (saga.requiredCharacter != null) {
         final reqChar = saga.requiredCharacter!;
         final name = reqChar['name'] as String;
 
-        if (effectiveCharacter == null || effectiveCharacter.name != name) {
+        if (character == null || character.name != name) {
           await _ensureCharacter(reqChar);
-          // Wait for a microtask to allow the provider to be recreated with the new character
-          await Future.microtask(() {});
-          if (!_isDisposed) {
-            await _ref.read(activeSagaAdventureProvider.notifier).startSaga(saga);
-          }
+          // Re-trigger startSaga on the new notifier after the provider rebuilds
+          Future.microtask(() {
+            _ref.read(activeSagaAdventureProvider.notifier).startSaga(saga);
+          });
           return;
         }
       }
 
-      if (effectiveCharacter == null) {
+      if (character == null) {
         throw Exception("Please create or select a character before beginning a Saga.");
       }
 
       final existingProgress = _repository.getProgress(saga.id);
       if (existingProgress != null) {
-        final activeChar = _activeCharacter!;
-        final characterAdventures = _advRepository.getAdventuresForCharacter(activeChar.id);
-        final adventure = characterAdventures.where((a) => a.id == existingProgress.adventureId).firstOrNull;
+        final adventure = _advRepository
+            .getAdventuresForCharacter(character.id)
+            .where((a) => a.id == existingProgress.adventureId)
+            .firstOrNull;
 
         if (adventure != null) {
           state = adventure;
           _ref.read(sagaProgressProvider.notifier).state = existingProgress;
           return;
         } else {
-          // Progress exists but adventure is missing for this character (e.g. character was re-created)
+          // Progress exists but adventure is missing for this character
           await _repository.deleteProgress(saga.id);
         }
       }
 
       // Start New Saga Adventure
-    final firstChapter = saga.chapters.first;
-    final activeChar = _activeCharacter!;
+      final firstChapter = saga.chapters.first;
+      final adventure = Adventure.create(
+        characterId: character.id,
+        title: "${saga.title}: ${firstChapter.title}",
+        mainGoal: firstChapter.hiddenGoal,
+      );
 
-    final adventure = Adventure.create(
-      characterId: activeChar.id,
-      title: "${saga.title}: ${firstChapter.title}",
-      mainGoal: firstChapter.hiddenGoal,
-    );
+      final progress = SagaProgress(
+        sagaId: saga.id,
+        currentChapterIndex: 0,
+        adventureId: adventure.id,
+        mechanicsState: firstChapter.mechanics,
+      );
 
-    final progress = SagaProgress(
-      sagaId: saga.id,
-      currentChapterIndex: 0,
-      adventureId: adventure.id,
-      mechanicsState: firstChapter.mechanics,
-    );
+      final firstSegment = StorySegment(
+        playerInput: "Begin the Saga: ${saga.title}",
+        aiResponse: firstChapter.startingPrompt,
+        timestamp: DateTime.now(),
+      );
 
-    final firstSegment = StorySegment(
-      playerInput: "Begin the Saga: ${saga.title}",
-      aiResponse: firstChapter.startingPrompt,
-      timestamp: DateTime.now(),
-    );
+      final updatedAdventure = adventure.copyWith(
+        storyHistory: [firstSegment],
+      );
 
-    final updatedAdventure = adventure.copyWith(
-      storyHistory: [firstSegment],
-    );
+      await _advRepository.saveAdventure(updatedAdventure);
+      await _repository.saveProgress(progress);
 
-    await _advRepository.saveAdventure(updatedAdventure);
-    await _repository.saveProgress(progress);
-
-    state = updatedAdventure;
-    _ref.read(sagaProgressProvider.notifier).state = progress;
+      state = updatedAdventure;
+      _ref.read(sagaProgressProvider.notifier).state = progress;
 
       // Update character last played
       await _characterNotifier.updateCharacter(
-        _activeCharacter.copyWith(lastPlayedAt: DateTime.now()),
+        character.copyWith(lastPlayedAt: DateTime.now()),
       );
     } catch (e) {
       rethrow;
@@ -175,11 +194,11 @@ class SagaNotifier extends StateNotifier<Adventure?> {
   Future<void> submitSagaAction(String action) async {
     final saga = _ref.read(activeSagaProvider);
     final progress = _ref.read(sagaProgressProvider);
-    if (state == null || saga == null || progress == null || _activeCharacter == null) return;
+    final character = _ref.read(activeCharacterProvider);
+    if (state == null || saga == null || progress == null || character == null) return;
 
     final currentChapter = saga.chapters[progress.currentChapterIndex];
-    final activeChar = _activeCharacter;
-    final inventoryList = activeChar.inventory.isEmpty ? "None" : activeChar.inventory.join(", ");
+    final inventoryList = character.inventory.isEmpty ? "None" : character.inventory.join(", ");
 
     // Saga-specific system message
     String mechanicsContext = "";
@@ -196,7 +215,7 @@ class SagaNotifier extends StateNotifier<Adventure?> {
 You are a creative storyteller for Grim Fable, currently running a SAGA MODE adventure.
 Saga: ${saga.title}
 Chapter: ${currentChapter.title}
-Protagonist: ${activeChar.name} (Played by the player)
+Protagonist: ${character.name} (Played by the player)
 
 CHAPTER OBJECTIVE (Hidden from player): ${currentChapter.hiddenGoal}
 IMPORTANT: When this objective is met, you MUST append the tag [CHAPTER_COMPLETE] to your response.
@@ -207,7 +226,7 @@ $globalLore$chapterLore$knowledge
 $mechanicsContext
 
 Inventory: $inventoryList
-Gold: ${_activeCharacter.gold}
+Gold: ${character.gold}
 
 Your task is to guide the story through the current chapter's plot anchors.
 Keep your responses short, exactly 1 paragraph (3-5 sentences).
@@ -260,7 +279,7 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
 
     if (_isDisposed) return;
     await _characterNotifier.updateCharacter(
-      _activeCharacter.copyWith(lastPlayedAt: DateTime.now()),
+      character.copyWith(lastPlayedAt: DateTime.now()),
     );
   }
 
@@ -308,9 +327,12 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
   }
 
   Future<String> _processSagaTags(String response) async {
+    final character = _ref.read(activeCharacterProvider);
+    if (character == null) return response;
+
     String cleanResponse = await TagProcessor.processInventoryTags(
       response: response,
-      character: _activeCharacter!,
+      character: character,
       characterNotifier: _characterNotifier,
       aiService: _aiService,
     );
