@@ -370,6 +370,33 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8),
+              if (saga.id == 'legacy_of_blood') ...[
+                Builder(builder: (context) {
+                  final corruption = (progress.mechanicsState['corruption'] ?? 0.0).toDouble();
+                  final displayColor = Color.lerp(Colors.orange, const Color(0xFF4A0000), corruption) ?? Colors.orange;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "ARMOR'S INFLUENCE: ${(corruption * 100).toInt()}%",
+                        style: GoogleFonts.grenze(
+                          color: displayColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      LinearProgressIndicator(
+                        value: corruption,
+                        backgroundColor: Colors.black12,
+                        color: displayColor,
+                        minHeight: 8,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                }),
+              ],
               Text(
                 "WITNESSED ANCHORS:",
                 style: GoogleFonts.grenze(
