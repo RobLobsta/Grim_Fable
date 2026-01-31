@@ -3,12 +3,25 @@
   "title": "Legacy of Blood",
   "series": "The Diablo Series",
   "coverArtUrl": "assets/sagas/legacy_of_blood.webp",
+  "loreContext": "The world of Sanctuary is a dark and dangerous place, caught in the Eternal Conflict between the High Heavens and the Burning Hells. Aranoch is a vast, unforgiving desert where ancient secrets lie buried beneath the sands. The Vizjerei are a powerful and often untrustworthy clan of mages with a history of demon summoning.",
+  "requiredCharacter": {
+    "name": "Norrec Vizharan",
+    "occupation": "Wandering Knight",
+    "backstory": "A former soldier of Westmarch, now bound to a cursed suit of blood-red armor.",
+    "inventory": ["Soldier's Blade"],
+    "itemDescriptions": {
+      "Soldier's Blade": "A well-worn but sharp sword from his time in Westmarch."
+    }
+  },
   "description": "Norrec Vizharan, a weary mercenary, seeks one last score in the deserts of Aranoch. What he finds is not gold, but the cursed armor of Bartuc, the Warlord of Blood. Now, he must survive the armor's thirst for slaughter while being hunted by demons and dark sorcerers alike.",
   "chapters": [
     {
       "id": "ch1_the_tomb",
       "title": "Chapter 1: The Blood Price",
+      "chapterArtUrl": "assets/sagas/legacy_of_blood_ch1.webp",
       "startingPrompt": "The air in the ancient tomb is thick with dust and the stench of decay. Norrec Vizharan stands before the ornate sarcophagus of Bartuc, his companions Sadun Tryst and Fauztin eagerly prying at the lid. They seek treasure, but Norrec feels a mounting sense of dread as the heavy stone shifts, revealing a suit of golden armor that seems to pulse with a faint, crimson light.",
+      "loreContext": "The tomb is part of an ancient complex dedicated to the Vizjerei mages. The traps are lethal and designed to protect the most dangerous relics of the clan.",
+      "hiddenKnowledge": "The armor is already sensing Norrec's weariness and is preparing to bond with him the moment he touches it. Sadun and Fauztin are doomed; their greed is a catalyst for the armor's awakening.",
       "plotAnchors": [
         "Sadun and Fauztin are killed by the tomb's traps or sudden revenants.",
         "Norrec is forced to don the golden armor of Bartuc to survive.",
@@ -23,7 +36,9 @@
     {
       "id": "ch2_desert_whispers",
       "title": "Chapter 2: Desert Shadows",
+      "chapterArtUrl": "assets/sagas/legacy_of_blood_ch2.webp",
       "startingPrompt": "The Aranoch desert is a relentless furnace, but Norrec does not feel the heat. The golden armor feels surprisingly light, almost like a second skin. As he treks toward the distant glimmer of Lut Gholein, he begins to hear whispers in the wind—the voices of Sadun and Fauztin, mocking him, and a deeper, darker voice that commands him to bleed.",
+      "hiddenKnowledge": "The ghosts of Sadun and Fauztin are actually psychic projections from the armor designed to break Norrec's will.",
       "plotAnchors": [
         "Norrec is haunted by the ghosts of his fallen friends.",
         "A group of desert bandits or monsters attacks, and the armor takes control of Norrec's body to slaughter them.",
@@ -38,6 +53,7 @@
     {
       "id": "ch3_city_of_the_sun",
       "title": "Chapter 3: The City of the Sun",
+      "chapterArtUrl": "assets/sagas/legacy_of_blood_ch3.webp",
       "startingPrompt": "Lut Gholein, the Jewel of the Desert, rises before Norrec. He hides his armor under a tattered cloak, but the stench of blood follows him. In a dark tavern, he encounters a woman with pale skin and eyes like cold embers—Kara Nightshadow, a necromancer who senses the ancient evil clinging to him.",
       "plotAnchors": [
         "Meeting Kara Nightshadow and learning she is a Vizjerei necromancer.",
@@ -53,6 +69,7 @@
     {
       "id": "ch4_vizjerei_secrets",
       "title": "Chapter 4: Whispers of the Vizjerei",
+      "chapterArtUrl": "assets/sagas/legacy_of_blood_ch4.webp",
       "startingPrompt": "Kara leads Norrec to a hidden archive within the city, or perhaps to the legendary mage Drognan. They seek the journals of Horazon, Bartuc's brother, hoping to find the secret of the armor's binding. But the armor grows restless, its golden surface turning a deeper shade of red as it hungers for the magic surrounding them.",
       "plotAnchors": [
         "Meeting the mage Drognan and discussing the history of Bartuc and Horazon.",
@@ -68,6 +85,7 @@
     {
       "id": "ch5_the_gathering_storm",
       "title": "Chapter 5: The Gathering Storm",
+      "chapterArtUrl": "assets/sagas/legacy_of_blood_ch5.webp",
       "startingPrompt": "General Augustus Malevolyn has arrived at the gates of Lut Gholein with a small but deadly army. He demands the armor, and with him is the sorceress Galeona and the bound demon Xazax. The city is in a panic, and Norrec finds himself trapped between the invaders and the growing madness within his own mind.",
       "plotAnchors": [
         "Malevolyn issues an ultimatum to the city.",
@@ -83,6 +101,7 @@
     {
       "id": "ch6_the_warlords_legacy",
       "title": "Chapter 6: The Warlord's Legacy",
+      "chapterArtUrl": "assets/sagas/legacy_of_blood_ch6.webp",
       "startingPrompt": "The final confrontation takes place in the ruins outside Lut Gholein. Malevolyn's ambition has blinded him to the true power of the armor. As Norrec faces the General, the spirit of Bartuc threatens to completely submerge his identity. He must use the armor's power to defeat his enemies without losing his soul forever.",
       "plotAnchors": [
         "A final duel with General Malevolyn.",

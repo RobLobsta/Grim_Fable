@@ -94,6 +94,7 @@ class SagaChaptersScreen extends ConsumerWidget {
     int index,
     bool isCompleted,
   ) {
+    final artUrl = chapter.chapterArtUrl;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -102,6 +103,18 @@ class SagaChaptersScreen extends ConsumerWidget {
         border: Border.all(
           color: isCompleted ? Colors.amber.withValues(alpha: 0.3) : Colors.white12,
         ),
+        image: artUrl != null
+            ? DecorationImage(
+                image: artUrl.startsWith('assets/')
+                    ? AssetImage(artUrl) as ImageProvider
+                    : NetworkImage(artUrl) as ImageProvider,
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Colors.black.withValues(alpha: 0.6),
+                  BlendMode.darken,
+                ),
+              )
+            : null,
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
