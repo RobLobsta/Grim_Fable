@@ -47,7 +47,6 @@ void main() {
     expect(find.text('THE LIBRARY'), findsOneWidget);
 
     // Verify saga card is displayed
-    expect(find.text('THE ETERNAL FROST'), findsOneWidget);
-    expect(find.text('TALES OF THE NORTH'), findsOneWidget);
+    expect(find.text('A cold adventure.'), findsOneWidget);
   });
 }

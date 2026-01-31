@@ -1,0 +1,355 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../character/character_provider.dart';
+import '../adventure/adventure_provider.dart';
+import '../../core/services/settings_service.dart';
+import '../../shared/widgets/ai_settings_dialog.dart';
+import '../../shared/widgets/app_settings_dialog.dart';
+import '../../shared/widgets/inventory_dialog.dart';
+import '../../shared/widgets/backstory_dialog.dart';
+
+class AdventureSelectionScreen extends ConsumerStatefulWidget {
+  const AdventureSelectionScreen({super.key});
+
+  @override
+  ConsumerState<AdventureSelectionScreen> createState() => _AdventureSelectionScreenState();
+}
+
+class _AdventureSelectionScreenState extends ConsumerState<AdventureSelectionScreen> {
+  bool _isStarting = false;
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _continueAdventure() async {
+    setState(() {
+      _isStarting = true;
+    });
+    try {
+      await ref.read(activeAdventureProvider.notifier).continueLatestAdventure();
+      if (mounted) {
+        _navigateToAdventure(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isStarting = false;
+        });
+      }
+    }
+  }
+
+  void _navigateToAdventure(BuildContext context) {
+    context.push('/adventure', extra: false);
+  }
+
+  void _navigateToCreation(BuildContext context) {
+    context.push('/create-character');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final activeCharacter = ref.watch(activeCharacterProvider);
+    final allCharacters = ref.watch(charactersProvider);
+    final sortedCharacters = allCharacters.where((c) => !c.isSagaCharacter).toList();
+    sortedCharacters.sort((a, b) => b.lastPlayedAt.compareTo(a.lastPlayedAt));
+
+    // If current selection is a Saga character, switch to first available adventure character
+    if (activeCharacter != null && activeCharacter.isSagaCharacter && sortedCharacters.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(selectedCharacterIdProvider.notifier).state = sortedCharacters.first.id;
+      });
+    }
+
+    if (_isStarting) {
+      return _buildLoadingOverlay();
+    }
+
+    return Scaffold(
+      body: _buildBackgroundContainer(
+        child: Column(
+          children: [
+            _buildAppBar(context, activeCharacter),
+            Expanded(
+              child: sortedCharacters.isEmpty
+                  ? _buildEmptyState(context)
+                  : _buildCharacterPager(sortedCharacters, activeCharacter),
+            ),
+            if (activeCharacter != null && sortedCharacters.length > 1)
+              _buildPageIndicator(sortedCharacters, activeCharacter),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingOverlay() {
+    return const Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 20),
+            Text(
+              'Consulting the fates...',
+              style: TextStyle(fontFamily: 'Serif', fontSize: 18),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackgroundContainer({required Widget child}) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: RadialGradient(
+          center: Alignment.center,
+          radius: 1.5,
+          colors: [
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            Theme.of(context).colorScheme.surface,
+          ],
+        ),
+      ),
+      child: SafeArea(child: child),
+    );
+  }
+
+  Widget _buildAppBar(BuildContext context, dynamic activeCharacter) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () => context.pop(),
+              child: const Text(
+                'GRIM FABLE',
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: TextStyle(
+                  fontFamily: 'Serif',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 4,
+                  color: Color(0xFFC0C0C0),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.settings_outlined, color: Color(0xFFC0C0C0)),
+                onPressed: () => AppSettingsDialog.show(context),
+                tooltip: 'App Settings',
+              ),
+              IconButton(
+                icon: const Icon(Icons.vpn_key_outlined, color: Color(0xFFC0C0C0)),
+                onPressed: () => AiSettingsDialog.show(context),
+                tooltip: 'AI Settings',
+              ),
+              IconButton(
+                icon: const Icon(Icons.person_add_outlined, color: Color(0xFFC0C0C0)),
+                onPressed: () => _navigateToCreation(context),
+                tooltip: 'New Character',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildHeroIcon(),
+          const SizedBox(height: 40),
+          Text(
+            'NO LEGENDS FOUND',
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 20),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () => _navigateToCreation(context),
+            child: const Text('FORGE FIRST CHARACTER'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCharacterPager(List<dynamic> characters, dynamic activeCharacter) {
+    return PageView.builder(
+      controller: _pageController,
+      itemCount: characters.length,
+      onPageChanged: (index) {
+        ref.read(selectedCharacterIdProvider.notifier).state = characters[index].id;
+      },
+      itemBuilder: (context, index) {
+        final character = characters[index];
+        return Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildHeroIcon(),
+                const SizedBox(height: 40),
+                _buildCharacterSection(context, character),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCharacterSection(BuildContext context, dynamic activeCharacter) {
+    final hasBackstory = activeCharacter.backstory.trim().isNotEmpty;
+    final hasApiKey = ref.watch(hfApiKeyProvider).isNotEmpty;
+
+    return Column(
+      children: [
+        Text(
+          activeCharacter.name.toUpperCase(),
+          style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                fontSize: 36,
+                letterSpacing: 2,
+              ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 48),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.description_outlined, color: Color(0xFFC0C0C0), size: 32),
+              onPressed: () => BackstoryDialog.show(context, activeCharacter),
+              tooltip: 'Backstory',
+            ),
+            const SizedBox(width: 24),
+            IconButton(
+              icon: const Icon(Icons.inventory_2_outlined, color: Color(0xFFC0C0C0), size: 32),
+              onPressed: () => InventoryDialog.show(
+                context,
+                activeCharacter.inventory,
+                itemDescriptions: activeCharacter.itemDescriptions,
+                gold: activeCharacter.gold,
+              ),
+              tooltip: 'Inventory',
+            ),
+          ],
+        ),
+        const SizedBox(height: 60),
+        if (hasBackstory) ...[
+          if (ref.watch(hasActiveAdventureProvider))
+            ElevatedButton(
+              onPressed: hasApiKey ? _continueAdventure : null,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(260, 60),
+              ),
+              child: Text(hasApiKey ? 'CONTINUE ADVENTURE' : 'KEY REQUIRED TO CONTINUE'),
+            )
+          else
+            ElevatedButton(
+              onPressed: hasApiKey ? () => context.push('/new-adventure') : null,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(260, 60),
+              ),
+              child: Text(hasApiKey ? 'NEW ADVENTURE' : 'KEY REQUIRED FOR NEW JOURNEY'),
+            ),
+        ],
+        if (ref.watch(characterAdventuresProvider).any((a) => !a.isActive)) ...[
+          const SizedBox(height: 24),
+          TextButton.icon(
+            onPressed: () => context.push('/history'),
+            icon: const Icon(Icons.history_edu, color: Color(0xFFC0C0C0), size: 20),
+            label: const Text(
+              'VIEW CHRONICLES',
+              style: TextStyle(
+                color: Color(0xFFC0C0C0),
+                fontFamily: 'Serif',
+                fontSize: 14,
+                letterSpacing: 2,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildHeroIcon() {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+            blurRadius: 30,
+            spreadRadius: 10,
+          ),
+        ],
+      ),
+      child: Icon(
+        Icons.auto_stories_outlined,
+        size: 80,
+        color: Theme.of(context).colorScheme.secondary,
+      ),
+    );
+  }
+
+  Widget _buildPageIndicator(List<dynamic> characters, dynamic activeCharacter) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(
+          characters.length,
+          (index) => Container(
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: activeCharacter.id == characters[index].id
+                  ? Theme.of(context).colorScheme.secondary
+                  : Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

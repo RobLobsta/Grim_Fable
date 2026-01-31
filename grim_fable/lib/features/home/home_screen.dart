@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../character/character_provider.dart';
-import '../adventure/adventure_provider.dart';
-import '../../core/services/settings_service.dart';
 import '../../shared/widgets/ai_settings_dialog.dart';
 import '../../shared/widgets/app_settings_dialog.dart';
-import '../../shared/widgets/inventory_dialog.dart';
-import '../../shared/widgets/backstory_dialog.dart';
+import '../saga/saga_provider.dart';
+import '../../core/models/saga_progress.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -17,88 +15,69 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  bool _isStarting = false;
-  bool _isSelectionMode = false;
-  late PageController _pageController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _continueAdventure() async {
-    setState(() {
-      _isStarting = true;
-    });
+  Future<void> _unlockAllChapters() async {
     try {
-      await ref.read(activeAdventureProvider.notifier).continueLatestAdventure();
+      final sagas = await ref.read(sagasProvider.future);
+      final lob = sagas.firstWhere((s) => s.id == 'legacy_of_blood');
+      final repo = ref.read(sagaRepositoryProvider);
+
+      final progress = SagaProgress(
+        sagaId: lob.id,
+        currentChapterIndex: lob.chapters.length - 1,
+        completedChapterIds: lob.chapters.map((c) => c.id).toList(),
+        adventureId: 'debug_adventure_${DateTime.now().millisecondsSinceEpoch}',
+        mechanicsState: {'corruption': 0.5},
+      );
+
+      await repo.saveProgress(progress);
+      ref.invalidate(sagaProgressProvider);
+
       if (mounted) {
-        _navigateToAdventure(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('All Legacy of Blood chapters unlocked!')),
+        );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isStarting = false;
-        });
       }
     }
   }
 
-  void _navigateToAdventure(BuildContext context) {
-    context.push('/adventure', extra: false);
+  void _showDebugMenu() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.lock_open_outlined),
+            title: const Text('Unlock All Legacy of Blood Chapters'),
+            onTap: () {
+              Navigator.pop(context);
+              _unlockAllChapters();
+            },
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final activeCharacter = ref.watch(activeCharacterProvider);
 
-    if (_isStarting) {
-      return _buildLoadingOverlay();
-    }
-
-    if (!_isSelectionMode) {
-      return _buildWelcomeView(context, activeCharacter);
-    }
-
-    return _buildSelectionView(context, activeCharacter);
-  }
-
-  Widget _buildLoadingOverlay() {
-    return const Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 20),
-            Text(
-              'Consulting the fates...',
-              style: TextStyle(fontFamily: 'Serif', fontSize: 18),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWelcomeView(BuildContext context, dynamic activeCharacter) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showDebugMenu,
+        mini: true,
+        backgroundColor: Colors.grey.withValues(alpha: 0.2),
+        child: const Icon(Icons.bug_report_outlined, size: 20, color: Colors.white54),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       body: _buildBackgroundContainer(
         child: Column(
           children: [
@@ -124,36 +103,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildSelectionView(BuildContext context, dynamic activeCharacter) {
-    final allCharacters = ref.watch(charactersProvider);
-    final sortedCharacters = allCharacters.where((c) => !c.isSagaCharacter).toList();
-    sortedCharacters.sort((a, b) => b.lastPlayedAt.compareTo(a.lastPlayedAt));
-
-    // If current selection is a Saga character, switch to first available adventure character
-    if (activeCharacter != null && activeCharacter.isSagaCharacter && sortedCharacters.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(selectedCharacterIdProvider.notifier).state = sortedCharacters.first.id;
-      });
-    }
-
-    return Scaffold(
-      body: _buildBackgroundContainer(
-        child: Column(
-          children: [
-            _buildAppBar(context, activeCharacter),
-            Expanded(
-              child: sortedCharacters.isEmpty
-                  ? _buildEmptyState(context)
-                  : _buildCharacterPager(sortedCharacters, activeCharacter),
-            ),
-            if (activeCharacter != null && sortedCharacters.length > 1)
-              _buildPageIndicator(sortedCharacters, activeCharacter),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildBackgroundContainer({required Widget child}) {
     return Container(
       decoration: BoxDecoration(
@@ -170,95 +119,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildHeroIcon(),
-          const SizedBox(height: 40),
-          Text(
-            'NO LEGENDS FOUND',
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(fontSize: 20),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () => _navigateToCreation(context),
-            child: const Text('FORGE FIRST CHARACTER'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCharacterPager(List<dynamic> characters, dynamic activeCharacter) {
-    return PageView.builder(
-      controller: _pageController,
-      itemCount: characters.length,
-      onPageChanged: (index) {
-        ref.read(selectedCharacterIdProvider.notifier).state = characters[index].id;
-      },
-      itemBuilder: (context, index) {
-        final character = characters[index];
-        return Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildHeroIcon(),
-                const SizedBox(height: 40),
-                _buildCharacterSection(context, character),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPageIndicator(List<dynamic> characters, dynamic activeCharacter) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(
-          characters.length,
-          (index) => Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: activeCharacter.id == characters[index].id
-                  ? Theme.of(context).colorScheme.secondary
-                  : Theme.of(context).colorScheme.secondary.withValues(alpha: 0.2),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildAppBar(BuildContext context, dynamic activeCharacter) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _isSelectionMode = false),
-              child: const Text(
-                'GRIM FABLE',
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                style: TextStyle(
-                  fontFamily: 'Serif',
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 4,
-                  color: Color(0xFFC0C0C0),
-                ),
+            child: const Text(
+              'GRIM FABLE',
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: TextStyle(
+                fontFamily: 'Serif',
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 4,
+                color: Color(0xFFC0C0C0),
               ),
             ),
           ),
@@ -276,13 +152,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onPressed: () => AiSettingsDialog.show(context),
                 tooltip: 'AI Settings',
               ),
-              if (_isSelectionMode) ...[
-                IconButton(
-                  icon: const Icon(Icons.person_add_outlined, color: Color(0xFFC0C0C0)),
-                  onPressed: () => _navigateToCreation(context),
-                  tooltip: 'New Character',
-                ),
-              ],
             ],
           ),
         ],
@@ -332,91 +201,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         const SizedBox(height: 16),
         ElevatedButton(
-          onPressed: () => setState(() => _isSelectionMode = true),
+          onPressed: () => context.push('/adventure-selection'),
           child: const Text('ADVENTURE MODE'),
         ),
       ],
     );
-  }
-
-  Widget _buildCharacterSection(BuildContext context, dynamic activeCharacter) {
-    final hasBackstory = activeCharacter.backstory.trim().isNotEmpty;
-    final hasApiKey = ref.watch(hfApiKeyProvider).isNotEmpty;
-
-    return Column(
-      children: [
-        Text(
-          activeCharacter.name.toUpperCase(),
-          style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                fontSize: 36,
-                letterSpacing: 2,
-              ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 48),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.description_outlined, color: Color(0xFFC0C0C0), size: 32),
-              onPressed: () => BackstoryDialog.show(context, activeCharacter),
-              tooltip: 'Backstory',
-            ),
-            const SizedBox(width: 24),
-            IconButton(
-              icon: const Icon(Icons.inventory_2_outlined, color: Color(0xFFC0C0C0), size: 32),
-              onPressed: () => InventoryDialog.show(
-                context,
-                activeCharacter.inventory,
-                itemDescriptions: activeCharacter.itemDescriptions,
-                gold: activeCharacter.gold,
-              ),
-              tooltip: 'Inventory',
-            ),
-          ],
-        ),
-        const SizedBox(height: 60),
-        if (hasBackstory) ...[
-          if (ref.watch(hasActiveAdventureProvider))
-            ElevatedButton(
-              onPressed: hasApiKey ? _continueAdventure : null,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(260, 60),
-              ),
-              child: Text(hasApiKey ? 'CONTINUE ADVENTURE' : 'KEY REQUIRED TO CONTINUE'),
-            )
-          else
-            ElevatedButton(
-              onPressed: hasApiKey ? () => context.push('/new-adventure') : null,
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(260, 60),
-              ),
-              child: Text(hasApiKey ? 'NEW ADVENTURE' : 'KEY REQUIRED FOR NEW JOURNEY'),
-            ),
-        ],
-        if (ref.watch(characterAdventuresProvider).any((a) => !a.isActive)) ...[
-          const SizedBox(height: 24),
-          TextButton.icon(
-            onPressed: () => context.push('/history'),
-            icon: const Icon(Icons.history_edu, color: Color(0xFFC0C0C0), size: 20),
-            label: const Text(
-              'VIEW CHRONICLES',
-              style: TextStyle(
-                color: Color(0xFFC0C0C0),
-                fontFamily: 'Serif',
-                fontSize: 14,
-                letterSpacing: 2,
-                decoration: TextDecoration.underline,
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-
-  void _navigateToCreation(BuildContext context) {
-    context.push('/create-character');
   }
 }
