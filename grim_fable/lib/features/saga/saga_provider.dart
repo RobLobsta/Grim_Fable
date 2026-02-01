@@ -220,6 +220,19 @@ The armor of Bartuc is sentient and malevolent. It craves slaughter and seeks to
 As corruption increases, Norrec's actions and the suggested choices MUST become darker, more violent, and impulsive.
 NEVER reveal this numerical value (e.g. $corruption) to the player in your narrative.
 """;
+    } else if (saga.id == 'night_of_the_full_moon') {
+      final courage = progress.mechanicsState['courage'] ?? 0;
+      final reputation = progress.mechanicsState['reputation'] ?? 0;
+      final moonPhase = progress.mechanicsState['moon_phase'] ?? "Crescent";
+      mechanicsContext = """
+Current Stats: Courage: $courage, Reputation: $reputation.
+Moon Phase: $moonPhase.
+Courage represents Little Red's bravery and willingness to fight.
+Reputation represents her kindness and honesty.
+As the Moon Phase progresses toward 'Full Moon', descriptions should become more eerie and dangerous.
+When the player makes a significant moral or brave choice, you MUST include tags like [COURAGE: +1] or [REPUTATION: +1].
+If Little Red picks up a class-defining item (Sword, Bow, Herbs, Spellbook) in Chapter 1, you MUST include the tag [CLASS_UPGRADE: ClassName] (Knight, Ranger, Apothecary, or Witch).
+""";
     }
 
     final globalLore = saga.loreContext != null ? "\nWorld Lore: ${saga.loreContext}" : "";
@@ -248,14 +261,14 @@ Keep your responses short, exactly 1 paragraph (3-5 sentences).
 Maintain a dark fantasy, gritty, and realistic tone consistent with the setting.
 Use third person exclusively.
 
-IMPORTANT: When Norrec first dons the armor (usually in Chapter 1), you MUST include the tag [ITEM_GAINED: Bartuc's Armor].
-
-At the end of your response, you MUST provide exactly 3 short suggested actions for Norrec, formatted as:
+At the end of your response, you MUST provide exactly 3 short suggested actions for the protagonist, formatted as:
 [CHOICES: Choice 1 | Choice 2 | Choice 3]
-These choices should reflect the armor's growing influence (more violent/impulsive at high corruption).
 
 If a plot anchor is clearly achieved, add the tag [ANCHOR_WITNESSED: Description].
 Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
+
+${saga.id == 'legacy_of_blood' ? "IMPORTANT: When Norrec first dons the armor (usually in Chapter 1), you MUST include the tag [ITEM_GAINED: Bartuc's Armor]." : ""}
+${saga.id == 'night_of_the_full_moon' ? "IMPORTANT: If the player meets the Traveling Merchant, offer specific items with prices in [CHOICES]. If they buy something, use [GOLD_REMOVED: X] and [ITEM_GAINED: Name]." : ""}
 """;
 
     final activeAdventure = state;
@@ -335,9 +348,13 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
     final nextChapter = saga.chapters[nextIndex];
 
     // Update progress
+    final newState = Map<String, dynamic>.from(progress.mechanicsState);
+    newState.addAll(nextChapter.mechanics);
+
     final updatedProgress = progress.copyWith(
       currentChapterIndex: nextIndex,
       completedChapterIds: [...progress.completedChapterIds, saga.chapters[progress.currentChapterIndex].id],
+      mechanicsState: newState,
     );
 
     await _repository.saveProgress(updatedProgress);
@@ -448,7 +465,7 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
       final delta = double.tryParse(corrMatch.group(1)!) ?? 0.0;
       final progress = _ref.read(sagaProgressProvider);
       if (progress != null) {
-        double current = progress.mechanicsState['corruption'] ?? progress.mechanicsState['initial_corruption'] ?? 0.1;
+        double current = (progress.mechanicsState['corruption'] ?? progress.mechanicsState['initial_corruption'] ?? 0.1).toDouble();
         double next = (current + delta).clamp(0.0, 1.0);
         final newState = Map<String, dynamic>.from(progress.mechanicsState);
         newState['corruption'] = next;
@@ -464,8 +481,8 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
          final progress = _ref.read(sagaProgressProvider);
          if (progress != null) {
             final chapter = saga.chapters[progress.currentChapterIndex];
-            final step = (chapter.mechanics['corruption_step'] ?? 0.02) as double;
-            double current = progress.mechanicsState['corruption'] ?? progress.mechanicsState['initial_corruption'] ?? 0.1;
+            final step = (chapter.mechanics['corruption_step'] ?? 0.02).toDouble();
+            double current = (progress.mechanicsState['corruption'] ?? progress.mechanicsState['initial_corruption'] ?? 0.1).toDouble();
             double next = (current + step).clamp(0.0, 1.0);
             final newState = Map<String, dynamic>.from(progress.mechanicsState);
             newState['corruption'] = next;
@@ -474,6 +491,41 @@ Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
             _ref.read(sagaProgressProvider.notifier).state = updatedProgress;
          }
       }
+    }
+
+    // For Night of the Full Moon: Courage and Reputation updates
+    final courageRegex = RegExp(r"\[COURAGE:\s*([+-]?\d+)\]");
+    final repRegex = RegExp(r"\[REPUTATION:\s*([+-]?\d+)\]");
+    final classRegex = RegExp(r"\[CLASS_UPGRADE:\s*(.+?)\]");
+
+    final courageMatch = courageRegex.firstMatch(response);
+    final repMatch = repRegex.firstMatch(response);
+    final classMatch = classRegex.firstMatch(response);
+
+    if (courageMatch != null || repMatch != null) {
+      final progress = _ref.read(sagaProgressProvider);
+      if (progress != null) {
+        final newState = Map<String, dynamic>.from(progress.mechanicsState);
+        if (courageMatch != null) {
+          int delta = int.tryParse(courageMatch.group(1)!) ?? 0;
+          newState['courage'] = (newState['courage'] ?? 0) + delta;
+          cleanResponse = cleanResponse.replaceAll(courageRegex, '');
+        }
+        if (repMatch != null) {
+          int delta = int.tryParse(repMatch.group(1)!) ?? 0;
+          newState['reputation'] = (newState['reputation'] ?? 0) + delta;
+          cleanResponse = cleanResponse.replaceAll(repRegex, '');
+        }
+        final updatedProgress = progress.copyWith(mechanicsState: newState);
+        await _repository.saveProgress(updatedProgress);
+        _ref.read(sagaProgressProvider.notifier).state = updatedProgress;
+      }
+    }
+
+    if (classMatch != null) {
+      final newClass = classMatch.group(1)!;
+      await _characterNotifier.updateCharacter(character.copyWith(occupation: newClass));
+      cleanResponse = cleanResponse.replaceAll(classRegex, '');
     }
 
     // Clean up extra whitespace from removed tags

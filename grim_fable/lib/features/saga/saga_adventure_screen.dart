@@ -8,6 +8,7 @@ import 'saga_provider.dart';
 import '../character/character_provider.dart';
 import '../../shared/widgets/story_segment_widget.dart';
 import '../../shared/widgets/inventory_dialog.dart';
+import '../../core/utils/extensions.dart';
 
 class SagaAdventureScreen extends ConsumerStatefulWidget {
   const SagaAdventureScreen({super.key});
@@ -290,6 +291,14 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
     }
 
     final isOverridden = sagaId == 'legacy_of_blood' && corruption > 0.8;
+    final char = ref.read(activeCharacterProvider);
+
+    String hintText = "What will ${char?.name ?? 'you'} do?";
+    if (isOverridden) {
+      hintText = "The armor's whispers drown out your thoughts...";
+    } else if (sagaId == 'night_of_the_full_moon') {
+      hintText = "Guide Little Red through the forest...";
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -303,7 +312,6 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
             IconButton(
               icon: const Icon(Icons.inventory_2_outlined),
               onPressed: () {
-                final char = ref.read(activeCharacterProvider);
                 if (char != null) {
                    InventoryDialog.show(context, char.inventory, itemDescriptions: char.itemDescriptions, gold: char.gold);
                 }
@@ -314,9 +322,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                 controller: _controller,
                 enabled: !isOverridden && !_isLoading && !_isTyping,
                 decoration: InputDecoration(
-                  hintText: isOverridden
-                      ? "The armor's whispers drown out your thoughts..."
-                      : "What will Norrec do?",
+                  hintText: hintText,
                   fillColor: Colors.white.withValues(alpha: 0.05),
                 ),
                 style: GoogleFonts.crimsonPro(),
@@ -331,6 +337,32 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildStatChip(IconData icon, String label, dynamic value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 6),
+          Text(
+            "$label: $value",
+            style: GoogleFonts.grenze(
+              color: color.darken(0.2),
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -396,6 +428,26 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                     ],
                   );
                 }),
+              ],
+              if (saga.id == 'night_of_the_full_moon') ...[
+                Row(
+                  children: [
+                    _buildStatChip(Icons.shield, "COURAGE", progress.mechanicsState['courage'] ?? 0, Colors.blueGrey),
+                    const SizedBox(width: 12),
+                    _buildStatChip(Icons.favorite, "REPUTATION", progress.mechanicsState['reputation'] ?? 0, Colors.teal),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  "MOON PHASE: ${(progress.mechanicsState['moon_phase'] ?? 'Crescent').toString().toUpperCase()}",
+                  style: GoogleFonts.grenze(
+                    color: const Color(0xFF2C2C2C),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 16),
               ],
               Text(
                 "WITNESSED ANCHORS:",
