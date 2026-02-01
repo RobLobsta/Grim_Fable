@@ -80,6 +80,7 @@ class EquipmentData {
     if (lowerItem.contains('torch') || lowerItem.contains('lantern') || lowerItem.contains('candle') || lowerItem.contains('lamp')) return FontAwesomeIcons.fire;
     if (lowerItem.contains('rope') || lowerItem.contains('chain')) return FontAwesomeIcons.bezierCurve;
     if (lowerItem.contains('bag') || lowerItem.contains('pouch') || lowerItem.contains('sack') || lowerItem.contains('satchel') || lowerItem.contains('backpack') || lowerItem.contains('pack')) return FontAwesomeIcons.bagShopping;
+    if (lowerItem.contains('basket')) return FontAwesomeIcons.basketShopping;
     if (lowerItem.contains('mortar') || lowerItem.contains('pestle')) return FontAwesomeIcons.mortarPestle;
     if (lowerItem.contains('bandage') || lowerItem.contains('dressing') || lowerItem.contains('suture') || lowerItem.contains('salve')) return FontAwesomeIcons.bandage;
     if (lowerItem.contains('trap')) return FontAwesomeIcons.toolbox;

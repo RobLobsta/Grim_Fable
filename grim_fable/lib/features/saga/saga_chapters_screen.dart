@@ -102,7 +102,11 @@ class SagaChaptersScreen extends ConsumerWidget {
                     ? AssetImage(artUrl) as ImageProvider
                     : NetworkImage(artUrl) as ImageProvider,
                 fit: BoxFit.cover,
-                alignment: (index == 0 || index == 1) ? Alignment.topCenter : Alignment.center,
+                alignment: (saga.id == 'night_of_the_full_moon' && (index == 0 || index == 1))
+                    ? Alignment.bottomCenter
+                    : (index == 0 || index == 1)
+                        ? Alignment.topCenter
+                        : Alignment.center,
                 colorFilter: ColorFilter.mode(
                   Colors.black.withValues(alpha: 0.6),
                   BlendMode.darken,

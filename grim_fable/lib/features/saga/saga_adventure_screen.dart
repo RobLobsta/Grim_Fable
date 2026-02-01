@@ -127,9 +127,41 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: isFullMoon ? _buildNightDecoration() : _buildParchmentDecoration(),
               child: isFullMoon
-                  ? Container(
-                      color: parchmentColor,
-                      child: _buildHistoryList(adventure, _isLoading, isFullMoon),
+                  ? Stack(
+                      children: [
+                        Container(color: parchmentColor),
+                        // Forest background with silhouettes
+                        Positioned.fill(
+                          child: Opacity(
+                            opacity: 0.2,
+                            child: Image.asset(
+                              saga.coverArtUrl ?? 'assets/sagas/night_of_the_full_moon.webp',
+                              fit: BoxFit.cover,
+                              alignment: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ),
+                        // Atmospheric mist/gradient at the bottom to ground the silhouettes
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: 300,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withValues(alpha: 0.6),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        _buildHistoryList(adventure, _isLoading, isFullMoon),
+                      ],
                     )
                   : ClipPath(
                       clipper: TatteredEdgeClipper(),
