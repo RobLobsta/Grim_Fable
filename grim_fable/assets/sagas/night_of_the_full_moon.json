@@ -1,0 +1,133 @@
+{
+  "id": "night_of_the_full_moon",
+  "title": "Night of the Full Moon",
+  "series": "Fable Chronicles",
+  "coverArtUrl": "assets/sagas/night_of_the_full_moon.webp",
+  "loreContext": "The Black Forest is a place of ancient curses and whispered legends. Little Red Riding Hood's grandmother has vanished, and the village of the Black Forest is gripped by fear. It is the night of the full moon, when the veil between worlds is thin and the monsters of the forest grow bold.",
+  "requiredCharacter": {
+    "name": "Little Red Riding Hood",
+    "occupation": "Village Girl",
+    "backstory": "A young girl with a crimson hood, searching for her missing grandmother in the dangerous Black Forest.",
+    "inventory": ["Grandmother's Basket", "Red Hood"],
+    "itemDescriptions": {
+      "Grandmother's Basket": "A small wicker basket intended for Grandmother. It currently holds only a few crumbs.",
+      "Red Hood": "A vibrant red cloak given to her by her grandmother. It feels warm and protective."
+    }
+  },
+  "description": "Grandmother has disappeared. Armed with only her courage and a few supplies, Little Red Riding Hood must venture into the Black Forest. Along the way, she will encounter strange allies, deadly foes, and a mystery that traces back to her own bloodline.",
+  "chapters": [
+    {
+      "id": "ch1_the_village",
+      "title": "Chapter 1: The Village of the Black Forest",
+      "chapterArtUrl": "assets/sagas/night_of_the_full_moon_ch1.webp",
+      "startingPrompt": "The village is unusually quiet as the sun begins to set. You stand in your small cottage, the empty bed of your grandmother a painful reminder of her disappearance. To find her, you must enter the Black Forest, but you cannot go empty-handed. You look around the room and the village square for something to aid you on your journey.",
+      "loreContext": "The village is the last bastion of safety before the forest. The villagers are superstitious and many have locked their doors. The forge, the herbalist's hut, and the old guard tower might have useful equipment.",
+      "hiddenKnowledge": "The choice of equipment here will determine Little Red's path. A sword for a Knight, a bow for a Ranger, herbs for an Apothecary, or an old tome for a Witch.",
+      "plotAnchors": [
+        "Explore the village square and talk to the worried Woodcutter.",
+        "Choose a weapon or tool: A rusty sword, a sturdy bow, a bundle of herbs, or a dusty spellbook.",
+        "Leave the village gates as the moon begins to rise."
+      ],
+      "importantNouns": ["Little Red Riding Hood", "Grandmother", "Black Forest", "Woodcutter", "Village Square"],
+      "hiddenGoal": "Acquire equipment and leave the village.",
+      "mechanics": {
+        "courage": 0,
+        "reputation": 0,
+        "moon_phase": "Crescent"
+      }
+    },
+    {
+      "id": "ch2_the_forest_gate",
+      "title": "Chapter 2: Into the Shadows",
+      "chapterArtUrl": "assets/sagas/night_of_the_full_moon_ch2.webp",
+      "startingPrompt": "The transition from the village to the forest is abrupt. The air grows cold, and the trees lean in as if whispering to one another. You haven't walked far when you encounter a fork in the path. One way leads toward a clearing where a fire burns, the other into a thicket of thorns.",
+      "loreContext": "The forest is semi-sentient and reacts to the traveler's heart. Those with courage find paths, those with kindness find friends.",
+      "hiddenKnowledge": "The first major encounter will test the player's resolve. The Red Knight or the Greedy Wolf may appear.",
+      "plotAnchors": [
+        "Encounter a forest denizen who asks for help or challenges you.",
+        "A battle or a riddle that rewards Courage or Reputation.",
+        "Discover a discarded letter from Grandmother."
+      ],
+      "importantNouns": ["Black Forest", "Red Knight", "Greedy Wolf", "Thorn Thicket"],
+      "hiddenGoal": "Reach the heart of the first forest tier.",
+      "mechanics": {
+        "courage_step": 1,
+        "reputation_step": 1
+      }
+    },
+    {
+      "id": "ch3_the_whispering_woods",
+      "title": "Chapter 3: The Traveling Merchant",
+      "chapterArtUrl": "assets/sagas/night_of_the_full_moon_ch3.webp",
+      "startingPrompt": "The woods grow denser, the moonlight barely piercing the canopy. You hear the rhythmic tinkling of bells and the creak of a wagon. A strange man in a colorful coat sits atop a mule-drawn carriage, his eyes twinkling with a predatory merchant's gleam. 'A dangerous night for a little girl,' he chuckles.",
+      "loreContext": "The Merchant sells relics and cards from 'The Great Library' of the game's lore. He is neutral but opportunistic.",
+      "hiddenKnowledge": "The merchant can provide 'Blessings' if the player has enough gold or reputation.",
+      "plotAnchors": [
+        "The Traveling Merchant offers three specific items for sale.",
+        "A choice to trade something valuable for a permanent 'Blessing'.",
+        "Escape an ambush by forest goblins or shadows."
+      ],
+      "importantNouns": ["Traveling Merchant", "Mule", "Blessing", "Forest Goblins"],
+      "hiddenGoal": "Successfully navigate the merchant encounter and move deeper into the forest.",
+      "mechanics": {
+        "moon_phase": "Half Moon"
+      }
+    },
+    {
+      "id": "ch4_the_path_of_trials",
+      "title": "Chapter 4: The Mystery Man",
+      "chapterArtUrl": "assets/sagas/night_of_the_full_moon_ch4.webp",
+      "startingPrompt": "The path opens into a moonlit glade where a man in a tattered noble's cloak stands waiting. He holds a deck of cards and watches you with an unsettling familiarity. 'You seek the old woman,' he says, his voice like dry leaves. 'But are you prepared for what she has become?'",
+      "loreContext": "The Mystery Man is a key figure who knows the truth about the forest's curse.",
+      "hiddenKnowledge": "He is testing Little Red to see if she has the 'Spirit' to break the cycle.",
+      "plotAnchors": [
+        "A deep conversation with the Mystery Man about family secrets.",
+        "A trial of cards or a combat encounter with a summoned shadow.",
+        "Choosing whether to trust the Mystery Man's cryptic warnings."
+      ],
+      "importantNouns": ["Mystery Man", "Family Secrets", "Glade", "Shadow"],
+      "hiddenGoal": "Survive the trial and learn the next clue about Grandmother.",
+      "mechanics": {
+        "courage_step": 2,
+        "reputation_step": 2
+      }
+    },
+    {
+      "id": "ch5_the_edge_of_night",
+      "title": "Chapter 5: The Wolf's Den",
+      "chapterArtUrl": "assets/sagas/night_of_the_full_moon_ch5.webp",
+      "startingPrompt": "The air is thick with the scent of pine and wet fur. You have reached the jagged peaks where the great wolves roam. A massive cave mouth looms ahead, the entrance decorated with the bones of those who failed to find their way. You feel the presence of the Werewolf King nearby.",
+      "loreContext": "The Werewolf King is the guardian of the final path. He represents the wild, untamed curse.",
+      "hiddenKnowledge": "If Reputation is high, he may be reasoned with. If Courage is high, he must be fought.",
+      "plotAnchors": [
+        "Confronting the Werewolf King.",
+        "Discovering Grandmother's lost glasses or shawl near the cave.",
+        "Deciding the fate of a trapped wolf cub."
+      ],
+      "importantNouns": ["Werewolf King", "Wolf Den", "Grandmother's Glasses"],
+      "hiddenGoal": "Pass through the Wolf's Den to the final destination.",
+      "mechanics": {
+        "moon_phase": "Gibbous"
+      }
+    },
+    {
+      "id": "ch6_the_full_moon",
+      "title": "Chapter 6: The Truth Revealed",
+      "chapterArtUrl": "assets/sagas/night_of_the_full_moon_ch6.webp",
+      "startingPrompt": "Finally, you see it: a lonely cottage on the highest hill, illuminated by the massive, silver orb of the Full Moon. The door is slightly ajar. You step inside, heart pounding. But it is not Grandmother you see sitting in the rocking chair, but a figure draped in shadows and moonlight.",
+      "loreContext": "The ending varies based on the player's Courage and Reputation throughout the Saga.",
+      "hiddenKnowledge": "Grandmother might be the Witch, the Werewolf, or a prisoner. The Mystery Man might reappear.",
+      "plotAnchors": [
+        "The final confrontation with the source of the forest's curse.",
+        "Learning the true story of the Red Hood and the Moon's Blessing.",
+        "The ultimate choice: Banish the curse, embrace it, or save Grandmother at a terrible cost.",
+        "The resolution of Little Red Riding Hood's journey."
+      ],
+      "importantNouns": ["Full Moon", "Shadow Figure", "Moon's Blessing", "Grandmother"],
+      "hiddenGoal": "Complete the final trial and discover Grandmother's true fate.",
+      "mechanics": {
+        "moon_phase": "Full Moon"
+      }
+    }
+  ]
+}
