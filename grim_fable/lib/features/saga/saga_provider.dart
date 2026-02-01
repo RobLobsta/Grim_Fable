@@ -230,8 +230,20 @@ Moon Phase: $moonPhase.
 Courage represents Little Red's bravery and willingness to fight.
 Reputation represents her kindness and honesty.
 As the Moon Phase progresses toward 'Full Moon', descriptions should become more eerie and dangerous.
-When the player makes a significant moral or brave choice, you MUST include tags like [COURAGE: +1] or [REPUTATION: +1].
-If Little Red picks up a class-defining item (Sword, Bow, Herbs, Spellbook) in Chapter 1, you MUST include the tag [CLASS_UPGRADE: ClassName] (Knight, Ranger, Apothecary, or Witch).
+
+STORY GUIDELINES:
+- Prioritize LONGER encounters. Do not rush to the next plot anchor.
+- Include riddles, puzzles, or deep conversations that require multiple turns to resolve.
+- Allow the player to explore and interact with the environment without forcing them toward the goal.
+- NEVER use corruption mechanics for this saga.
+- When the player makes a significant moral or brave choice, you MUST include tags like [COURAGE: +1] or [REPUTATION: +1].
+- In Chapter 1, if Little Red picks up a class-defining item, you MUST include the tag [CLASS_UPGRADE: ClassName].
+  - Sword -> Knight
+  - Bow -> Ranger
+  - Herbs -> Apothecary
+  - Spellbook -> Witch
+  - Rosary or Holy Water -> Nun
+  - Wrench or Gears -> Mechanic
 """;
     }
 

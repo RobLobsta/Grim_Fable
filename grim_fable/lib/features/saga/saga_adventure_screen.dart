@@ -95,13 +95,18 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    final isFullMoon = saga.id == 'night_of_the_full_moon';
+
     // Subtle corruption effect: parchment turns slightly redder as corruption increases
     final corruption = (progress.mechanicsState['corruption'] ?? 0.0).toDouble();
-    final parchmentColor = Color.lerp(
-      const Color(0xFFE5D3B3),
-      const Color(0xFF8B0000).withValues(alpha: 0.3),
-      corruption,
-    ) ?? const Color(0xFFE5D3B3);
+    final parchmentColor = isFullMoon
+        ? const Color(0xFF0D1B2A) // Dark night forest blue
+        : Color.lerp(
+            const Color(0xFFE5D3B3),
+            const Color(0xFF8B0000).withValues(alpha: 0.3),
+            corruption,
+          ) ??
+            const Color(0xFFE5D3B3);
 
     return Scaffold(
       backgroundColor: const Color(0xFF1A1510),
@@ -120,91 +125,19 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
           Expanded(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: _buildParchmentDecoration(),
-              child: ClipPath(
-                clipper: TatteredEdgeClipper(),
-                child: Container(
-                  color: parchmentColor,
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(24.0),
-                    itemCount: adventure.storyHistory.length + (_isLoading ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index < adventure.storyHistory.length) {
-                        final segment = adventure.storyHistory[index];
-                        final isLast = index == adventure.storyHistory.length - 1;
-                        final isTransition = segment.playerInput.startsWith("Transition to");
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            if (index > 0 && !isTransition)
-                               _buildPlayerAction(segment.playerInput),
-
-                            if (isTransition)
-                               _buildChapterTransitionHeader(),
-
-                            StorySegmentWidget(
-                              response: segment.aiResponse,
-                              animate: isLast && _animatedTexts[index] == null,
-                              onProgress: _scrollToBottom,
-                              onFinishedTyping: () {
-                                if (isLast && mounted) {
-                                  setState(() {
-                                    _animatedTexts[index] = segment.aiResponse;
-                                    _isTyping = false;
-                                  });
-                                  _scrollToBottom();
-                                }
-                              },
-                              // Custom text style for parchment
-                              textStyle: GoogleFonts.crimsonPro(
-                                color: const Color(0xFF2C2C2C),
-                                fontSize: 18,
-                                height: 1.5,
-                              ),
-                              decoration: const BoxDecoration(color: Colors.transparent),
-                            ),
-                            // Recommended choices
-                            if (isLast &&
-                                segment.recommendedChoices != null &&
-                                segment.recommendedChoices!.isNotEmpty &&
-                                adventure.isActive &&
-                                !_isTyping) ...[
-                              const SizedBox(height: 16),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: segment.recommendedChoices!.map((choice) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 8.0),
-                                  child: ElevatedButton(
-                                    onPressed: (_isLoading || _isTyping) ? null : () => _submitAction(action: choice),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF4A0000).withValues(alpha: 0.1),
-                                      foregroundColor: const Color(0xFF4A0000),
-                                      padding: const EdgeInsets.symmetric(vertical: 16),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                        side: BorderSide(color: const Color(0xFF4A0000).withValues(alpha: 0.3)),
-                                      ),
-                                      elevation: 0,
-                                    ),
-                                    child: Text(
-                                      choice.toUpperCase(),
-                                      style: GoogleFonts.grenze(fontSize: 14, letterSpacing: 2, fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                )).toList(),
-                              ),
-                            ],
-                            const SizedBox(height: 24),
-                          ],
-                        );
-                      }
-                      return const Center(child: CircularProgressIndicator(color: Color(0xFF4A0000)));
-                    },
-                  ),
-                ),
-              ),
+              decoration: isFullMoon ? _buildNightDecoration() : _buildParchmentDecoration(),
+              child: isFullMoon
+                  ? Container(
+                      color: parchmentColor,
+                      child: _buildHistoryList(adventure, _isLoading, isFullMoon),
+                    )
+                  : ClipPath(
+                      clipper: TatteredEdgeClipper(),
+                      child: Container(
+                        color: parchmentColor,
+                        child: _buildHistoryList(adventure, _isLoading, isFullMoon),
+                      ),
+                    ),
             ),
           ),
           _buildInputArea(adventure.isActive, corruption, saga.id),
@@ -213,34 +146,112 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
     );
   }
 
-  Widget _buildChapterTransitionHeader() {
+  Widget _buildHistoryList(dynamic adventure, bool isLoading, bool isFullMoon) {
+    return ListView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(24.0),
+      itemCount: adventure.storyHistory.length + (isLoading ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index < adventure.storyHistory.length) {
+          final segment = adventure.storyHistory[index];
+          final isLast = index == adventure.storyHistory.length - 1;
+          final isTransition = segment.playerInput.startsWith("Transition to");
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (index > 0 && !isTransition) _buildPlayerAction(segment.playerInput, isFullMoon: isFullMoon),
+
+              if (isTransition) _buildChapterTransitionHeader(isFullMoon: isFullMoon),
+
+              StorySegmentWidget(
+                response: segment.aiResponse,
+                animate: isLast && _animatedTexts[index] == null,
+                onProgress: _scrollToBottom,
+                onFinishedTyping: () {
+                  if (isLast && mounted) {
+                    setState(() {
+                      _animatedTexts[index] = segment.aiResponse;
+                      _isTyping = false;
+                    });
+                    _scrollToBottom();
+                  }
+                },
+                // Custom text style for parchment
+                textStyle: GoogleFonts.crimsonPro(
+                  color: isFullMoon ? Colors.white.withValues(alpha: 0.8) : const Color(0xFF2C2C2C),
+                  fontSize: 18,
+                  height: 1.5,
+                ),
+                decoration: const BoxDecoration(color: Colors.transparent),
+              ),
+              // Recommended choices
+              if (isLast && segment.recommendedChoices != null && segment.recommendedChoices!.isNotEmpty && adventure.isActive && !_isTyping) ...[
+                const SizedBox(height: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: segment.recommendedChoices!
+                      .map((choice) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: ElevatedButton(
+                              onPressed: (_isLoading || _isTyping) ? null : () => _submitAction(action: choice),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isFullMoon ? Colors.white.withValues(alpha: 0.05) : const Color(0xFF4A0000).withValues(alpha: 0.1),
+                                foregroundColor: isFullMoon ? const Color(0xFF90E0EF) : const Color(0xFF4A0000),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: BorderSide(color: isFullMoon ? Colors.white.withValues(alpha: 0.1) : const Color(0xFF4A0000).withValues(alpha: 0.3)),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: Text(
+                                choice.toUpperCase(),
+                                style: GoogleFonts.grenze(fontSize: 14, letterSpacing: 2, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ))
+                      .toList(),
+                ),
+              ],
+              const SizedBox(height: 24),
+            ],
+          );
+        }
+        return Center(child: CircularProgressIndicator(color: isFullMoon ? const Color(0xFF90E0EF) : const Color(0xFF4A0000)));
+      },
+    );
+  }
+
+  Widget _buildChapterTransitionHeader({bool isFullMoon = false}) {
+    final color = isFullMoon ? const Color(0xFF90E0EF) : const Color(0xFF4A0000);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 32),
       child: Column(
         children: [
           Row(
             children: [
-              const Expanded(child: Divider(color: Color(0xFF4A0000), thickness: 1.5)),
+              Expanded(child: Divider(color: color, thickness: 1.5)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   "CHAPTER COMPLETE",
                   style: GoogleFonts.grenze(
-                    color: const Color(0xFF4A0000),
+                    color: color,
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 4,
                   ),
                 ),
               ),
-              const Expanded(child: Divider(color: Color(0xFF4A0000), thickness: 1.5)),
+              Expanded(child: Divider(color: color, thickness: 1.5)),
             ],
           ),
           const SizedBox(height: 8),
           Text(
             "THE TALE CONTINUES...",
             style: GoogleFonts.crimsonPro(
-              color: const Color(0xFF4A0000).withValues(alpha: 0.7),
+              color: color.withValues(alpha: 0.7),
               fontSize: 14,
               fontWeight: FontWeight.bold,
               letterSpacing: 2,
@@ -251,18 +262,32 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
     );
   }
 
-  Widget _buildPlayerAction(String input) {
+  Widget _buildPlayerAction(String input, {bool isFullMoon = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Text(
         "> $input",
         style: GoogleFonts.grenze(
-          color: const Color(0xFF4A0000),
+          color: isFullMoon ? const Color(0xFF62929E) : const Color(0xFF4A0000),
           fontSize: 20,
           fontWeight: FontWeight.bold,
           fontStyle: FontStyle.italic,
         ),
       ),
+    );
+  }
+
+  BoxDecoration _buildNightDecoration() {
+    return BoxDecoration(
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.5),
+          blurRadius: 20,
+          spreadRadius: 2,
+        ),
+      ],
     );
   }
 
@@ -368,9 +393,13 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
   }
 
   void _showChronicle(BuildContext context, dynamic saga, dynamic progress) {
+    final isFullMoon = saga.id == 'night_of_the_full_moon';
+    final primaryColor = isFullMoon ? const Color(0xFF90E0EF) : const Color(0xFF4A0000);
+    final textColor = isFullMoon ? Colors.white.withValues(alpha: 0.9) : const Color(0xFF2C2C2C);
+
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFFE5D3B3),
+      backgroundColor: isFullMoon ? const Color(0xFF0D1B2A) : const Color(0xFFE5D3B3),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -383,17 +412,17 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
               Text(
                 "THE CHRONICLE",
                 style: GoogleFonts.grenze(
-                  color: const Color(0xFF4A0000),
+                  color: primaryColor,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const Divider(color: Color(0xFF4A0000)),
+              Divider(color: primaryColor),
               const SizedBox(height: 16),
               AutoSizeText(
                 "CHAPTER: ${saga.chapters[progress.currentChapterIndex].title.toUpperCase()}",
                 style: GoogleFonts.grenze(
-                  color: const Color(0xFF2C2C2C),
+                  color: textColor,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -441,7 +470,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                 Text(
                   "MOON PHASE: ${(progress.mechanicsState['moon_phase'] ?? 'Crescent').toString().toUpperCase()}",
                   style: GoogleFonts.grenze(
-                    color: const Color(0xFF2C2C2C),
+                    color: textColor,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
@@ -452,7 +481,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
               Text(
                 "WITNESSED ANCHORS:",
                 style: GoogleFonts.grenze(
-                  color: const Color(0xFF2C2C2C),
+                  color: textColor,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -462,10 +491,10 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                   itemCount: progress.witnessedAnchors.length,
                   itemBuilder: (context, index) {
                     return ListTile(
-                      leading: const Icon(Icons.bookmark, color: Color(0xFF4A0000)),
+                      leading: Icon(Icons.bookmark, color: primaryColor),
                       title: Text(
                         progress.witnessedAnchors[index],
-                        style: GoogleFonts.crimsonPro(color: const Color(0xFF2C2C2C)),
+                        style: GoogleFonts.crimsonPro(color: textColor),
                       ),
                     );
                   },

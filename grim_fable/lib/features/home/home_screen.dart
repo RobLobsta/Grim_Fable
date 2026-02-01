@@ -18,23 +18,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _unlockAllChapters() async {
     try {
       final sagas = await ref.read(sagasProvider.future);
-      final lob = sagas.firstWhere((s) => s.id == 'legacy_of_blood');
       final repo = ref.read(sagaRepositoryProvider);
 
-      final progress = SagaProgress(
-        sagaId: lob.id,
-        currentChapterIndex: lob.chapters.length - 1,
-        completedChapterIds: lob.chapters.map((c) => c.id).toList(),
-        adventureId: 'debug_adventure_${DateTime.now().millisecondsSinceEpoch}',
-        mechanicsState: {'corruption': 0.5},
-      );
+      for (final saga in sagas) {
+        final progress = SagaProgress(
+          sagaId: saga.id,
+          currentChapterIndex: saga.chapters.length - 1,
+          completedChapterIds: saga.chapters.map((c) => c.id).toList(),
+          adventureId: 'debug_adventure_${saga.id}_${DateTime.now().millisecondsSinceEpoch}',
+          mechanicsState: saga.id == 'legacy_of_blood'
+              ? {'corruption': 0.5}
+              : {'courage': 10, 'reputation': 10, 'moon_phase': 'Full Moon'},
+        );
+        await repo.saveProgress(progress);
+      }
 
-      await repo.saveProgress(progress);
       ref.invalidate(sagaProgressProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('All Legacy of Blood chapters unlocked!')),
+          const SnackBar(content: Text('All Saga chapters unlocked!')),
         );
       }
     } catch (e) {
@@ -54,7 +57,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           ListTile(
             leading: const Icon(Icons.lock_open_outlined),
-            title: const Text('Unlock All Legacy of Blood Chapters'),
+            title: const Text('Unlock All Saga Chapters'),
             onTap: () {
               Navigator.pop(context);
               _unlockAllChapters();
