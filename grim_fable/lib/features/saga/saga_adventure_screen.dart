@@ -96,17 +96,28 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
     }
 
     final isFullMoon = saga.id == 'night_of_the_full_moon';
+    final isBhaal = saga.id == 'throne_of_bhaal';
+    final isDarkTheme = isFullMoon || isBhaal;
 
-    // Subtle corruption effect: parchment turns slightly redder as corruption increases
+    // Subtle mechanics effects on background color
     final corruption = (progress.mechanicsState['corruption'] ?? 0.0).toDouble();
+    final infamy = (progress.mechanicsState['infamy'] ?? 0).toDouble();
+    final infamyFactor = (infamy / 15.0).clamp(0.0, 1.0);
+
     final parchmentColor = isFullMoon
         ? const Color(0xFF0D1B2A) // Dark night forest blue
-        : Color.lerp(
-            const Color(0xFFE5D3B3),
-            const Color(0xFF8B0000).withValues(alpha: 0.3),
-            corruption,
-          ) ??
-            const Color(0xFFE5D3B3);
+        : isBhaal
+            ? Color.lerp(
+                const Color(0xFF1A1A1A), // Dark charcoal
+                const Color(0xFF4A0000), // Deep blood-red
+                infamyFactor,
+              )!
+            : Color.lerp(
+                const Color(0xFFE5D3B3),
+                const Color(0xFF8B0000).withValues(alpha: 0.3),
+                corruption,
+              ) ??
+                const Color(0xFFE5D3B3);
 
     return Scaffold(
       backgroundColor: const Color(0xFF1A1510),
@@ -125,22 +136,37 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
           Expanded(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: isFullMoon ? _buildNightDecoration() : _buildParchmentDecoration(),
-              child: isFullMoon
+              decoration: isDarkTheme ? _buildNightDecoration() : _buildParchmentDecoration(),
+              child: isDarkTheme
                   ? Stack(
                       children: [
                         Container(color: parchmentColor),
-                        // Forest background with silhouettes
-                        Positioned.fill(
-                          child: Opacity(
-                            opacity: 0.2,
-                            child: Image.asset(
-                              saga.coverArtUrl ?? 'assets/sagas/night_of_the_full_moon.webp',
-                              fit: BoxFit.cover,
-                              alignment: Alignment.bottomCenter,
+                        if (isFullMoon) ...[
+                          // Forest background with silhouettes
+                          Positioned.fill(
+                            child: Opacity(
+                              opacity: 0.2,
+                              child: Image.asset(
+                                saga.coverArtUrl ?? 'assets/sagas/night_of_the_full_moon.webp',
+                                fit: BoxFit.cover,
+                                alignment: Alignment.bottomCenter,
+                              ),
                             ),
                           ),
-                        ),
+                        ],
+                        if (isBhaal) ...[
+                          // Throne of Bhaal cover art overlay
+                          Positioned.fill(
+                            child: Opacity(
+                              opacity: (infamyFactor * 0.3).clamp(0.0, 0.3),
+                              child: Image.asset(
+                                saga.coverArtUrl ?? 'assets/sagas/throne_of_bhaal.webp',
+                                fit: BoxFit.cover,
+                                alignment: Alignment.center,
+                              ),
+                            ),
+                          ),
+                        ],
                         // Atmospheric mist/gradient at the bottom to ground the silhouettes
                         Positioned(
                           bottom: 0,
@@ -154,20 +180,20 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                                 end: Alignment.bottomCenter,
                                 colors: [
                                   Colors.transparent,
-                                  Colors.black.withValues(alpha: 0.6),
+                                  Colors.black.withValues(alpha: isFullMoon ? 0.6 : 0.4),
                                 ],
                               ),
                             ),
                           ),
                         ),
-                        _buildHistoryList(adventure, _isLoading, isFullMoon),
+                        _buildHistoryList(adventure, _isLoading, isDarkTheme, saga),
                       ],
                     )
                   : ClipPath(
                       clipper: TatteredEdgeClipper(),
                       child: Container(
                         color: parchmentColor,
-                        child: _buildHistoryList(adventure, _isLoading, isFullMoon),
+                        child: _buildHistoryList(adventure, _isLoading, isDarkTheme, saga),
                       ),
                     ),
             ),
@@ -178,7 +204,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
     );
   }
 
-  Widget _buildHistoryList(dynamic adventure, bool isLoading, bool isFullMoon) {
+  Widget _buildHistoryList(dynamic adventure, bool isLoading, bool isDarkTheme, dynamic saga) {
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.all(24.0),
@@ -188,13 +214,19 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
           final segment = adventure.storyHistory[index];
           final isLast = index == adventure.storyHistory.length - 1;
           final isTransition = segment.playerInput.startsWith("Transition to");
+          final isStart = index == 0 && segment.playerInput.startsWith("Begin the Saga");
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (index > 0 && !isTransition) _buildPlayerAction(segment.playerInput, isFullMoon: isFullMoon),
+              if (isStart) _buildChapterArt(saga.chapters[0]),
 
-              if (isTransition) _buildChapterTransitionHeader(isFullMoon: isFullMoon),
+              if (index > 0 && !isTransition) _buildPlayerAction(segment.playerInput, isDarkTheme: isDarkTheme),
+
+              if (isTransition) ...[
+                _buildChapterTransitionHeader(isDarkTheme: isDarkTheme),
+                _buildChapterArtFromTitle(segment.playerInput.replaceFirst("Transition to ", ""), saga),
+              ],
 
               StorySegmentWidget(
                 response: segment.aiResponse,
@@ -211,7 +243,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                 },
                 // Custom text style for parchment
                 textStyle: GoogleFonts.crimsonPro(
-                  color: isFullMoon ? Colors.white.withValues(alpha: 0.8) : const Color(0xFF2C2C2C),
+                  color: isDarkTheme ? Colors.white.withValues(alpha: 0.8) : const Color(0xFF2C2C2C),
                   fontSize: 18,
                   height: 1.5,
                 ),
@@ -228,12 +260,12 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                             child: ElevatedButton(
                               onPressed: (_isLoading || _isTyping) ? null : () => _submitAction(action: choice),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: isFullMoon ? Colors.white.withValues(alpha: 0.05) : const Color(0xFF4A0000).withValues(alpha: 0.1),
-                                foregroundColor: isFullMoon ? const Color(0xFF90E0EF) : const Color(0xFF4A0000),
+                                backgroundColor: isDarkTheme ? Colors.white.withValues(alpha: 0.05) : const Color(0xFF4A0000).withValues(alpha: 0.1),
+                                foregroundColor: isDarkTheme ? const Color(0xFF90E0EF) : const Color(0xFF4A0000),
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  side: BorderSide(color: isFullMoon ? Colors.white.withValues(alpha: 0.1) : const Color(0xFF4A0000).withValues(alpha: 0.3)),
+                                  side: BorderSide(color: isDarkTheme ? Colors.white.withValues(alpha: 0.1) : const Color(0xFF4A0000).withValues(alpha: 0.3)),
                                 ),
                                 elevation: 0,
                               ),
@@ -250,15 +282,45 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
             ],
           );
         }
-        return Center(child: CircularProgressIndicator(color: isFullMoon ? const Color(0xFF90E0EF) : const Color(0xFF4A0000)));
+        return Center(child: CircularProgressIndicator(color: isDarkTheme ? const Color(0xFF90E0EF) : const Color(0xFF4A0000)));
       },
     );
   }
 
-  Widget _buildChapterTransitionHeader({bool isFullMoon = false}) {
-    final color = isFullMoon ? const Color(0xFF90E0EF) : const Color(0xFF4A0000);
+  Widget _buildChapterArtFromTitle(String title, dynamic saga) {
+    final chapter = saga.chapters.where((c) => c.title == title).firstOrNull;
+    if (chapter == null) return const SizedBox.shrink();
+    return _buildChapterArt(chapter);
+  }
+
+  Widget _buildChapterArt(dynamic chapter) {
+    final artUrl = chapter.chapterArtUrl;
+    if (artUrl == null) return const SizedBox.shrink();
+
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 32),
+      height: 180,
+      margin: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        image: DecorationImage(
+          image: artUrl.startsWith('assets/') ? AssetImage(artUrl) as ImageProvider : NetworkImage(artUrl) as ImageProvider,
+          fit: BoxFit.cover,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChapterTransitionHeader({bool isDarkTheme = false}) {
+    final color = isDarkTheme ? const Color(0xFF90E0EF) : const Color(0xFF4A0000);
+    return Container(
+      padding: const EdgeInsets.only(top: 32, bottom: 16),
       child: Column(
         children: [
           Row(
@@ -294,13 +356,13 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
     );
   }
 
-  Widget _buildPlayerAction(String input, {bool isFullMoon = false}) {
+  Widget _buildPlayerAction(String input, {bool isDarkTheme = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Text(
         "> $input",
         style: GoogleFonts.grenze(
-          color: isFullMoon ? const Color(0xFF62929E) : const Color(0xFF4A0000),
+          color: isDarkTheme ? const Color(0xFF62929E) : const Color(0xFF4A0000),
           fontSize: 20,
           fontWeight: FontWeight.bold,
           fontStyle: FontStyle.italic,
@@ -428,12 +490,16 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
 
   void _showChronicle(BuildContext context, dynamic saga, dynamic progress) {
     final isFullMoon = saga.id == 'night_of_the_full_moon';
-    final primaryColor = isFullMoon ? const Color(0xFF90E0EF) : const Color(0xFF4A0000);
-    final textColor = isFullMoon ? Colors.white.withValues(alpha: 0.9) : const Color(0xFF2C2C2C);
+    final isBhaal = saga.id == 'throne_of_bhaal';
+    final isDarkTheme = isFullMoon || isBhaal;
+    final primaryColor = isDarkTheme ? const Color(0xFF90E0EF) : const Color(0xFF4A0000);
+    final textColor = isDarkTheme ? Colors.white.withValues(alpha: 0.9) : const Color(0xFF2C2C2C);
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: isFullMoon ? const Color(0xFF0D1B2A) : const Color(0xFFE5D3B3),
+      backgroundColor: isDarkTheme
+          ? (isBhaal ? const Color(0xFF1A1A1A) : const Color(0xFF0D1B2A))
+          : const Color(0xFFE5D3B3),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
