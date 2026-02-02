@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'saga_provider.dart';
 import '../character/character_provider.dart';
 import '../../shared/widgets/story_segment_widget.dart';
+import '../../shared/widgets/night_forest_painter.dart';
 import '../../shared/widgets/inventory_dialog.dart';
 import '../../core/utils/extensions.dart';
 
@@ -136,20 +137,19 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
           Expanded(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              clipBehavior: Clip.antiAlias,
               decoration: isDarkTheme ? _buildNightDecoration() : _buildParchmentDecoration(),
               child: isDarkTheme
                   ? Stack(
                       children: [
                         Container(color: parchmentColor),
                         if (isFullMoon) ...[
-                          // Forest background with silhouettes
+                          // Forest background with custom tree silhouettes
                           Positioned.fill(
                             child: Opacity(
-                              opacity: 0.2,
-                              child: Image.asset(
-                                saga.coverArtUrl ?? 'assets/sagas/night_of_the_full_moon.webp',
-                                fit: BoxFit.cover,
-                                alignment: Alignment.bottomCenter,
+                              opacity: 0.4,
+                              child: CustomPaint(
+                                painter: NightForestPainter(),
                               ),
                             ),
                           ),

@@ -142,24 +142,12 @@ class _AdventureSelectionScreenState extends ConsumerState<AdventureSelectionScr
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => context.pop(),
-              child: const Text(
-                'GRIM FABLE',
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                style: TextStyle(
-                  fontFamily: 'Serif',
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 4,
-                  color: Color(0xFFC0C0C0),
-                ),
-              ),
-            ),
+          IconButton(
+            icon: const Icon(Icons.arrow_back, color: Color(0xFFC0C0C0), size: 28),
+            onPressed: () => context.pop(),
+            tooltip: 'Back to Main Menu',
           ),
-          const SizedBox(width: 8),
+          const Spacer(),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
