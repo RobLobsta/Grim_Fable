@@ -355,6 +355,8 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
       hintText = "The armor's whispers drown out your thoughts...";
     } else if (sagaId == 'night_of_the_full_moon') {
       hintText = "Guide Little Red through the forest...";
+    } else if (sagaId == 'throne_of_bhaal') {
+      hintText = "What will the Lord of Murder do next?";
     }
 
     return Container(
@@ -507,6 +509,15 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
                   ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              if (saga.id == 'throne_of_bhaal') ...[
+                _buildStatChip(
+                  Icons.local_fire_department,
+                  "INFAMY",
+                  progress.mechanicsState['infamy'] ?? 0,
+                  Colors.deepOrange,
                 ),
                 const SizedBox(height: 16),
               ],
