@@ -252,12 +252,10 @@ STORY GUIDELINES:
 """;
     } else if (saga.id == 'throne_of_bhaal') {
       final infamy = progress.mechanicsState['infamy'] ?? 0;
-      final worldEvents = (progress.mechanicsState['world_events'] as List<dynamic>?)?.join(", ") ?? "None";
       final inConversationWith = progress.mechanicsState['active_conversation_partner'];
 
       mechanicsContext = """
 Current Infamy: $infamy.
-World Events & Decisions: $worldEvents.
 Active Conversation: ${inConversationWith ?? 'None'}.
 
 STORY GUIDELINES:
@@ -276,6 +274,17 @@ STORY GUIDELINES:
     final chapterLore = currentChapter.loreContext != null ? "\nChapter Lore: ${currentChapter.loreContext}" : "";
     final knowledge = currentChapter.hiddenKnowledge != null ? "\nHidden Knowledge (Secret): ${currentChapter.hiddenKnowledge}" : "";
 
+    final narrativeHistory = (progress.mechanicsState['narrative_history'] as List<dynamic>?)?.join("\n- ") ?? "None";
+    final witnessedAnchors = progress.witnessedAnchors.join("\n- ");
+
+    final narrativeContext = """
+Narrative History (Past Significant Events):
+- $narrativeHistory
+
+Witnessed Plot Anchors:
+- ${witnessedAnchors.isEmpty ? "None" : witnessedAnchors}
+""";
+
     final systemMessage = """
 You are a creative storyteller for Grim Fable, currently running a SAGA MODE adventure.
 Saga: ${saga.title}
@@ -288,6 +297,7 @@ IMPORTANT: When this objective is met, you MUST append the tag [CHAPTER_COMPLETE
 Lore Lexicon (Important Nouns): ${currentChapter.importantNouns.join(", ")}
 Plot Anchors to weave in: ${currentChapter.plotAnchors.join(" | ")}
 $globalLore$chapterLore$knowledge
+$narrativeContext
 $mechanicsContext
 
 Inventory: $inventoryList
@@ -572,50 +582,30 @@ ${saga.id == 'night_of_the_full_moon' ? "IMPORTANT: If the player meets the Trav
       cleanResponse = cleanResponse.replaceAll(classRegex, '');
     }
 
-    // For Throne of Bhaal: World Events and Conversation tags
+    // Process Conversation tags (currently Throne of Bhaal specific)
     final activeSaga = _ref.read(activeSagaProvider);
     if (activeSaga?.id == 'throne_of_bhaal') {
       final convRegex = RegExp(r"\[CONVERSATION:\s*(.+?)\]");
-      final eventRegex = RegExp(r"\[WORLD_EVENT:\s*(.+?)\]");
-
       final progress = _ref.read(sagaProgressProvider);
       if (progress != null) {
         final newState = Map<String, dynamic>.from(progress.mechanicsState);
         bool changed = false;
 
-        // Conversation
         final convMatch = convRegex.firstMatch(response);
         if (convMatch != null) {
           newState['active_conversation_partner'] = convMatch.group(1)!;
           cleanResponse = cleanResponse.replaceAll(convRegex, '');
           changed = true;
         } else if (newState.containsKey('active_conversation_partner')) {
-          // NLP Fallback for conversation end detection
           if (!_detectConversationNLP(cleanResponse)) {
             newState.remove('active_conversation_partner');
             changed = true;
           }
         } else {
-          // NLP Fallback for conversation start detection
           if (_detectConversationNLP(cleanResponse)) {
-            newState['active_conversation_partner'] = "NPC"; // Generic fallback
+            newState['active_conversation_partner'] = "NPC";
             changed = true;
           }
-        }
-
-        // World Events
-        final eventMatches = eventRegex.allMatches(response);
-        if (eventMatches.isNotEmpty) {
-          final List<String> currentEvents = List<String>.from(newState['world_events'] ?? []);
-          for (final m in eventMatches) {
-            final event = m.group(1)!;
-            if (!currentEvents.contains(event)) {
-              currentEvents.add(event);
-            }
-          }
-          newState['world_events'] = currentEvents;
-          cleanResponse = cleanResponse.replaceAll(eventRegex, '');
-          changed = true;
         }
 
         if (changed) {
@@ -624,6 +614,36 @@ ${saga.id == 'night_of_the_full_moon' ? "IMPORTANT: If the player meets the Trav
           _ref.read(sagaProgressProvider.notifier).state = updatedProgress;
         }
       }
+    }
+
+    // Process Narrative / World Event tags (Global)
+    final narrativeRegex = RegExp(r"\[NARRATIVE:\s*(.+?)\]");
+    final worldEventRegex = RegExp(r"\[WORLD_EVENT:\s*(.+?)\]");
+    final narrativeMatches = [...narrativeRegex.allMatches(response), ...worldEventRegex.allMatches(response)];
+
+    if (narrativeMatches.isNotEmpty) {
+      final progress = _ref.read(sagaProgressProvider);
+      if (progress != null) {
+        final newState = Map<String, dynamic>.from(progress.mechanicsState);
+        // Support both old 'world_events' and new 'narrative_history' for backwards compatibility if needed,
+        // but we'll migrate to 'narrative_history'.
+        final List<String> history = List<String>.from(newState['narrative_history'] ?? newState['world_events'] ?? []);
+
+        for (final m in narrativeMatches) {
+          final event = m.group(1)!;
+          if (!history.contains(event)) {
+            history.add(event);
+          }
+        }
+
+        newState['narrative_history'] = history;
+        if (newState.containsKey('world_events')) newState.remove('world_events');
+
+        final updatedProgress = progress.copyWith(mechanicsState: newState);
+        await _repository.saveProgress(updatedProgress);
+        _ref.read(sagaProgressProvider.notifier).state = updatedProgress;
+      }
+      cleanResponse = cleanResponse.replaceAll(narrativeRegex, '').replaceAll(worldEventRegex, '');
     }
 
     // Clean up extra whitespace from removed tags

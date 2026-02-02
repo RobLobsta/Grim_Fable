@@ -74,8 +74,10 @@ class ItemParser {
     // Common abstract nouns or phrases that are NOT items
     final nonItems = {
       'hope', 'way', 'mind', 'courage', 'strength', 'sight', 'consciousness',
-      'balance', 'patience', 'time', 'faith', 'will',
-      'perspective', 'control', 'footing', 'cool', 'breath', 'sense', 'lead'
+      'balance', 'patience', 'time', 'faith', 'will', 'perspective', 'control',
+      'footing', 'cool', 'breath', 'sense', 'lead', 'distance', 'glimpse',
+      'moment', 'thought', 'feeling', 'idea', 'seconds', 'minutes', 'hours',
+      'days', 'weeks', 'months', 'years', 'part', 'bit', 'piece', 'while'
     };
 
     if (nonItems.contains(lower)) return false;

@@ -19,11 +19,12 @@
       "id": "ch1_the_tomb",
       "title": "Chapter 1: The Blood Price",
       "chapterArtUrl": "assets/sagas/legacy_of_blood_ch1.webp",
-      "startingPrompt": "The air in the ancient tomb is thick with dust and the stench of decay. Norrec Vizharan stands before the ornate sarcophagus of Bartuc, his companions Sadun Tryst and Fauztin eagerly prying at the lid. They seek treasure, but Norrec feels a mounting sense of dread as the heavy stone shifts, revealing a suit of golden armor that seems to pulse with a faint, crimson light.",
+      "startingPrompt": "The Aranoch sun beats down on the desert campsite where Norrec Vizharan and his companions, Sadun Tryst and Fauztin, make their final preparations. Ahead, half-buried in the shifting sands, lies the entrance to the tomb of Bartuc, the Warlord of Blood. Greed glints in Sadun's eyes as he sharpens his blade, while Fauztin pores over an ancient, tattered map. Norrec, however, feels a cold dread that the heat of the desert cannot touch.",
       "loreContext": "The tomb is part of an ancient complex dedicated to the Vizjerei mages. The traps are lethal and designed to protect the most dangerous relics of the clan.",
       "hiddenKnowledge": "The armor is already sensing Norrec's weariness and is preparing to bond with him the moment he touches it. Sadun and Fauztin are doomed; their greed is a catalyst for the armor's awakening.",
       "plotAnchors": [
-        "Sadun and Fauztin are killed by the tomb's traps or sudden revenants.",
+        "Norrec and his companions approach the tomb's entrance and overcome the initial outer defenses or environmental hazards.",
+        "Sadun and Fauztin are killed by the tomb's traps or sudden revenants inside the inner chamber.",
         "Norrec is forced to don the golden armor of Bartuc to survive.",
         "Norrec escapes the collapsing tomb into the burning Aranoch desert."
       ],
