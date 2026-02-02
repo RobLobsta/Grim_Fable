@@ -3,21 +3,21 @@
   "title": "Night of the Full Moon",
   "series": "Fable Chronicles",
   "coverArtUrl": "assets/sagas/night_of_the_full_moon.webp",
-  "loreContext": "The Black Forest is a place of ancient curses and whispered legends. Little Red Riding Hood's grandmother has vanished, and the village of the Black Forest is gripped by fear. It is the night of the full moon, when the veil between worlds is thin and the monsters of the forest grow bold.",
+  "loreContext": "The Black Forest is a place of ancient curses and whispered legends. Little Red's grandmother has vanished, and the village of the Black Forest is gripped by fear. It is the night of the full moon, when the veil between worlds is thin and the monsters of the forest grow bold.",
   "requiredCharacter": {
-    "name": "Little Red Riding Hood",
+    "name": "Little Red",
     "occupation": "Village Girl",
     "backstory": "A young girl with a crimson hood, searching for her missing grandmother in the dangerous Black Forest.",
     "inventory": [],
     "itemDescriptions": {}
   },
-  "description": "Grandmother has disappeared. Armed with only her courage and a few supplies, Little Red Riding Hood must venture into the Black Forest. Along the way, she will encounter strange allies, deadly foes, and a mystery that traces back to her own bloodline.",
+  "description": "Grandmother has disappeared. Armed with only her courage and a few supplies, Little Red must venture into the Black Forest. Along the way, she will encounter strange allies, deadly foes, and a mystery that traces back to her own bloodline.",
   "chapters": [
     {
       "id": "ch1_the_departure",
       "title": "Chapter 1: The Departure",
       "chapterArtUrl": "assets/sagas/night_of_the_full_moon_ch1.webp",
-      "startingPrompt": "You wake with a start, the morning chill biting at your skin. The cottage is silent—too silent. Usually, the smell of baking bread and Grandmother's soft humming fill the air, but today there is only the cold. You climb out of bed and call her name, but only the wind in the chimney answers. Her bed is neatly made, untouched. Something is wrong. You must find her. You look around the room, feeling the weight of the mystery that has just begun.",
+      "startingPrompt": "The morning light filters through the cottage windows, but the usual warmth of the hearth is missing. Little Red opens her eyes to a silence that feels heavy and wrong. No bread baking, no soft humming from the kitchen—only the distant, lonely call of a bird from the Black Forest. She calls out for Grandmother, but her voice only echoes back from the empty rooms. The bed is neatly made, but Grandmother is nowhere to be found. Something is wrong. Little Red must find her.",
       "loreContext": "The village is the last bastion of safety, but even here, the shadows seem longer. Little Red has just discovered her grandmother is missing, and the silence in the cottage is deafening. The path to the forest entrance is a winding trail through autumn fields, now feeling more like a gauntlet. The environment should feel oppressive, with the silhouettes of the Black Forest looming in the distance like ancient, watchful giants.",
       "hiddenKnowledge": "Encourage clever branches: the player might find Grandmother's Red Hood hidden under the floorboards or find her Basket abandoned near the well. Moral dilemmas: help a suspicious villager for information or prioritize speed? Skill-based paths: use keen observation to find clues or use social standing to rally the villagers. The player's choice of equipment at the end of this chapter will determine their class upgrade: Sword (Knight), Bow (Ranger), Herbs (Apothecary), Spellbook (Witch), Rosary (Nun), or Wrench (Mechanic).",
       "plotAnchors": [
@@ -27,7 +27,7 @@
         "Reach the massive, gnarled gates of the Black Forest entrance.",
         "Choose a definitive piece of equipment that defines your path ahead."
       ],
-      "importantNouns": ["Little Red Riding Hood", "Grandmother", "Black Forest Gates", "Village Outskirts", "Autumn Fields", "Red Hood", "Grandmother's Basket"],
+      "importantNouns": ["Little Red", "Grandmother", "Black Forest Gates", "Village Outskirts", "Autumn Fields", "Red Hood", "Grandmother's Basket"],
       "hiddenGoal": "Reach the forest entrance and select a class-defining item.",
       "mechanics": {
         "courage": 0,
@@ -39,7 +39,7 @@
       "id": "ch2_whispering_woods",
       "title": "Chapter 2: The Whispering Woods",
       "chapterArtUrl": "assets/sagas/night_of_the_full_moon_ch2.webp",
-      "startingPrompt": "The gates of the forest creak shut behind you. The air is thick with the scent of damp earth and something sweet yet rotting. The trees seem to lean in, their branches like skeletal fingers. You hear whispers on the wind—voices that sound like friends, but the words are nonsensical. Your journey into the heart of the woods has truly begun.",
+      "startingPrompt": "The gates of the forest creak shut behind Little Red. The air is thick with the scent of damp earth and something sweet yet rotting. The trees seem to lean in, their branches like skeletal fingers. She hears whispers on the wind—voices that sound like friends, but the words are nonsensical. Her journey into the heart of the woods has truly begun.",
       "loreContext": "The outer woods are home to the 'Whisperers'—spirits of those who lost their way. They often speak in riddles or try to lure travelers off the path.",
       "hiddenKnowledge": "Encounters here should be non-linear. The player might find a lost child or a suspicious woodcutter. Choices should have long-term consequences: sparing a creature might provide an ally later, or taking a risk could yield a powerful artifact.",
       "plotAnchors": [
@@ -59,7 +59,7 @@
       "id": "ch3_deep_forest_shadows",
       "title": "Chapter 3: Deep Forest Shadows",
       "chapterArtUrl": "assets/sagas/night_of_the_full_moon_ch3.webp",
-      "startingPrompt": "The light of the moon struggle to reach the forest floor here. The shadows are long and seem to move independently of the trees. The path is narrow and choked with thorns. You feel as if you are being watched from every side. The challenges ahead will test everything you have learned so far.",
+      "startingPrompt": "The light of the moon struggles to reach the forest floor here. The shadows are long and seem to move independently of the trees. The path is narrow and choked with thorns. Little Red feels as if she is being watched from every side. The challenges ahead will test everything she has learned so far.",
       "loreContext": "The Deep Forest is where the truly dangerous creatures roam. The shadows can manifest as the player's fears.",
       "hiddenKnowledge": "The Traveling Merchant or the Mystery Man might appear here to offer aid or cryptic warnings. Skill-based branches: a character with high Courage might face the shadows directly, while one with high Reputation might find help from forest creatures.",
       "plotAnchors": [
@@ -77,7 +77,7 @@
       "id": "ch4_moonlit_path",
       "title": "Chapter 4: The Moonlit Path",
       "chapterArtUrl": "assets/sagas/night_of_the_full_moon_ch4.webp",
-      "startingPrompt": "The canopy thins, and the silver light of the moon bathes the path in a ghostly glow. Ahead, the forest begins to change—the trees are older, more twisted, and the air hums with ancient magic. You are approaching the source of the mystery. The cottage is near, but the path is treacherous.",
+      "startingPrompt": "The canopy thins, and the silver light of the moon bathes the path in a ghostly glow. Ahead, the forest begins to change—the trees are older, more twisted, and the air hums with ancient magic. Little Red is approaching the source of the mystery. The cottage is near, but the path is treacherous.",
       "loreContext": "The Moonlit Path is a threshold between the mundane world and the heart of the curse. Magic is stronger here.",
       "hiddenKnowledge": "The player's class choice should heavily influence their options here (e.g., the Nun can bless the path, the Mechanic can repair an ancient mechanism). Multiple paths to the goal: stealth, magic, or raw strength.",
       "plotAnchors": [
@@ -97,7 +97,7 @@
       "id": "ch5_castle_lair",
       "title": "Chapter 5: The Castle Lair",
       "chapterArtUrl": "assets/sagas/night_of_the_full_moon_ch5.webp",
-      "startingPrompt": "Emerging from the trees, you see it—not a simple cottage, but a structure far more imposing. It looks like a small, ruined castle or a fortified lair, overgrown with moonflowers and black vines. This is where Grandmother was taken. You must prepare yourself for the final confrontation.",
+      "startingPrompt": "Emerging from the trees, Little Red sees it—not a simple cottage, but a structure far more imposing. It looks like a small, ruined castle or a fortified lair, overgrown with moonflowers and black vines. This is where Grandmother was taken. She must prepare herself for the final confrontation.",
       "loreContext": "The Lair was once a place of power for the forest's original protectors, now twisted by the curse.",
       "hiddenKnowledge": "This chapter is about preparation and infiltration. The player must find a way inside and deal with the final defenses. Branching based on previous allies: did you save the woodcutter? He might show up to help.",
       "plotAnchors": [
@@ -115,7 +115,7 @@
       "id": "ch6_the_truth",
       "title": "Chapter 6: The Truth Revealed",
       "chapterArtUrl": "assets/sagas/night_of_the_full_moon_ch6.webp",
-      "startingPrompt": "You stand in the central chamber of the lair. The Full Moon hangs directly overhead, visible through the shattered roof. In the center of the room sits a figure. As you approach, the figure turns, and you realize the truth is far more complex than you ever imagined. Grandmother's fate is in your hands.",
+      "startingPrompt": "Little Red stands in the central chamber of the lair. The Full Moon hangs directly overhead, visible through the shattered roof. In the center of the room sits a figure. As she approaches, the figure turns, and she realizes the truth is far more complex than she ever imagined. Grandmother's fate is in her hands.",
       "loreContext": "The ending is dynamic. Grandmother could be the source of the curse, a tragic victim, or something else entirely.",
       "hiddenKnowledge": "The final outcome depends on the player's total Courage, Reputation, and their final choices in this conversation. Multiple endings based on the character's journey and moral compass.",
       "plotAnchors": [
