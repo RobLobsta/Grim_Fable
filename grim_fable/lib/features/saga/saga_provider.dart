@@ -245,6 +245,19 @@ STORY GUIDELINES:
   - Rosary or Holy Water -> Nun
   - Wrench or Gears -> Mechanic
 """;
+    } else if (saga.id == 'throne_of_bhaal') {
+      final infamy = progress.mechanicsState['infamy'] ?? 0;
+      mechanicsContext = """
+Current Infamy: $infamy.
+Infamy represents how much the world fears and recognizes Bhaal as a harbinger of death.
+High Infamy causes more rumors in town, wanted posters, and the Flaming Fist to pursue him aggressively.
+
+STORY GUIDELINES:
+- TONE: Maintain a 'tragicomic' and 'absurd' tone. Bhaal is a god, but currently a confused and amnesiac one.
+- NPCs: Frequently weave in Cespenar (sarcastic imp butler), The Grinning Skull (mocking talking skull), Sister Gwendolyn (cluelessly optimistic priestess), and Mortimer the Unlucky (a man who survives disasters Bhaal causes).
+- INFAMY: When Bhaal causes a death, murder, or major disaster (intentional or accidental), you MUST include the tag [INFAMY: +1] (or more for major events).
+- Provide situational irony—mortals whispering of a 20-foot monster while Bhaal is just a man with cabbage in his hair.
+""";
     }
 
     final globalLore = saga.loreContext != null ? "\nWorld Lore: ${saga.loreContext}" : "";
@@ -508,13 +521,15 @@ ${saga.id == 'night_of_the_full_moon' ? "IMPORTANT: If the player meets the Trav
     // For Night of the Full Moon: Courage and Reputation updates
     final courageRegex = RegExp(r"\[COURAGE:\s*([+-]?\d+)\]");
     final repRegex = RegExp(r"\[REPUTATION:\s*([+-]?\d+)\]");
+    final infamyRegex = RegExp(r"\[INFAMY:\s*([+-]?\d+)\]");
     final classRegex = RegExp(r"\[CLASS_UPGRADE:\s*(.+?)\]");
 
     final courageMatch = courageRegex.firstMatch(response);
     final repMatch = repRegex.firstMatch(response);
+    final infamyMatch = infamyRegex.firstMatch(response);
     final classMatch = classRegex.firstMatch(response);
 
-    if (courageMatch != null || repMatch != null) {
+    if (courageMatch != null || repMatch != null || infamyMatch != null) {
       final progress = _ref.read(sagaProgressProvider);
       if (progress != null) {
         final newState = Map<String, dynamic>.from(progress.mechanicsState);
@@ -527,6 +542,11 @@ ${saga.id == 'night_of_the_full_moon' ? "IMPORTANT: If the player meets the Trav
           int delta = int.tryParse(repMatch.group(1)!) ?? 0;
           newState['reputation'] = (newState['reputation'] ?? 0) + delta;
           cleanResponse = cleanResponse.replaceAll(repRegex, '');
+        }
+        if (infamyMatch != null) {
+          int delta = int.tryParse(infamyMatch.group(1)!) ?? 0;
+          newState['infamy'] = (newState['infamy'] ?? 0) + delta;
+          cleanResponse = cleanResponse.replaceAll(infamyRegex, '');
         }
         final updatedProgress = progress.copyWith(mechanicsState: newState);
         await _repository.saveProgress(updatedProgress);
