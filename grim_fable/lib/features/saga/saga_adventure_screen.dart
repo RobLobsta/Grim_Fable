@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'saga_provider.dart';
+import '../../core/models/saga_progress.dart';
 import '../character/character_provider.dart';
 import '../../shared/widgets/story_segment_widget.dart';
 import '../../shared/widgets/night_forest_painter.dart';
@@ -186,25 +187,29 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                             ),
                           ),
                         ),
-                        _buildHistoryList(adventure, _isLoading, isDarkTheme, saga),
+                        _buildHistoryList(adventure, _isLoading, isDarkTheme, saga, progress),
                       ],
                     )
                   : ClipPath(
                       clipper: TatteredEdgeClipper(),
                       child: Container(
                         color: parchmentColor,
-                        child: _buildHistoryList(adventure, _isLoading, isDarkTheme, saga),
+                        child: _buildHistoryList(adventure, _isLoading, isDarkTheme, saga, progress),
                       ),
                     ),
             ),
           ),
-          _buildInputArea(adventure.isActive, corruption, saga.id),
+          _buildInputArea(adventure.isActive, corruption, saga.id, progress),
         ],
       ),
     );
   }
 
-  Widget _buildHistoryList(dynamic adventure, bool isLoading, bool isDarkTheme, dynamic saga) {
+  Widget _buildHistoryList(dynamic adventure, bool isLoading, bool isDarkTheme, dynamic saga, SagaProgress? progress) {
+    final inConversation = progress?.mechanicsState['active_conversation_partner'] != null;
+    final isBhaal = saga.id == 'throne_of_bhaal';
+    final showChoices = !isBhaal || !inConversation;
+
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.all(24.0),
@@ -250,12 +255,20 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                 decoration: const BoxDecoration(color: Colors.transparent),
               ),
               // Recommended choices
-              if (isLast && segment.recommendedChoices != null && segment.recommendedChoices!.isNotEmpty && adventure.isActive && !_isTyping) ...[
-                const SizedBox(height: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: segment.recommendedChoices!
-                      .map((choice) => Padding(
+              if (isLast && adventure.isActive && !_isTyping && showChoices) ...[
+                Builder(builder: (context) {
+                  final choices = List<String>.from(segment.recommendedChoices ?? []);
+                  if (isBhaal && choices.isEmpty) {
+                    choices.add("Keep Moving");
+                  }
+
+                  if (choices.isEmpty) return const SizedBox.shrink();
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 16),
+                      ...choices.map((choice) => Padding(
                             padding: const EdgeInsets.only(bottom: 8.0),
                             child: ElevatedButton(
                               onPressed: (_isLoading || _isTyping) ? null : () => _submitAction(action: choice),
@@ -274,9 +287,10 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                                 style: GoogleFonts.grenze(fontSize: 14, letterSpacing: 2, fontWeight: FontWeight.bold),
                               ),
                             ),
-                          ))
-                      .toList(),
-                ),
+                          )),
+                    ],
+                  );
+                }),
               ],
               const SizedBox(height: 24),
             ],
@@ -397,7 +411,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
     );
   }
 
-  Widget _buildInputArea(bool isActive, double corruption, String sagaId) {
+  Widget _buildInputArea(bool isActive, double corruption, String sagaId, SagaProgress? progress) {
     if (!isActive) {
       return Container(
         padding: const EdgeInsets.all(24),
@@ -411,14 +425,20 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
 
     final isOverridden = sagaId == 'legacy_of_blood' && corruption > 0.8;
     final char = ref.read(activeCharacterProvider);
+    final partner = progress?.mechanicsState['active_conversation_partner'];
+    final inConversation = partner != null;
+    final isBhaal = sagaId == 'throne_of_bhaal';
+
+    // If Bhaal and NOT in conversation, hide the text input
+    final showTextInput = !isBhaal || inConversation;
 
     String hintText = "What will ${char?.name ?? 'you'} do?";
     if (isOverridden) {
       hintText = "The armor's whispers drown out your thoughts...";
     } else if (sagaId == 'night_of_the_full_moon') {
       hintText = "Guide Little Red through the forest...";
-    } else if (sagaId == 'throne_of_bhaal') {
-      hintText = "What will the Lord of Murder do next?";
+    } else if (isBhaal) {
+      hintText = inConversation ? "Say to $partner..." : "Choose an action above...";
     }
 
     return Container(
@@ -438,24 +458,40 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                 }
               },
             ),
-            Expanded(
-              child: TextField(
-                controller: _controller,
-                enabled: !isOverridden && !_isLoading && !_isTyping,
-                decoration: InputDecoration(
-                  hintText: hintText,
-                  fillColor: Colors.white.withValues(alpha: 0.05),
+            if (showTextInput) ...[
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  enabled: !isOverridden && !_isLoading && !_isTyping,
+                  decoration: InputDecoration(
+                    hintText: hintText,
+                    prefixIcon: isBhaal && inConversation ? const Icon(Icons.chat_bubble_outline, size: 20) : null,
+                    fillColor: Colors.white.withValues(alpha: 0.05),
+                  ),
+                  style: GoogleFonts.crimsonPro(),
+                  onSubmitted: (_) => _submitAction(),
                 ),
-                style: GoogleFonts.crimsonPro(),
-                onSubmitted: (_) => _submitAction(),
               ),
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              icon: const Icon(Icons.send_rounded),
-              onPressed: isOverridden ? null : _submitAction,
-              color: isOverridden ? Colors.grey : Theme.of(context).colorScheme.tertiary,
-            ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.send_rounded),
+                onPressed: isOverridden ? null : _submitAction,
+                color: isOverridden ? Colors.grey : Theme.of(context).colorScheme.tertiary,
+              ),
+            ] else ...[
+              Expanded(
+                child: Center(
+                  child: Text(
+                    "EXPLORATION MODE",
+                    style: GoogleFonts.grenze(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      letterSpacing: 2,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

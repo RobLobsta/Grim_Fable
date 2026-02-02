@@ -3,21 +3,21 @@
   "title": "Throne of Bhaal",
   "series": "Throne of Bhaal",
   "coverArtUrl": "assets/sagas/throne_of_bhaal.webp",
-  "loreContext": "The Sword Coast is a region of beauty and betrayal, with the city of Baldur's Gate at its heart. Bhaal, the former Lord of Murder, has been newly resurrected but remains amnesiac, wandering the world as a man who feels he should be important but can't remember why. The atmosphere is one of 'tragicomic absurdity'—where cosmic irony meets gallows humor. Lexicon: [Bhaal: The amnesiac Lord of Murder], [Baldur's Gate: A city of coin and cutthroats], [Flaming Fist: The city's brutal mercenary police], [Cespenar: A sarcastic imp butler], [The Grinning Skull: A mocking, talking skull], [Divine Essence: Fragments of godhood], [Infamy: Your reputation as a harbinger of death].",
+  "loreContext": "The Sword Coast is a region of beauty and betrayal, with the city of Baldur's Gate at its heart. Bhaal, the former Lord of Murder, has been newly resurrected but remains amnesiac, wandering the world as a nameless man with no memory of his past. The atmosphere is one of 'tragicomic absurdity'—where cosmic irony meets gallows humor. Lexicon: [Bhaal: The amnesiac Lord of Murder], [Baldur's Gate: A city of coin and cutthroats], [Flaming Fist: The city's brutal mercenary police], [Cespenar: A sarcastic imp butler], [The Grinning Skull: A mocking, talking skull], [Divine Essence: Fragments of godhood], [Infamy: Your reputation as a harbinger of death].",
   "requiredCharacter": {
     "name": "Bhaal",
     "occupation": "Resurrected",
-    "backstory": "A man washed ashore with no memories, only a vague sense that he should be causing more trouble than he currently is.",
+    "backstory": "A man washed ashore with no memories, wondering why his head hurts and where his boots went.",
     "inventory": [],
     "itemDescriptions": {}
   },
-  "description": "Bhaal has returned, though he doesn't quite know it yet. Follow the amnesiac Lord of Murder as he wanders the Sword Coast, accidentally causing disasters and meeting a cast of tragicomic characters who either want to worship him, kill him, or ask him for housekeeping advice.",
+  "description": "A man has returned from the sea, though he doesn't quite know who he is yet. Follow this amnesiac as he wanders the Sword Coast, accidentally causing disasters and meeting a cast of tragicomic characters who either want to worship him, kill him, or ask him for housekeeping advice.",
   "chapters": [
     {
       "id": "ch1_nameless_awakening",
       "title": "Chapter 1: Nameless Awakening",
       "chapterArtUrl": "assets/sagas/throne_of_bhaal_ch1.webp",
-      "startingPrompt": "You wake up face-down in a bed of damp seaweed, the salty spray of the Sea of Swords stinging your eyes. Your clothes are rags, and your head feels like it was used as a practice dummy for a giant. As you push yourself up, you realize you haven't the faintest clue who you are, though you have a nagging suspicion that you're probably someone very important—or at least someone very dangerous. A few yards away, a group of seagulls is fighting over a blood-stained boot that might be yours.",
+      "startingPrompt": "You wake up face-down in a bed of damp seaweed, the salty spray of the Sea of Swords stinging your eyes. Your clothes are rags, and your head feels like it was used as a practice dummy for a giant. As you push yourself up, you realize you haven't the faintest clue who you are, or why you are here. A few yards away, a group of seagulls is fighting over a blood-stained boot that might be yours.",
       "loreContext": "The beach is just south of Baldur's Gate. The tone is brooding but absurd. Sister Gwendolyn, a hyper-optimistic priestess, is nearby tending to 'injured' crabs.",
       "hiddenKnowledge": "Sister Gwendolyn will mistake Bhaal for a holy man because he looks so 'peaceful' (he's actually just concussed). Mortimer the Unlucky is hiding nearby after a failed attempt at fishing resulted in him catching a literal sea monster.",
       "plotAnchors": [
