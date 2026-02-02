@@ -203,7 +203,12 @@ class SagaNotifier extends StateNotifier<Adventure?> {
 
     // Influence / Override Logic
     String finalAction = action;
-    if (saga.id == 'legacy_of_blood') {
+    if (saga.id == 'throne_of_bhaal') {
+      final inConversationWith = progress.mechanicsState['active_conversation_partner'];
+      if (inConversationWith != null) {
+        finalAction = "Player says to $inConversationWith: \"$action\"";
+      }
+    } else if (saga.id == 'legacy_of_blood') {
       final corruption = (progress.mechanicsState['corruption'] ?? progress.mechanicsState['initial_corruption'] ?? 0.1).toDouble();
       if (Random().nextDouble() < corruption) {
         finalAction = await _generateArmorWill(action, character, currentChapter);
@@ -247,15 +252,22 @@ STORY GUIDELINES:
 """;
     } else if (saga.id == 'throne_of_bhaal') {
       final infamy = progress.mechanicsState['infamy'] ?? 0;
+      final worldEvents = (progress.mechanicsState['world_events'] as List<dynamic>?)?.join(", ") ?? "None";
+      final inConversationWith = progress.mechanicsState['active_conversation_partner'];
+
       mechanicsContext = """
 Current Infamy: $infamy.
-Infamy represents how much the world fears and recognizes Bhaal as a harbinger of death.
-High Infamy causes more rumors in town, wanted posters, and the Flaming Fist to pursue him aggressively.
+World Events & Decisions: $worldEvents.
+Active Conversation: ${inConversationWith ?? 'None'}.
 
 STORY GUIDELINES:
 - TONE: Maintain a 'tragicomic' and 'absurd' tone. Bhaal is a god, but currently a confused and amnesiac one.
-- NPCs: Frequently weave in Cespenar (sarcastic imp butler), The Grinning Skull (mocking talking skull), Sister Gwendolyn (cluelessly optimistic priestess), and Mortimer the Unlucky (a man who survives disasters Bhaal causes).
-- INFAMY: When Bhaal causes a death, murder, or major disaster (intentional or accidental), you MUST include the tag [INFAMY: +1] (or more for major events).
+- AMNESIA: Do NOT hint that the player is important or divine early on. Let the mystery build naturally through the world's reaction to his accidents.
+- RANDOM ENCOUNTERS: Between plot anchors, introduce randomized, thematic encounters (e.g., meeting travelers, stumbling upon oddities, finding ruins) that enrich the Sword Coast setting.
+- CONVERSATIONS: When an NPC speaks to the player and expects a response, you MUST use the tag [CONVERSATION: NPC Name]. If the conversation ends or no immediate response is needed, do NOT include the tag.
+- WORLD EVENTS: When the player makes a significant choice or causes a lasting change, use the tag [WORLD_EVENT: Description].
+- DIALOGUE: If the player provides speech, narrate their delivery based on the tone (e.g., 'You shrug and say...').
+- INFAMY: When Bhaal causes a death, murder, or major disaster, use [INFAMY: +1].
 - Provide situational irony—mortals whispering of a 20-foot monster while Bhaal is just a man with cabbage in his hair.
 """;
     }
@@ -560,8 +572,79 @@ ${saga.id == 'night_of_the_full_moon' ? "IMPORTANT: If the player meets the Trav
       cleanResponse = cleanResponse.replaceAll(classRegex, '');
     }
 
+    // For Throne of Bhaal: World Events and Conversation tags
+    final activeSaga = _ref.read(activeSagaProvider);
+    if (activeSaga?.id == 'throne_of_bhaal') {
+      final convRegex = RegExp(r"\[CONVERSATION:\s*(.+?)\]");
+      final eventRegex = RegExp(r"\[WORLD_EVENT:\s*(.+?)\]");
+
+      final progress = _ref.read(sagaProgressProvider);
+      if (progress != null) {
+        final newState = Map<String, dynamic>.from(progress.mechanicsState);
+        bool changed = false;
+
+        // Conversation
+        final convMatch = convRegex.firstMatch(response);
+        if (convMatch != null) {
+          newState['active_conversation_partner'] = convMatch.group(1)!;
+          cleanResponse = cleanResponse.replaceAll(convRegex, '');
+          changed = true;
+        } else if (newState.containsKey('active_conversation_partner')) {
+          // NLP Fallback for conversation end detection
+          if (!_detectConversationNLP(cleanResponse)) {
+            newState.remove('active_conversation_partner');
+            changed = true;
+          }
+        } else {
+          // NLP Fallback for conversation start detection
+          if (_detectConversationNLP(cleanResponse)) {
+            newState['active_conversation_partner'] = "NPC"; // Generic fallback
+            changed = true;
+          }
+        }
+
+        // World Events
+        final eventMatches = eventRegex.allMatches(response);
+        if (eventMatches.isNotEmpty) {
+          final List<String> currentEvents = List<String>.from(newState['world_events'] ?? []);
+          for (final m in eventMatches) {
+            final event = m.group(1)!;
+            if (!currentEvents.contains(event)) {
+              currentEvents.add(event);
+            }
+          }
+          newState['world_events'] = currentEvents;
+          cleanResponse = cleanResponse.replaceAll(eventRegex, '');
+          changed = true;
+        }
+
+        if (changed) {
+          final updatedProgress = progress.copyWith(mechanicsState: newState);
+          await _repository.saveProgress(updatedProgress);
+          _ref.read(sagaProgressProvider.notifier).state = updatedProgress;
+        }
+      }
+    }
+
     // Clean up extra whitespace from removed tags
     return cleanResponse.trim();
+  }
+
+  bool _detectConversationNLP(String text) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return false;
+
+    // Check if the text ends with a question directed at 'you'
+    final hasQuestion = trimmed.endsWith('?');
+    final hasYou = trimmed.toLowerCase().contains('you');
+
+    // Check for direct speech markers
+    final hasQuotes = trimmed.contains('"') || trimmed.contains("'");
+    final dialogueMarkers = ['asks', 'says', 'shouts', 'whispers', 'replies', 'speaks'];
+    final hasMarker = dialogueMarkers.any((m) => trimmed.toLowerCase().contains(m));
+
+    // If it has quotes and ends in a question, or has quotes and a dialogue marker, it's likely a conversation
+    return (hasQuotes && hasQuestion && hasYou) || (hasQuotes && hasMarker);
   }
 }
 
