@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 class StorySegmentWidget extends StatefulWidget {
@@ -110,6 +111,7 @@ class StorySegmentWidgetState extends State<StorySegmentWidget> with SingleTicke
 
   void skip() {
     if (_isAnimating) {
+      HapticFeedback.lightImpact();
       _controller.stop();
       if (mounted) {
         setState(() {

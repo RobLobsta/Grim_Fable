@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -131,6 +132,7 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
       _isGenerating = true;
     });
 
+    HapticFeedback.mediumImpact();
     try {
       final aiService = ref.read(aiServiceProvider);
 
@@ -230,6 +232,7 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
         itemDescriptions: _itemDescriptions,
       ).copyWith(inventory: _generatedItems);
 
+      HapticFeedback.heavyImpact();
       await ref.read(charactersProvider.notifier).addCharacter(character);
 
       if (mounted) {
