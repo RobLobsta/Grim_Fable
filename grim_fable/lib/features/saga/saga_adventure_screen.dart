@@ -9,6 +9,7 @@ import '../../core/models/saga_progress.dart';
 import '../character/character_provider.dart';
 import '../../shared/widgets/story_segment_widget.dart';
 import '../../shared/widgets/night_forest_painter.dart';
+import '../../shared/widgets/throne_effects_painter.dart';
 import '../../shared/widgets/inventory_dialog.dart';
 import '../../core/utils/extensions.dart';
 
@@ -19,9 +20,10 @@ class SagaAdventureScreen extends ConsumerStatefulWidget {
   ConsumerState<SagaAdventureScreen> createState() => _SagaAdventureScreenState();
 }
 
-class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
+class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with SingleTickerProviderStateMixin {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
+  late AnimationController _pulseController;
   bool _isLoading = false;
   bool _isTyping = false;
   final Map<int, String> _animatedTexts = {};
@@ -29,6 +31,11 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
   @override
   void initState() {
     super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat();
+
     final adventure = ref.read(activeSagaAdventureProvider);
     if (adventure != null) {
       for (int i = 0; i < adventure.storyHistory.length; i++) {
@@ -63,6 +70,14 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
         );
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _submitAction({String? action}) async {
@@ -174,6 +189,20 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                                 fit: BoxFit.cover,
                                 alignment: Alignment.center,
                               ),
+                            ),
+                          ),
+                          // Divine Pulse and Shadow Effects
+                          Positioned.fill(
+                            child: AnimatedBuilder(
+                              animation: _pulseController,
+                              builder: (context, child) {
+                                return CustomPaint(
+                                  painter: ThroneEffectsPainter(
+                                    pulseValue: _pulseController.value,
+                                    infamyFactor: infamyFactor,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ],
@@ -441,14 +470,22 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
         color: const Color(0xFF1A1510),
         child: SafeArea(
           child: Center(
-            child: Text(
-              "THE FATES ARE SPEAKING...",
-              style: GoogleFonts.grenze(
-                color: Colors.white.withValues(alpha: 0.5),
-                letterSpacing: 2,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+            child: AnimatedBuilder(
+              animation: _pulseController,
+              builder: (context, child) {
+                return Opacity(
+                  opacity: 0.3 + (_pulseController.value * 0.4),
+                  child: Text(
+                    "THE FATES ARE SPEAKING...",
+                    style: GoogleFonts.grenze(
+                      color: Colors.white,
+                      letterSpacing: 2 + (_pulseController.value * 2),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ),
