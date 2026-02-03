@@ -3,7 +3,7 @@
   "title": "Throne of Bhaal",
   "series": "Throne of Bhaal",
   "coverArtUrl": "assets/sagas/throne_of_bhaal.webp",
-  "loreContext": "The Sword Coast is a region of beauty and betrayal, with the city of Baldur's Gate at its heart. Bhaal, the former Lord of Murder, has been newly resurrected but remains amnesiac, wandering the world as a nameless man with no memory of his past. The atmosphere is one of 'tragicomic absurdity'—where cosmic irony meets gallows humor. Lexicon: [Bhaal: The amnesiac Lord of Murder], [Baldur's Gate: A city of coin and cutthroats], [Flaming Fist: The city's brutal mercenary police], [Cespenar: A sarcastic imp butler], [The Grinning Skull: A mocking, talking skull], [Divine Essence: Fragments of godhood], [Infamy: Your reputation as a harbinger of death].",
+  "loreContext": "The Sword Coast is a region of beauty and betrayal. Bhaal, the former Lord of Murder, has been resurrected but remains amnesiac. The atmosphere is 'tragicomic absurdity'—cosmic irony meets gallows humor. As Bhaal's power (Infamy) grows, his shadow begins to act independently, and the world begins to pulse with a dark, divine rhythm that he finds mostly annoying. Lexicon: [Bhaal: The amnesiac Lord of Murder], [Cespenar: A sarcastic imp butler], [The Grinning Skull: A mocking, talking skull], [Divine Essence: Fragments of godhood], [Infamy: Your reputation as a harbinger of death].",
   "requiredCharacter": {
     "name": "Bhaal",
     "occupation": "Resurrected",
@@ -17,16 +17,16 @@
       "id": "ch1_nameless_awakening",
       "title": "Chapter 1: Nameless Awakening",
       "chapterArtUrl": "assets/sagas/throne_of_bhaal_ch1.webp",
-      "startingPrompt": "You wake up face-down in a bed of damp seaweed, the salty spray of the Sea of Swords stinging your eyes. Your clothes are rags, and your head feels like it was used as a practice dummy for a giant. As you push yourself up, you realize you haven't the faintest clue who you are, or why you are here. A few yards away, a group of seagulls is fighting over a blood-stained boot that might be yours.",
-      "loreContext": "The beach is just south of Baldur's Gate. The tone is brooding but absurd. Sister Gwendolyn, a hyper-optimistic priestess, is nearby tending to 'injured' crabs.",
-      "hiddenKnowledge": "Sister Gwendolyn will mistake Bhaal for a holy man because he looks so 'peaceful' (he's actually just concussed). Mortimer the Unlucky is hiding nearby after a failed attempt at fishing resulted in him catching a literal sea monster.",
+      "startingPrompt": "You wake up face-down in a bed of damp seaweed. Your head feels like a practice dummy for a giant. A few yards away, a group of particularly aggressive seagulls is fighting over a blood-stained boot that looks remarkably like yours. Nearby, Sister Gwendolyn, a hyper-optimistic priestess, is loudly humming a hymn while attempting to 'baptize' a very confused crab.",
+      "loreContext": "The beach is just south of Baldur's Gate. Sister Gwendolyn believes every creature deserves a blessing, even the ones currently pinching her fingers.",
+      "hiddenKnowledge": "Sister Gwendolyn will mistake Bhaal for a holy man because he looks so 'peaceful' (he's actually just concussed). Mortimer the Unlucky is hiding in a nearby cave, having accidentally caught a literal sea monster while trying to find his sandwich.",
       "plotAnchors": [
-        "Meet Sister Gwendolyn and receive her 'blessing'.",
-        "Accidentally cause a minor death or disaster (like a falling rock hitting a bandit).",
-        "Hear a rumor from a passing traveler about the 'Return of the Dead God'.",
-        "Reach the outer gates of Baldur's Gate."
+        "Defeat the 'Alpha Seagull' to reclaim your boot.",
+        "Help Sister Gwendolyn with her 'Crab Ministry' or accidentally cause a crustacean catastrophe.",
+        "Encounter Mortimer the Unlucky and his 'pet' sea monster.",
+        "Reach the outer gates of Baldur's Gate while smelling strongly of salt and failure."
       ],
-      "importantNouns": ["Bhaal", "Sister Gwendolyn", "Mortimer the Unlucky", "Sea of Swords", "Baldur's Gate"],
+      "importantNouns": ["Bhaal", "Sister Gwendolyn", "Mortimer the Unlucky", "Crab Ministry", "Baldur's Gate"],
       "hiddenGoal": "Find a clue about your identity and reach the city gates.",
       "mechanics": {
         "infamy": 0
@@ -36,16 +36,16 @@
       "id": "ch2_tales_of_a_mad_god",
       "title": "Chapter 2: Tales of a Mad God",
       "chapterArtUrl": "assets/sagas/throne_of_bhaal_ch2.webp",
-      "startingPrompt": "The Lower City of Baldur's Gate is a cacophony of smells and shouts. You wander the streets, a nameless beggar in a city of legends. Everywhere you go, you hear whispers: 'Bhaal has returned,' they say, describing a monster twenty feet tall with eyes of fire. You catch your reflection in a puddle—you're barely six feet tall and currently have a piece of cabbage stuck in your hair. The irony is not lost on you, even if your memories are.",
-      "loreContext": "The city is rife with rumors. The 'Stumbling Tankard' is the local hub for gossip. The Grinning Skull is found in a junk pile and begins its commentary.",
-      "hiddenKnowledge": "The Bard in the Stumbling Tankard is actually a failed assassin who knows more about Bhaal's history than he lets on. Mortimer the Unlucky reappears, having accidentally set his own house on fire.",
+      "startingPrompt": "The Lower City of Baldur's Gate is a cacophony of smells. You wander the streets, a nameless beggar with a piece of cabbage inexplicably stuck in your hair. A 'Bhaalist' fanboy spots you and, mistaking you for a fellow devotee, tries to get you to sign his copy of 'Murder for Dummies'. The Grinning Skull, found in a junk pile, begins its mocking commentary on your lack of style.",
+      "loreContext": "The city is rife with rumors about the 'Return of the Dead God'. The Grinning Skull claims to have been Bhaal's favorite paperweight in a past life.",
+      "hiddenKnowledge": "The fanboy actually knows a secret handshake that might open doors in the city's underbelly. Mortimer the Unlucky reappears, having accidentally set his own house on fire while trying to cook toast.",
       "plotAnchors": [
-        "Find the Grinning Skull in a pile of discarded 'holy' relics.",
+        "Find the Grinning Skull and endure its first insult.",
+        "Interact with the 'Bhaalist' Fanboy and decide whether to sign his book.",
         "Hear a Bard tell a completely inaccurate and ridiculous story about Bhaal's past.",
-        "Encounter a 'Bhaalist' fanboy who wants you to sign his copy of 'Murder for Dummies'.",
-        "Reach the Stumbling Tankard tavern."
+        "Reach the Stumbling Tankard tavern to hide from your own growing legend."
       ],
-      "importantNouns": ["Lower City", "The Grinning Skull", "Stumbling Tankard", "Bhaalist Cultists"],
+      "importantNouns": ["Lower City", "The Grinning Skull", "Murder for Dummies", "Bhaalist Fanboy", "Stumbling Tankard"],
       "hiddenGoal": "Gather information about the Bhaal legend at the Stumbling Tankard.",
       "mechanics": {
         "infamy_step": 1
@@ -55,16 +55,16 @@
       "id": "ch3_masks_and_monsters",
       "title": "Chapter 3: Masks and Monsters",
       "chapterArtUrl": "assets/sagas/throne_of_bhaal_ch3.webp",
-      "startingPrompt": "You've been 'invited' to a masquerade ball in the Upper City, though the invitation was found in the pocket of a man who 'tripped' onto your dagger. Everyone is wearing masks of monsters and gods, unaware that the actual Lord of Murder is standing at the buffet table, confused by the choice of dipping sauces. This isn't just a party, though—it's a meeting of a secret cult that claims to follow your every whim.",
-      "loreContext": "The Upper City is opulent and oblivious. The cultists are more interested in fashion than actual murder. Cespenar appears, having been summoned by a 'ritual' that was supposed to bring forth a demon but only brought a butler.",
-      "hiddenKnowledge": "The cult leader is a noble who just wants to use Bhaal's name to avoid paying taxes. Cespenar is disappointed that Bhaal hasn't polished his shoes in centuries.",
+      "startingPrompt": "You've been 'invited' to a masquerade ball in the Upper City. Everyone wears masks of gods, unaware that the actual Lord of Murder is currently confused by the choice of dipping sauces at the buffet. Cespenar, a sarcastic imp butler, appears after a failed ritual and immediately begins critiquing your footwear. The 'Dark Ritual' you were expecting turns out to be a very long committee meeting regarding cult insurance.",
+      "loreContext": "The Upper City is opulent and oblivious. Cespenar is disappointed that you haven't polished his favorite silver set in centuries.",
+      "hiddenKnowledge": "The cult leader is a noble who just wants to use Bhaal's name to avoid paying property taxes. Cespenar is hiding a genuine relic of Bhaal's power inside a very tacky decorative vase.",
       "plotAnchors": [
-        "Meet Cespenar and endure his sarcastic critique of your current outfit.",
-        "Infiltrate the 'Inner Sanctum' of the cult masquerade.",
-        "Witness a 'Dark Ritual' that turns out to be an incredibly boring committee meeting.",
-        "Find a genuine relic of your past among the cult's tacky decorations."
+        "Meet Cespenar and survive his first sarcastic critique.",
+        "Attend the 'Dark Ritual' committee meeting and try not to fall asleep.",
+        "Find the hidden relic inside the cult's 'tasteless' decor.",
+        "Identify the cult leader's true, mundane intentions."
       ],
-      "importantNouns": ["Upper City", "Cespenar", "Cult of Bhaal", "Inner Sanctum"],
+      "importantNouns": ["Upper City", "Cespenar", "Cult Insurance", "Inner Sanctum"],
       "hiddenGoal": "Identify the true intentions of the cult and recover a relic.",
       "mechanics": {
         "infamy_step": 2
@@ -74,16 +74,16 @@
       "id": "ch4_when_shadows_rise",
       "title": "Chapter 4: When Shadows Rise",
       "chapterArtUrl": "assets/sagas/throne_of_bhaal_ch4.webp",
-      "startingPrompt": "The joke has gone too far. The city is in a panic as 'omens' (mostly accidental) suggest Bhaal is reclaiming his throne. The Flaming Fist are scouring the streets, and you're their number one suspect, mostly because you're the only one who looks both suspicious and confused. The shadows of the city seem to be lengthening, stretching toward you like eager servants.",
-      "loreContext": "The city is on lockdown. The Flaming Fist are aggressive and paranoid. The tone shifts toward more direct danger, though the irony remains.",
-      "hiddenKnowledge": "The Flaming Fist commander is secretly terrified of ghosts, a fact the Grinning Skull is all too happy to exploit. Mortimer the Unlucky is 'trapped' in a prison cell that he accidentally locked from the inside.",
+      "startingPrompt": "The city is in a panic. The Flaming Fist are scouring the streets, and you're the main suspect because you're the only one who looks both suspicious and genuinely lost. Your shadow is now acting independently, occasionally tripping passersby when you're not looking. The Grinning Skull suggests that the Flaming Fist Commander is secretly terrified of ghosts—a weakness ripe for exploitation.",
+      "loreContext": "The city is on lockdown. The Flaming Fist are aggressive but easily spooked by anything that looks like a vengeful spirit.",
+      "hiddenKnowledge": "The independent shadow is a sign that Bhaal's divine essence is waking up, whether he likes it or not. Mortimer is trapped in a jail cell he accidentally locked from the inside.",
       "plotAnchors": [
-        "Escape a Flaming Fist ambush using the Grinning Skull's 'distractions'.",
-        "Confront the Flaming Fist commander in a tragicomic standoff.",
-        "Rescue (or accidentally further endanger) Mortimer the Unlucky.",
-        "Realize that your shadow is starting to act independently."
+        "Escape a Flaming Fist ambush using your 'Independent Shadow' as a distraction.",
+        "Exploit the Commander's fear of ghosts with the Grinning Skull's help.",
+        "Rescue (or further endanger) Mortimer the Unlucky from the City Jail.",
+        "Leave the city while Bhaal's divine pulse begins to thrum in his ears."
       ],
-      "importantNouns": ["Flaming Fist", "Commander", "Shadows", "City Jail"],
+      "importantNouns": ["Flaming Fist", "Commander", "Independent Shadow", "City Jail"],
       "hiddenGoal": "Evade the Flaming Fist and leave the city for the outskirts.",
       "mechanics": {
         "infamy_step": 3
@@ -93,15 +93,16 @@
       "id": "ch5_tides_of_blood",
       "title": "Chapter 5: Tides of Blood",
       "chapterArtUrl": "assets/sagas/throne_of_bhaal_ch5.webp",
-      "startingPrompt": "You stand on the cliffs overlooking the sea, the divine essence within you pulsing like a second heartbeat. An army of would-be god-slayers and misguided worshippers is gathering below. The humor is thinning now, replaced by the grand, operatic weight of your true nature. The Sea of Swords is turning a deep, iron red, and the air smells of old copper.",
-      "loreContext": "The battlefield is an ancient ruin. The stakes are mythic. The tragicomic elements are now focused on the futility of the mortals' struggle.",
-      "hiddenKnowledge": "Sister Gwendolyn is here, still trying to offer 'peace' to the soldiers as they prepare for slaughter. Cespenar is busy packing a 'victory picnic'.",
+      "startingPrompt": "You stand on the cliffs overlooking the sea, your divine essence pulsing like a heavy drum. An army of god-slayers and worshippers is gathering below. The humor is thinning, replaced by the operatic weight of your nature. However, Cespenar is currently busy setting up a 'Victory Picnic' on a nearby rock, insisting that 'one cannot properly ascend to godhood on an empty stomach'.",
+      "loreContext": "The battlefield is an ancient ruin. The stakes are mythic, but Bhaal is still mostly worried about the choice of sandwiches for the picnic.",
+      "hiddenKnowledge": "Sister Gwendolyn has followed you here, still trying to offer 'peace' to the soldiers before they are inevitably slaughtered. Mortimer has accidentally joined the opposing army and is currently holding his spear backwards.",
       "plotAnchors": [
         "Address the gathering army with a speech that is either terrifying or unintentionally hilarious.",
-        "Wield a portion of your true power to repel a major assault.",
-        "Make a final choice about who will stand by your side at the Throne."
+        "Wield your true power to repel an assault, perhaps while holding a sandwich from Cespenar.",
+        "Save Mortimer from his own army or Sister Gwendolyn from her own optimism.",
+        "Prepare for the final ascent to the Throne."
       ],
-      "importantNouns": ["Divine Essence", "Sea of Swords", "Ancient Ruin", "Battlefield"],
+      "importantNouns": ["Divine Essence", "Victory Picnic", "Ancient Ruin", "Battlefield"],
       "hiddenGoal": "Defeat the claimants to your power and prepare for the final ascent.",
       "mechanics": {
         "infamy_step": 5
@@ -111,14 +112,14 @@
       "id": "ch6_throne_of_bhaal",
       "title": "Chapter 6: Throne of Bhaal",
       "chapterArtUrl": "assets/sagas/throne_of_bhaal_ch6.webp",
-      "startingPrompt": "The Throne of Bhaal stands before you, a seat of cold stone and ancient blood. The amnesia is gone, replaced by the crushing weight of everything you've ever done—and everything you've done in the last few days by accident. The Grinning Skull is unusually quiet. Cespenar is waiting with a single, dusty crown. The cosmic irony is complete: the God of Murder has learned what it means to be human, just in time to decide if he wants to be a god again.",
-      "loreContext": "The final chamber is outside of time. The decision here will reshape the Sword Coast forever.",
-      "hiddenKnowledge": "The final ending depends on the total Infamy and the moral choices made throughout the journey. A 'Redeemed' Bhaal is possible, as is an 'Accidental' Tyrant.",
+      "startingPrompt": "The Throne of Bhaal stands before you, a seat of cold stone and ancient blood. Your memories have returned, including the time you forgot your own birthday in the Second Era. Cespenar is waiting with a single, dusty crown and a silver tray of cookies. The cosmic irony is complete: you are the God of Murder, but you've also quite enjoyed being a man with cabbage in his hair.",
+      "loreContext": "The final chamber is outside of time. The decision here will define Bhaal's legacy—as a tyrant, a redeemer, or something much more absurd.",
+      "hiddenKnowledge": "The 'Absurd Ending' is available if Infamy is high but Bhaal has remained consistently confused or kind. Cespenar actually likes the cookies he's serving.",
       "plotAnchors": [
-        "A final conversation with your companions: Cespenar, the Skull, and perhaps a ghost of your former self.",
-        "Face the ultimate irony of your existence.",
-        "Take the Throne, destroy it, or find a third, more absurd option.",
-        "The resolution of the saga and the fate of Bhaal's soul."
+        "A final conversation with Cespenar and the Grinning Skull about the nature of destiny.",
+        "Face the ultimate irony of your existence: the God of Murder who hates killing.",
+        "Take the Throne, destroy it, or choose the 'Absurd' option of becoming a humble gardener.",
+        "Define the fate of Bhaal's soul and the Sword Coast."
       ],
       "importantNouns": ["Throne of Bhaal", "The Crown", "Cosmic Irony", "Final Choice"],
       "hiddenGoal": "Complete the final encounter and define your legacy.",
