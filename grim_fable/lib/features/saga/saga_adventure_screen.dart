@@ -264,10 +264,8 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                 decoration: const BoxDecoration(color: Colors.transparent),
               ),
               // Recommended choices
-              if (isLast && adventure.isActive && showChoices) ...[
+              if (isLast && adventure.isActive && showChoices && !_isTyping) ...[
                 Builder(builder: (context) {
-                  if (_isTyping) return const SizedBox.shrink();
-
                   final choices = List<String>.from(segment.recommendedChoices ?? []);
                   if (isBhaal && choices.isEmpty) {
                     choices.add("Keep Moving");
@@ -434,6 +432,26 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
       );
     }
 
+    if (_isTyping) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        color: const Color(0xFF1A1510),
+        child: SafeArea(
+          child: Center(
+            child: Text(
+              "THE FATES ARE SPEAKING...",
+              style: GoogleFonts.grenze(
+                color: Colors.white.withValues(alpha: 0.5),
+                letterSpacing: 2,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     final isOverridden = sagaId == 'legacy_of_blood' && corruption > 0.8;
     final char = ref.read(activeCharacterProvider);
     final partner = progress?.mechanicsState['active_conversation_partner'];
@@ -465,7 +483,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
               icon: const Icon(Icons.inventory_2_outlined),
               onPressed: () {
                 if (char != null) {
-                   InventoryDialog.show(context, char.inventory, itemDescriptions: char.itemDescriptions, gold: char.gold);
+                  InventoryDialog.show(context, char.inventory, itemDescriptions: char.itemDescriptions, gold: char.gold);
                 }
               },
             ),
@@ -473,7 +491,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
               Expanded(
                 child: TextField(
                   controller: _controller,
-                  enabled: !isOverridden && !_isLoading && !_isTyping,
+                  enabled: !isOverridden && !_isLoading,
                   decoration: InputDecoration(
                     hintText: hintText,
                     prefixIcon: isBhaal && inConversation ? const Icon(Icons.chat_bubble_outline, size: 20) : null,
@@ -493,7 +511,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
               Expanded(
                 child: Center(
                   child: Text(
-                    _isTyping ? "THE FATES ARE SPEAKING..." : "EXPLORATION MODE",
+                    "EXPLORATION MODE",
                     style: GoogleFonts.grenze(
                       color: Colors.white.withValues(alpha: 0.3),
                       letterSpacing: 2,

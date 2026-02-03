@@ -411,16 +411,6 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _generatedBackstory = 'A hero with a mysterious past.';
-                            _backstoryAccepted = true;
-                          });
-                        },
-                        child: Text('DEBUG: SKIP AI', style: GoogleFonts.grenze(color: Colors.white38)),
-                      ),
                     ],
                   )
                 else
