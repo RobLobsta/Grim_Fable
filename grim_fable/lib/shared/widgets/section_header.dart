@@ -16,12 +16,12 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-            width: 1,
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            width: 1.5,
           ),
         ),
       ),
@@ -32,11 +32,14 @@ class SectionHeader extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: GoogleFonts.grenze(
-                fontSize: 20,
+              style: GoogleFonts.cinzel(
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
-                letterSpacing: 2,
-                color: Colors.white70,
+                letterSpacing: 3,
+                color: Colors.white,
+                shadows: [
+                  Shadow(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4), blurRadius: 8),
+                ],
               ),
               overflow: TextOverflow.ellipsis,
             ),

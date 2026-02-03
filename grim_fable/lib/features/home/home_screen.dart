@@ -114,10 +114,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          stops: const [0.0, 0.5, 1.0],
+          stops: const [0.0, 0.3, 0.7, 1.0],
           colors: [
             Theme.of(context).colorScheme.surface,
-            Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
             Theme.of(context).colorScheme.surface,
           ],
         ),
@@ -295,59 +296,69 @@ class _ModeCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          HapticFeedback.lightImpact();
+          HapticFeedback.mediumImpact();
           onTap();
         },
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4)),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
             gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
               colors: [
-                Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-                Colors.transparent,
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                Theme.of(context).colorScheme.surface.withValues(alpha: 0.1),
               ],
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
                 ),
-                child: Icon(icon, color: Theme.of(context).colorScheme.tertiary, size: 28),
+                child: Icon(icon, color: Theme.of(context).colorScheme.tertiary, size: 32),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 24),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: GoogleFonts.grenze(
-                        fontSize: 22,
+                      style: GoogleFonts.cinzel(
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 2,
                         color: Colors.white,
                       ),
                     ),
+                    const SizedBox(height: 4),
                     Text(
                       subtitle,
                       style: GoogleFonts.crimsonPro(
-                        fontSize: 14,
-                        color: Colors.white60,
+                        fontSize: 15,
+                        color: Colors.white70,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios, color: Colors.white24, size: 16),
+              Icon(Icons.arrow_forward_ios, color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.5), size: 18),
             ],
           ),
         ),

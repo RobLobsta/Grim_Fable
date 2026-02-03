@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -228,13 +229,21 @@ class _AdventureSelectionScreenState extends ConsumerState<AdventureSelectionScr
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(32),
             border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withValues(alpha: 0.05),
+                Colors.transparent,
+              ],
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 30,
+                offset: const Offset(0, 15),
               ),
             ],
           ),
@@ -245,42 +254,59 @@ class _AdventureSelectionScreenState extends ConsumerState<AdventureSelectionScr
               Text(
                 activeCharacter.name.toUpperCase(),
                 style: GoogleFonts.cinzel(
-                  fontSize: 32,
+                  fontSize: 36,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 4,
+                  letterSpacing: 6,
                   color: Colors.white,
+                  shadows: [
+                    Shadow(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5), blurRadius: 15),
+                  ],
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 4),
-              Text(
-                activeCharacter.occupation.toUpperCase(),
-                style: GoogleFonts.grenze(
-                  fontSize: 18,
-                  letterSpacing: 2,
-                  color: Theme.of(context).colorScheme.tertiary,
-                  fontWeight: FontWeight.bold,
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)),
+                ),
+                child: Text(
+                  activeCharacter.occupation.toUpperCase(),
+                  style: GoogleFonts.grenze(
+                    fontSize: 18,
+                    letterSpacing: 3,
+                    color: Theme.of(context).colorScheme.tertiary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 40),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   _ActionButton(
-                    icon: Icons.description_outlined,
-                    label: 'STORY',
-                    onPressed: () => BackstoryDialog.show(context, activeCharacter),
+                    icon: Icons.history_edu,
+                    label: 'BACKSTORY',
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      BackstoryDialog.show(context, activeCharacter);
+                    },
                   ),
                   const SizedBox(width: 16),
                   _ActionButton(
-                    icon: Icons.inventory_2_outlined,
-                    label: 'GEAR',
-                    onPressed: () => InventoryDialog.show(
-                      context,
-                      activeCharacter.inventory,
-                      itemDescriptions: activeCharacter.itemDescriptions,
-                      gold: activeCharacter.gold,
-                    ),
+                    icon: Icons.shield_outlined,
+                    label: 'EQUIPMENT',
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      InventoryDialog.show(
+                        context,
+                        activeCharacter.inventory,
+                        itemDescriptions: activeCharacter.itemDescriptions,
+                        gold: activeCharacter.gold,
+                      );
+                    },
                   ),
                 ],
               ),

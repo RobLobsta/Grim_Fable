@@ -247,10 +247,13 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                 animate: isLast && _animatedTexts[index] == null,
                 onProgress: _scrollToBottom,
                 onFinishedTyping: () {
-                  if (isLast && mounted) {
+                  if (mounted) {
                     setState(() {
                       _animatedTexts[index] = segment.aiResponse;
-                      _isTyping = false;
+                      // Only stop the "typing" status if this was the last segment finishing
+                      if (index == (adventure.storyHistory.length - 1)) {
+                        _isTyping = false;
+                      }
                     });
                     _scrollToBottom();
                   }
