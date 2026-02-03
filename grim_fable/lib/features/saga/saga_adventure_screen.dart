@@ -32,6 +32,15 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
     final adventure = ref.read(activeSagaAdventureProvider);
     if (adventure != null) {
       for (int i = 0; i < adventure.storyHistory.length; i++) {
+        // If it's a brand new adventure (created in the last 30 seconds) and it's the first segment,
+        // don't mark it as animated so the typewriter effect plays.
+        final isVeryNew = DateTime.now().difference(adventure.createdAt).inSeconds < 30;
+        final isFirstSegment = i == 0 && adventure.storyHistory.length == 1;
+
+        if (isVeryNew && isFirstSegment) {
+          _isTyping = true;
+          continue;
+        }
         _animatedTexts[i] = adventure.storyHistory[i].aiResponse;
       }
     }
@@ -238,10 +247,13 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                 animate: isLast && _animatedTexts[index] == null,
                 onProgress: _scrollToBottom,
                 onFinishedTyping: () {
-                  if (isLast && mounted) {
+                  if (mounted) {
                     setState(() {
                       _animatedTexts[index] = segment.aiResponse;
-                      _isTyping = false;
+                      // Only stop the "typing" status if this was the last segment finishing
+                      if (index == (adventure.storyHistory.length - 1)) {
+                        _isTyping = false;
+                      }
                     });
                     _scrollToBottom();
                   }
@@ -255,7 +267,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                 decoration: const BoxDecoration(color: Colors.transparent),
               ),
               // Recommended choices
-              if (isLast && adventure.isActive && !_isTyping && showChoices) ...[
+              if (isLast && adventure.isActive && showChoices && !_isTyping) ...[
                 Builder(builder: (context) {
                   final choices = List<String>.from(segment.recommendedChoices ?? []);
                   if (isBhaal && choices.isEmpty) {
@@ -423,6 +435,26 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
       );
     }
 
+    if (_isTyping) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        color: const Color(0xFF1A1510),
+        child: SafeArea(
+          child: Center(
+            child: Text(
+              "THE FATES ARE SPEAKING...",
+              style: GoogleFonts.grenze(
+                color: Colors.white.withValues(alpha: 0.5),
+                letterSpacing: 2,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     final isOverridden = sagaId == 'legacy_of_blood' && corruption > 0.8;
     final char = ref.read(activeCharacterProvider);
     final partner = progress?.mechanicsState['active_conversation_partner'];
@@ -454,7 +486,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
               icon: const Icon(Icons.inventory_2_outlined),
               onPressed: () {
                 if (char != null) {
-                   InventoryDialog.show(context, char.inventory, itemDescriptions: char.itemDescriptions, gold: char.gold);
+                  InventoryDialog.show(context, char.inventory, itemDescriptions: char.itemDescriptions, gold: char.gold);
                 }
               },
             ),
@@ -462,7 +494,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
               Expanded(
                 child: TextField(
                   controller: _controller,
-                  enabled: !isOverridden && !_isLoading && !_isTyping,
+                  enabled: !isOverridden && !_isLoading,
                   decoration: InputDecoration(
                     hintText: hintText,
                     prefixIcon: isBhaal && inConversation ? const Icon(Icons.chat_bubble_outline, size: 20) : null,

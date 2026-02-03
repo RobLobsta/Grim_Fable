@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -14,23 +15,38 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: Theme.of(context).colorScheme.tertiary, size: 24),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                  fontSize: 18,
-                  letterSpacing: 2,
-                  color: const Color(0xFFC0C0C0),
-                ),
-            overflow: TextOverflow.ellipsis,
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            width: 1.5,
           ),
         ),
-        if (trailing != null) trailing!,
-      ],
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Theme.of(context).colorScheme.tertiary, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              title,
+              style: GoogleFonts.cinzel(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 3,
+                color: Colors.white,
+                shadows: [
+                  Shadow(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4), blurRadius: 8),
+                ],
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (trailing != null) trailing!,
+        ],
+      ),
     );
   }
 }

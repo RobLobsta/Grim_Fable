@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
 class StorySegmentWidget extends StatefulWidget {
@@ -110,6 +111,7 @@ class StorySegmentWidgetState extends State<StorySegmentWidget> with SingleTicke
 
   void skip() {
     if (_isAnimating) {
+      HapticFeedback.lightImpact();
       _controller.stop();
       if (mounted) {
         setState(() {
@@ -130,18 +132,22 @@ class StorySegmentWidgetState extends State<StorySegmentWidget> with SingleTicke
       border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2)),
     );
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: widget.decoration ?? defaultDecoration,
-      child: MarkdownBody(
-        data: _displayResponse,
-        styleSheet: MarkdownStyleSheet(
-          p: widget.textStyle ??
-              Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    height: 1.8,
-                    fontSize: 17,
-                    color: Theme.of(context).colorScheme.secondary,
-                  ),
+    return GestureDetector(
+      onDoubleTap: skip,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: widget.decoration ?? defaultDecoration,
+        child: MarkdownBody(
+          data: _displayResponse,
+          styleSheet: MarkdownStyleSheet(
+            p: widget.textStyle ??
+                Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      height: 1.8,
+                      fontSize: 17,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+          ),
         ),
       ),
     );

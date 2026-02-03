@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/models/character.dart';
 import '../../core/services/ai_provider.dart';
 import '../../core/services/settings_service.dart';
@@ -46,18 +48,26 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
       builder: (context) => PopScope(
         canPop: isReview,
         child: AlertDialog(
-          title: const Text('THY DESTINY REVEALED', style: TextStyle(fontFamily: 'Serif', letterSpacing: 2)),
+          backgroundColor: const Color(0xFF1A1A2E),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)),
+          ),
+          title: Text(
+            'THY DESTINY REVEALED',
+            style: GoogleFonts.cinzel(letterSpacing: 2, fontWeight: FontWeight.bold, fontSize: 20),
+          ),
           content: SingleChildScrollView(
             child: Text(
               _generatedBackstory,
-              style: const TextStyle(fontFamily: 'Serif', fontSize: 16, height: 1.6),
+              style: GoogleFonts.crimsonPro(fontSize: 18, height: 1.6, color: Colors.white.withValues(alpha: 0.9)),
             ),
           ),
           actions: [
             if (isReview)
               TextButton(
                 onPressed: () => context.pop(),
-                child: const Text('CLOSE'),
+                child: Text('CLOSE', style: GoogleFonts.grenze(letterSpacing: 2)),
               )
             else ...[
               ElevatedButton(
@@ -72,12 +82,13 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                   context.pop();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
+                  backgroundColor: Colors.transparent,
                   foregroundColor: Colors.redAccent,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   side: const BorderSide(color: Colors.redAccent, width: 1),
+                  elevation: 0,
                 ),
-                child: const Text('DECLINE', style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold)),
+                child: Text('DECLINE', style: GoogleFonts.grenze(letterSpacing: 2, fontWeight: FontWeight.bold)),
               ),
               const SizedBox(width: 8),
               ElevatedButton(
@@ -88,12 +99,12 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                   context.pop();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: const Color(0xFFC0C0C0), // Silver
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  side: const BorderSide(color: Color(0xFFC0C0C0), width: 1),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('ACCEPT', style: TextStyle(letterSpacing: 2, fontWeight: FontWeight.bold)),
+                child: Text('ACCEPT', style: GoogleFonts.grenze(letterSpacing: 2, fontWeight: FontWeight.bold)),
               ),
             ],
           ],
@@ -121,6 +132,7 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
       _isGenerating = true;
     });
 
+    HapticFeedback.mediumImpact();
     try {
       final aiService = ref.read(aiServiceProvider);
 
@@ -220,6 +232,7 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
         itemDescriptions: _itemDescriptions,
       ).copyWith(inventory: _generatedItems);
 
+      HapticFeedback.heavyImpact();
       await ref.read(charactersProvider.notifier).addCharacter(character);
 
       if (mounted) {
@@ -234,16 +247,22 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('FORGE CHARACTER'),
+        title: Text('FORGE CHARACTER', style: GoogleFonts.cinzel(letterSpacing: 4, fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            stops: const [0.0, 0.5, 1.0],
             colors: [
-              const Color(0xFF0D1117),
-              Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+              Theme.of(context).colorScheme.surface,
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+              Theme.of(context).colorScheme.surface,
             ],
           ),
         ),
@@ -307,13 +326,16 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                   },
                   decoration: InputDecoration(
                     labelText: 'NAME',
+                    labelStyle: GoogleFonts.grenze(letterSpacing: 2, color: Colors.white70),
                     errorText: _nameError,
-                    prefixIcon: const Icon(Icons.person_outline),
+                    prefixIcon: const Icon(Icons.person_outline, size: 20),
                     counterStyle: const TextStyle(color: Colors.grey, fontSize: 10),
-                    fillColor: _backstoryAccepted ? Colors.white.withValues(alpha: 0.05) : null,
-                    filled: _backstoryAccepted,
+                    fillColor: _backstoryAccepted ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.02),
+                    filled: true,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3))),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Theme.of(context).colorScheme.tertiary, width: 2)),
                   ),
-                  style: const TextStyle(fontFamily: 'Serif', letterSpacing: 1.2),
+                  style: GoogleFonts.grenze(fontSize: 18, letterSpacing: 1.2),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'THE NAMELESS CANNOT BE FORGED';
@@ -334,13 +356,16 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                   },
                   decoration: InputDecoration(
                     labelText: 'OCCUPATION',
+                    labelStyle: GoogleFonts.grenze(letterSpacing: 2, color: Colors.white70),
                     errorText: _occupationError,
-                    prefixIcon: const Icon(Icons.work_outline),
+                    prefixIcon: const Icon(Icons.work_outline, size: 20),
                     counterStyle: const TextStyle(color: Colors.grey, fontSize: 10),
-                    fillColor: _backstoryAccepted ? Colors.white.withValues(alpha: 0.05) : null,
-                    filled: _backstoryAccepted,
+                    fillColor: _backstoryAccepted ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.02),
+                    filled: true,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3))),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Theme.of(context).colorScheme.tertiary, width: 2)),
                   ),
-                  style: const TextStyle(fontFamily: 'Serif', letterSpacing: 1.2),
+                  style: GoogleFonts.grenze(fontSize: 18, letterSpacing: 1.2),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'ONE MUST HAVE A PURPOSE IN THIS DARK WORLD';
@@ -357,13 +382,16 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                   readOnly: _backstoryAccepted,
                   decoration: InputDecoration(
                     labelText: 'DESCRIPTION (OPTIONAL)',
-                    prefixIcon: const Icon(Icons.description_outlined),
+                    labelStyle: GoogleFonts.grenze(letterSpacing: 2, color: Colors.white70),
+                    prefixIcon: const Icon(Icons.description_outlined, size: 20),
                     counterStyle: const TextStyle(color: Colors.grey, fontSize: 10),
                     hintText: 'e.g., A weary traveler from the north...',
-                    fillColor: _backstoryAccepted ? Colors.white.withValues(alpha: 0.05) : null,
-                    filled: _backstoryAccepted,
+                    fillColor: _backstoryAccepted ? Colors.white.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.02),
+                    filled: true,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3))),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Theme.of(context).colorScheme.tertiary, width: 2)),
                   ),
-                  style: const TextStyle(fontFamily: 'Serif', letterSpacing: 1.2),
+                  style: GoogleFonts.grenze(fontSize: 18, letterSpacing: 1.2),
                 ),
                 const SizedBox(height: 60),
                 if (_isGenerating)
@@ -382,21 +410,12 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                     children: [
                       ElevatedButton.icon(
                         onPressed: hasApiKey ? _generateBackstory : null,
-                        icon: Icon(hasApiKey ? Icons.auto_awesome_outlined : Icons.lock_outline),
+                        icon: Icon(hasApiKey ? Icons.auto_awesome_outlined : Icons.lock_outline, size: 24),
                         label: Text(hasApiKey ? 'AI DIVINATION' : 'KEY REQUIRED'),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 24),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: () {
-                          setState(() {
-                            _generatedBackstory = 'A hero with a mysterious past.';
-                            _backstoryAccepted = true;
-                          });
-                        },
-                        child: const Text('DEBUG: SKIP AI'),
                       ),
                     ],
                   )
@@ -408,10 +427,11 @@ class _CharacterCreationScreenState extends ConsumerState<CharacterCreationScree
                         onPressed: _saveCharacter,
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 24),
-                          backgroundColor: Theme.of(context).colorScheme.secondary,
-                          foregroundColor: Theme.of(context).colorScheme.onSecondary,
+                          backgroundColor: Theme.of(context).colorScheme.tertiary,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
-                        child: const Text('FORGE CHARACTER'),
+                        child: Text('FORGE CHARACTER', style: GoogleFonts.cinzel(fontWeight: FontWeight.bold, letterSpacing: 2)),
                       ),
                       const SizedBox(height: 16),
                       Wrap(

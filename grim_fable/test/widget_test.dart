@@ -38,6 +38,6 @@ void main() {
 
     // Verify that our welcome message is displayed.
     expect(find.text('GRIM FABLE'), findsOneWidget);
-    expect(find.text('Behold, Thy Fate'), findsOneWidget);
+    expect(find.text('BEHOLD, THY FATE'), findsOneWidget);
   });
 }

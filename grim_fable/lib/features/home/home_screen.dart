@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../character/character_provider.dart';
 import '../../shared/widgets/ai_settings_dialog.dart';
 import '../../shared/widgets/app_settings_dialog.dart';
@@ -109,11 +111,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildBackgroundContainer({required Widget child}) {
     return Container(
       decoration: BoxDecoration(
-        gradient: RadialGradient(
-          center: Alignment.center,
-          radius: 1.5,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          stops: const [0.0, 0.3, 0.7, 1.0],
           colors: [
+            Theme.of(context).colorScheme.surface,
             Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
             Theme.of(context).colorScheme.surface,
           ],
         ),
@@ -124,20 +129,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildAppBar(BuildContext context, dynamic activeCharacter) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
         children: [
           Expanded(
-            child: const Text(
+            child: Text(
               'GRIM FABLE',
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
-              style: TextStyle(
-                fontFamily: 'Serif',
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 4,
-                color: Color(0xFFC0C0C0),
+              style: GoogleFonts.cinzel(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 6,
+                color: const Color(0xFFE0E0E0),
+                shadows: [
+                  Shadow(
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
+                    blurRadius: 10,
+                  ),
+                ],
               ),
             ),
           ),
@@ -145,13 +155,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              IconButton(
-                icon: const Icon(Icons.settings_outlined, color: Color(0xFFC0C0C0)),
+              _AppBarButton(
+                icon: Icons.settings_outlined,
                 onPressed: () => AppSettingsDialog.show(context),
                 tooltip: 'App Settings',
               ),
-              IconButton(
-                icon: const Icon(Icons.vpn_key_outlined, color: Color(0xFFC0C0C0)),
+              const SizedBox(width: 12),
+              _AppBarButton(
+                icon: Icons.vpn_key_outlined,
                 onPressed: () => AiSettingsDialog.show(context),
                 tooltip: 'AI Settings',
               ),
@@ -164,22 +175,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildHeroIcon() {
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.all(40),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5), width: 2),
-        boxShadow: [
-          BoxShadow(
+        gradient: RadialGradient(
+          colors: [
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+            Colors.transparent,
+          ],
+        ),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(
+            Icons.auto_stories,
+            size: 100,
             color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-            blurRadius: 30,
-            spreadRadius: 10,
+          ),
+          Icon(
+            Icons.auto_stories_outlined,
+            size: 80,
+            color: Theme.of(context).colorScheme.secondary,
           ),
         ],
-      ),
-      child: Icon(
-        Icons.auto_stories_outlined,
-        size: 80,
-        color: Theme.of(context).colorScheme.secondary,
       ),
     );
   }
@@ -188,26 +211,158 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Column(
       children: [
         Text(
-          'Behold, Thy Fate',
-          style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: 32),
+          'BEHOLD, THY FATE',
+          style: GoogleFonts.cinzel(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 4,
+            color: Colors.white,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
         Text(
-          'Your dark adventure awaits...',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontStyle: FontStyle.italic),
+          'A dark odyssey in the palm of thy hand...',
+          style: GoogleFonts.crimsonPro(
+            fontSize: 18,
+            fontStyle: FontStyle.italic,
+            color: Colors.white70,
+          ),
         ),
-        const SizedBox(height: 60),
-        ElevatedButton(
-          onPressed: () => context.push('/saga-selection'),
-          child: const Text('SAGA MODE'),
+        const SizedBox(height: 64),
+        _ModeCard(
+          title: 'SAGA MODE',
+          subtitle: 'Guided Narrative Experiences',
+          icon: Icons.auto_stories,
+          onTap: () => context.push('/saga-selection'),
         ),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: () => context.push('/adventure-selection'),
-          child: const Text('ADVENTURE MODE'),
+        const SizedBox(height: 20),
+        _ModeCard(
+          title: 'ADVENTURE MODE',
+          subtitle: 'Forge Your Own Legend',
+          icon: Icons.fort,
+          onTap: () => context.push('/adventure-selection'),
         ),
       ],
+    );
+  }
+}
+
+class _AppBarButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onPressed;
+  final String tooltip;
+
+  const _AppBarButton({
+    required this.icon,
+    required this.onPressed,
+    required this.tooltip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: IconButton(
+        icon: Icon(icon, color: const Color(0xFFC0C0C0), size: 20),
+        onPressed: onPressed,
+        tooltip: tooltip,
+        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+      ),
+    );
+  }
+}
+
+class _ModeCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _ModeCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                Theme.of(context).colorScheme.surface.withValues(alpha: 0.1),
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)),
+                ),
+                child: Icon(icon, color: Theme.of(context).colorScheme.tertiary, size: 32),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.cinzel(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.crimsonPro(
+                        fontSize: 15,
+                        color: Colors.white70,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios, color: Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.5), size: 18),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
