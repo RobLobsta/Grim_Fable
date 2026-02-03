@@ -32,6 +32,15 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
     final adventure = ref.read(activeSagaAdventureProvider);
     if (adventure != null) {
       for (int i = 0; i < adventure.storyHistory.length; i++) {
+        // If it's a brand new adventure (created in the last 30 seconds) and it's the first segment,
+        // don't mark it as animated so the typewriter effect plays.
+        final isVeryNew = DateTime.now().difference(adventure.createdAt).inSeconds < 30;
+        final isFirstSegment = i == 0 && adventure.storyHistory.length == 1;
+
+        if (isVeryNew && isFirstSegment) {
+          _isTyping = true;
+          continue;
+        }
         _animatedTexts[i] = adventure.storyHistory[i].aiResponse;
       }
     }
@@ -482,7 +491,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
               Expanded(
                 child: Center(
                   child: Text(
-                    "EXPLORATION MODE",
+                    _isTyping ? "THE FATES ARE SPEAKING..." : "EXPLORATION MODE",
                     style: GoogleFonts.grenze(
                       color: Colors.white.withValues(alpha: 0.3),
                       letterSpacing: 2,

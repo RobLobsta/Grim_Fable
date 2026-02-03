@@ -95,8 +95,9 @@ void main() {
     await tester.pump();
 
     // 1. Start Journey (Create Character)
-    expect(find.text('ADVENTURE MODE'), findsOneWidget);
-    await tester.tap(find.text('ADVENTURE MODE'));
+    final adventureModeFinder = find.text('ADVENTURE MODE');
+    await tester.ensureVisible(adventureModeFinder);
+    await tester.tap(adventureModeFinder);
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
