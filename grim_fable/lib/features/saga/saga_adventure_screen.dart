@@ -264,8 +264,10 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> {
                 decoration: const BoxDecoration(color: Colors.transparent),
               ),
               // Recommended choices
-              if (isLast && adventure.isActive && !_isTyping && showChoices) ...[
+              if (isLast && adventure.isActive && showChoices) ...[
                 Builder(builder: (context) {
+                  if (_isTyping) return const SizedBox.shrink();
+
                   final choices = List<String>.from(segment.recommendedChoices ?? []);
                   if (isBhaal && choices.isEmpty) {
                     choices.add("Keep Moving");
