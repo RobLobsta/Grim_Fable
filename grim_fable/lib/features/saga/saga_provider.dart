@@ -287,6 +287,16 @@ Witnessed Plot Anchors:
 - ${witnessedAnchors.isEmpty ? "None" : witnessedAnchors}
 """;
 
+    int choiceCount = 3;
+    String sentenceConstraint = "exactly 1 paragraph (3-5 sentences)";
+
+    if (saga.id == 'throne_of_bhaal') {
+      choiceCount = 5;
+      sentenceConstraint = "2-3 concise sentences";
+    }
+
+    final choicesExample = List.generate(choiceCount, (i) => "Choice ${i + 1}").join(" | ");
+
     final systemMessage = """
 You are a creative storyteller for Grim Fable, currently running a SAGA MODE adventure.
 Saga: ${saga.title}
@@ -306,12 +316,12 @@ Inventory: $inventoryList
 Gold: ${character.gold}
 
 Your task is to guide the story through the current chapter's plot anchors.
-Keep your responses short, exactly 1 paragraph (3-5 sentences).
+Keep your responses short, $sentenceConstraint.
 Maintain a dark fantasy, gritty, and realistic tone consistent with the setting.
 Use third person exclusively.
 
-At the end of your response, you MUST provide exactly 3 short suggested actions for the protagonist, formatted as:
-[CHOICES: Choice 1 | Choice 2 | Choice 3]
+At the end of your response, you MUST provide exactly $choiceCount short suggested actions for the protagonist, formatted as:
+[CHOICES: $choicesExample]
 
 If a plot anchor is clearly achieved, add the tag [ANCHOR_WITNESSED: Description].
 Standard tags apply: [ITEM_GAINED: Name], [GOLD_GAINED: Number], etc.
