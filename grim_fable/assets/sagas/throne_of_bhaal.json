@@ -3,7 +3,7 @@
   "title": "Throne of Bhaal",
   "series": "Throne of Bhaal",
   "coverArtUrl": "assets/sagas/throne_of_bhaal.webp",
-  "loreContext": "The Sword Coast is a region of beauty and betrayal. Bhaal, the former Lord of Murder, has been resurrected but remains amnesiac. The atmosphere is 'tragicomic absurdity'—cosmic irony meets gallows humor. As Bhaal's power (Infamy) grows, his shadow begins to act independently, and the world begins to pulse with a dark, divine rhythm that he finds mostly annoying. Lexicon: [Bhaal: The amnesiac Lord of Murder], [Cespenar: A sarcastic imp butler], [The Grinning Skull: A mocking, talking skull], [Divine Essence: Fragments of godhood], [Infamy: Your reputation as a harbinger of death].",
+  "loreContext": "The Sword Coast is a region of beauty and betrayal. Bhaal, the former Lord of Murder, has been resurrected but remains amnesiac. The atmosphere is 'tragicomic absurdity'—cosmic irony meets gallows humor. As Bhaal's power (Infamy) grows, his shadow begins to act independently, and the world begins to pulse with a dark, divine rhythm that he finds mostly annoying. Lexicon: [Bhaal: The amnesiac Lord of Murder], [Divine Essence: Fragments of godhood], [Infamy: Your reputation as a harbinger of death].",
   "requiredCharacter": {
     "name": "Bhaal",
     "occupation": "Resurrected",
