@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -26,6 +27,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
   late AnimationController _pulseController;
   bool _isLoading = false;
   bool _isTyping = false;
+  bool _userHasScrolledUp = false;
   final Map<int, String> _animatedTexts = {};
 
   @override
@@ -35,6 +37,8 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
       vsync: this,
       duration: const Duration(seconds: 4),
     )..repeat();
+
+    _scrollController.addListener(_handleScroll);
 
     final adventure = ref.read(activeSagaAdventureProvider);
     if (adventure != null) {
@@ -60,7 +64,30 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
     }
   }
 
+  void _handleScroll() {
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
+
+    // If we are within 50 pixels of the bottom, we consider it "at the bottom"
+    final isAtBottom = pos.pixels >= pos.maxScrollExtent - 50;
+
+    if (isAtBottom && _userHasScrolledUp) {
+      setState(() {
+        _userHasScrolledUp = false;
+      });
+    } else if (!isAtBottom && !_userHasScrolledUp) {
+      // Only set to true if the user is actually scrolling (not just the programmatic scroll)
+      if (pos.userScrollDirection != ScrollDirection.idle) {
+        setState(() {
+          _userHasScrolledUp = true;
+        });
+      }
+    }
+  }
+
   void _scrollToBottom() {
+    if (_userHasScrolledUp) return;
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -90,6 +117,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
     setState(() {
       _isLoading = true;
       _isTyping = true;
+      _userHasScrolledUp = false; // Reset on new action
     });
 
     try {
@@ -473,10 +501,13 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
             child: AnimatedBuilder(
               animation: _pulseController,
               builder: (context, child) {
+                final label = sagaId == 'throne_of_bhaal'
+                    ? "DESTINY IS BEING WRITTEN (POORLY)..."
+                    : "THE FATES ARE SPEAKING...";
                 return Opacity(
                   opacity: 0.3 + (_pulseController.value * 0.4),
                   child: Text(
-                    "THE FATES ARE SPEAKING...",
+                    label,
                     style: GoogleFonts.grenze(
                       color: Colors.white,
                       letterSpacing: 2 + (_pulseController.value * 2),
