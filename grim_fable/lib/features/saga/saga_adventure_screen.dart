@@ -28,6 +28,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
   bool _isLoading = false;
   bool _isTyping = false;
   bool _userHasScrolledUp = false;
+  int _visibleChoicesCount = 0;
   final Map<int, String> _animatedTexts = {};
 
   @override
@@ -55,6 +56,11 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
         _animatedTexts[i] = adventure.storyHistory[i].aiResponse;
       }
     }
+
+    if (!_isTyping) {
+      _visibleChoicesCount = 100;
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) => _jumpToBottom());
   }
 
@@ -99,6 +105,31 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
     });
   }
 
+  void _startChoicesAnimation(List<String>? recommendedChoices, bool isBhaal, String lastInput) {
+    _visibleChoicesCount = 0;
+
+    final choices = List<String>.from(recommendedChoices ?? []);
+    final wasContinue = lastInput.trim().toUpperCase() == "CONTINUE";
+
+    if (isBhaal && !wasContinue) {
+      if (!choices.any((c) => c.trim().toUpperCase() == "CONTINUE")) {
+        choices.add("CONTINUE");
+      }
+    }
+
+    if (choices.isEmpty) return;
+
+    Future.delayed(const Duration(seconds: 1), () async {
+      for (int i = 1; i <= choices.length; i++) {
+        if (!mounted || _isTyping) break;
+        setState(() {
+          _visibleChoicesCount = i;
+        });
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+    });
+  }
+
   @override
   void dispose() {
     _pulseController.dispose();
@@ -118,6 +149,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
       _isLoading = true;
       _isTyping = true;
       _userHasScrolledUp = false; // Reset on new action
+      _visibleChoicesCount = 0; // Reset choices animation
     });
 
     try {
@@ -310,6 +342,7 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
                       // Only stop the "typing" status if this was the last segment finishing
                       if (index == (adventure.storyHistory.length - 1)) {
                         _isTyping = false;
+                        _startChoicesAnimation(segment.recommendedChoices, isBhaal, segment.playerInput);
                       }
                     });
                     _scrollToBottom();
@@ -327,8 +360,13 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
               if (isLast && adventure.isActive && showChoices && !_isTyping) ...[
                 Builder(builder: (context) {
                   final choices = List<String>.from(segment.recommendedChoices ?? []);
-                  if (isBhaal && choices.isEmpty) {
-                    choices.add("Keep Moving");
+                  final lastInput = segment.playerInput;
+                  final wasContinue = lastInput.trim().toUpperCase() == "CONTINUE";
+
+                  if (isBhaal && !wasContinue) {
+                    if (!choices.any((c) => c.trim().toUpperCase() == "CONTINUE")) {
+                      choices.add("CONTINUE");
+                    }
                   }
 
                   if (choices.isEmpty) return const SizedBox.shrink();
@@ -337,10 +375,18 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const SizedBox(height: 16),
-                      ...choices.map((choice) => Padding(
+                      ...choices.asMap().entries.map((entry) {
+                        final i = entry.key;
+                        final choice = entry.value;
+                        final isVisible = i < _visibleChoicesCount;
+
+                        return AnimatedOpacity(
+                          opacity: isVisible ? 1.0 : 0.0,
+                          duration: const Duration(milliseconds: 500),
+                          child: Padding(
                             padding: const EdgeInsets.only(bottom: 8.0),
                             child: ElevatedButton(
-                              onPressed: (_isLoading || _isTyping) ? null : () => _submitAction(action: choice),
+                              onPressed: (isVisible && !_isLoading && !_isTyping) ? () => _submitAction(action: choice) : null,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: isDarkTheme ? Colors.white.withValues(alpha: 0.05) : const Color(0xFF4A0000).withValues(alpha: 0.1),
                                 foregroundColor: isDarkTheme ? const Color(0xFF90E0EF) : const Color(0xFF4A0000),
@@ -356,7 +402,9 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
                                 style: GoogleFonts.grenze(fontSize: 14, letterSpacing: 2, fontWeight: FontWeight.bold),
                               ),
                             ),
-                          )),
+                          ),
+                        );
+                      }),
                     ],
                   );
                 }),
