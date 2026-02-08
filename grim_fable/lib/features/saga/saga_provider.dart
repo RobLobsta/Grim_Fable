@@ -208,6 +208,11 @@ class SagaNotifier extends StateNotifier<Adventure?> {
       if (inConversationWith != null) {
         finalAction = "Player says to $inConversationWith: \"$action\"";
       }
+
+      // 15% chance for a comedic fatality
+      if (Random().nextDouble() < 0.15) {
+        finalAction = "$finalAction\n[SYSTEM: This action must result in a DARK SLAPSTICK FATALITY. Something goes horribly, absurdly wrong for someone nearby or involved, caused by Bhaal's unintended divine power.]";
+      }
     } else if (saga.id == 'legacy_of_blood') {
       final corruption = (progress.mechanicsState['corruption'] ?? progress.mechanicsState['initial_corruption'] ?? 0.1).toDouble();
       if (Random().nextDouble() < corruption) {
@@ -259,7 +264,7 @@ Current Infamy: $infamy.
 Active Conversation: ${inConversationWith ?? 'None'}.
 
 STORY GUIDELINES:
-- TONE: Maintain a 'tragicomic' and 'absurd' tone. Bhaal is a god, but currently a confused and amnesiac one.
+- TONE: Maintain a 'tragicomic', 'dark slapstick', and 'absurd' tone. Bhaal is a god, but currently a confused and amnesiac one.
 - AMNESIA: Do NOT hint that the player is important or divine early on. Let the mystery build naturally through the world's reaction to his accidents.
 - COMPANIONS: Frequently include gallows-humor commentary from 'The Grinning Skull' (mocking/sarcastic) or 'Cespenar' (fussy/disappointed butler). When a companion speaks, use bold for their name (e.g., **The Grinning Skull:** "Hehe...").
 - INFAMY EFFECTS: As Infamy increases, mention Bhaal's shadow acting independently (e.g., tripping people) or the world pulsing with a dark divine rhythm.
@@ -268,6 +273,7 @@ STORY GUIDELINES:
 - WORLD EVENTS: When the player makes a significant choice or causes a lasting change, use the tag [WORLD_EVENT: Description].
 - DIALOGUE: If the player provides speech, narrate their delivery based on the tone (e.g., 'You shrug and say...').
 - INFAMY: When Bhaal causes a death, murder, or major disaster, use [INFAMY: +1].
+- FATALITIES: Occasionally, Bhaal's actions result in dark slapstick fatalities. These should be absurd, ironic, and messy. If you see a [SYSTEM: DARK SLAPSTICK FATALITY] instruction, you MUST ensure a secondary character or a random bystander meets a ridiculous, gruesome, yet funny end as a direct (but unintended) result of Bhaal's action.
 - Provide situational irony—mortals whispering of a 20-foot monster while Bhaal is just a man with cabbage in his hair.
 """;
     }
