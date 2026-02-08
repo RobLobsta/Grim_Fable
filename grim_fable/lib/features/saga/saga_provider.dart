@@ -258,22 +258,32 @@ STORY GUIDELINES:
     } else if (saga.id == 'throne_of_bhaal') {
       final infamy = progress.mechanicsState['infamy'] ?? 0;
       final inConversationWith = progress.mechanicsState['active_conversation_partner'];
+      final companions = (progress.mechanicsState['companions'] as List<dynamic>?)?.join(", ") ?? "None";
 
       mechanicsContext = """
 Current Infamy: $infamy.
 Active Conversation: ${inConversationWith ?? 'None'}.
+Current Companions: $companions.
 
 STORY GUIDELINES:
 - TONE: Maintain a 'tragicomic', 'dark slapstick', and 'absurd' tone. Bhaal is a god, but currently a confused and amnesiac one.
 - AMNESIA: Do NOT hint that the player is important or divine early on. Let the mystery build naturally through the world's reaction to his accidents.
-- COMPANIONS: Frequently include gallows-humor commentary from 'The Grinning Skull' (mocking/sarcastic) or 'Cespenar' (fussy/disappointed butler). When a companion speaks, use bold for their name (e.g., **The Grinning Skull:** "Hehe...").
+- COMPANIONS: Only present companions ($companions) can speak. If a companion joins or leaves Bhaal's company, you MUST use [COMPANION_JOINED: Name] or [COMPANION_LEFT: Name].
+- ANIMALS: Animals (like the Litigious Crab) do NOT speak. Instead, narrate Bhaal's informal interpretation of what he believes the animal is saying within the narrative text. Do NOT use dialogue formatting for animals.
+- SPEECH FORMATTING: When Bhaal, a companion, or an NPC speaks, you MUST use a line break, then the name in bold followed by a colon and the dialogue in quotes, then another line break.
+  Example:
+  The sun beats down on the sand.
+
+  **Bhaal:** "Why does the sand feel so judgmental?"
+
+  The waves crash against the shore.
 - INFAMY EFFECTS: As Infamy increases, mention Bhaal's shadow acting independently (e.g., tripping people) or the world pulsing with a dark divine rhythm.
-- RANDOM ENCOUNTERS: Between plot anchors, introduce randomized, thematic encounters (e.g., meeting travelers, stumbling upon oddities, finding ruins) that enrich the Sword Coast setting.
-- CONVERSATIONS: When an NPC speaks to the player and expects a response, you MUST use the tag [CONVERSATION: NPC Name]. If the conversation ends or no immediate response is needed, do NOT include the tag.
+- RANDOM ENCOUNTERS: Between plot anchors, introduce randomized, thematic encounters that enrich the Sword Coast setting.
+- CONVERSATIONS: When an NPC speaks to the player and expects a response, you MUST use the tag [CONVERSATION: NPC Name].
 - WORLD EVENTS: When the player makes a significant choice or causes a lasting change, use the tag [WORLD_EVENT: Description].
-- DIALOGUE: If the player provides speech, narrate their delivery based on the tone (e.g., 'You shrug and say...').
 - INFAMY: When Bhaal causes a death, murder, or major disaster, use [INFAMY: +1].
-- FATALITIES: Occasionally, Bhaal's actions result in dark slapstick fatalities. These should be absurd, ironic, and messy. If you see a [SYSTEM: DARK SLAPSTICK FATALITY] instruction, you MUST ensure a secondary character or a random bystander meets a ridiculous, gruesome, yet funny end as a direct (but unintended) result of Bhaal's action.
+- FATALITIES: [SYSTEM: DARK SLAPSTICK FATALITY] triggers a ridiculous, gruesome, yet funny unintended death.
+- CONTINUE ACTION: The 'CONTINUE' action is used for natural progression or providing extra context without explicit player actions.
 - Provide situational irony—mortals whispering of a 20-foot monster while Bhaal is just a man with cabbage in his hair.
 """;
     }
@@ -598,6 +608,36 @@ ${saga.id == 'night_of_the_full_moon' ? "IMPORTANT: If the player meets the Trav
       final newClass = classMatch.group(1)!;
       await _characterNotifier.updateCharacter(character.copyWith(occupation: newClass));
       cleanResponse = cleanResponse.replaceAll(classRegex, '');
+    }
+
+    // Process Companion tags
+    final joinedRegex = RegExp(r"\[COMPANION_JOINED:\s*(.+?)\]");
+    final leftRegex = RegExp(r"\[COMPANION_LEFT:\s*(.+?)\]");
+
+    final joinedMatches = joinedRegex.allMatches(response);
+    final leftMatches = leftRegex.allMatches(response);
+
+    if (joinedMatches.isNotEmpty || leftMatches.isNotEmpty) {
+      final progress = _ref.read(sagaProgressProvider);
+      if (progress != null) {
+        final newState = Map<String, dynamic>.from(progress.mechanicsState);
+        final List<String> companions = List<String>.from(newState['companions'] ?? []);
+
+        for (final m in joinedMatches) {
+          final name = m.group(1)!;
+          if (!companions.contains(name)) companions.add(name);
+        }
+        for (final m in leftMatches) {
+          final name = m.group(1)!;
+          companions.removeWhere((c) => c == name);
+        }
+
+        newState['companions'] = companions;
+        final updatedProgress = progress.copyWith(mechanicsState: newState);
+        await _repository.saveProgress(updatedProgress);
+        _ref.read(sagaProgressProvider.notifier).state = updatedProgress;
+      }
+      cleanResponse = cleanResponse.replaceAll(joinedRegex, '').replaceAll(leftRegex, '');
     }
 
     // Process Conversation tags (currently Throne of Bhaal specific)
