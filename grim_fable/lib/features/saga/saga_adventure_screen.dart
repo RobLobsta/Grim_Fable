@@ -703,100 +703,167 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
               ),
               Divider(color: primaryColor),
               const SizedBox(height: 16),
-              AutoSizeText(
-                "CHAPTER: ${saga.chapters[progress.currentChapterIndex].title.toUpperCase()}",
-                style: GoogleFonts.grenze(
-                  color: textColor,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-                maxLines: 1,
-                minFontSize: 14,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-              if (saga.id == 'legacy_of_blood') ...[
-                Builder(builder: (context) {
-                  final corruption = (progress.mechanicsState['corruption'] ?? 0.0).toDouble();
-                  final displayColor = Color.lerp(Colors.orange, const Color(0xFF4A0000), corruption) ?? Colors.orange;
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+              Expanded(
+                child: ListView(
+                  children: [
+                    AutoSizeText(
+                      saga.chapters[progress.currentChapterIndex].title.toUpperCase(),
+                      style: GoogleFonts.grenze(
+                        color: textColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      minFontSize: 14,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 16),
+                    if (saga.id == 'legacy_of_blood') ...[
+                      Builder(builder: (context) {
+                        final corruption = (progress.mechanicsState['corruption'] ?? 0.0).toDouble();
+                        final displayColor = Color.lerp(Colors.orange, const Color(0xFF4A0000), corruption) ?? Colors.orange;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "ARMOR'S INFLUENCE: ${(corruption * 100).toInt()}%",
+                              style: GoogleFonts.grenze(
+                                color: displayColor,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            LinearProgressIndicator(
+                              value: corruption,
+                              backgroundColor: Colors.black12,
+                              color: displayColor,
+                              minHeight: 8,
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        );
+                      }),
+                    ],
+                    if (saga.id == 'night_of_the_full_moon') ...[
+                      Row(
+                        children: [
+                          _buildStatChip(Icons.shield, "COURAGE", progress.mechanicsState['courage'] ?? 0, Colors.blueGrey),
+                          const SizedBox(width: 12),
+                          _buildStatChip(Icons.favorite, "REPUTATION", progress.mechanicsState['reputation'] ?? 0, Colors.teal),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
                       Text(
-                        "ARMOR'S INFLUENCE: ${(corruption * 100).toInt()}%",
+                        "MOON PHASE: ${(progress.mechanicsState['moon_phase'] ?? 'Crescent').toString().toUpperCase()}",
                         style: GoogleFonts.grenze(
-                          color: displayColor,
+                          color: textColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    if (saga.id == 'throne_of_bhaal') ...[
+                      _buildStatChip(
+                        Icons.local_fire_department,
+                        "INFAMY",
+                        progress.mechanicsState['infamy'] ?? 0,
+                        Colors.deepOrange,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    Text(
+                      "WITNESSED ANCHORS:",
+                      style: GoogleFonts.grenze(
+                        color: textColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...progress.witnessedAnchors.map((anchor) => ListTile(
+                          leading: Icon(Icons.bookmark, color: primaryColor, size: 20),
+                          contentPadding: EdgeInsets.zero,
+                          visualDensity: VisualDensity.compact,
+                          title: Text(
+                            anchor,
+                            style: GoogleFonts.crimsonPro(color: textColor, fontSize: 16),
+                          ),
+                        )),
+                    if (progress.witnessedAnchors.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text("None yet", style: GoogleFonts.crimsonPro(color: textColor.withValues(alpha: 0.5), fontStyle: FontStyle.italic)),
+                      ),
+                    if (saga.id == 'throne_of_bhaal') ...[
+                      const SizedBox(height: 24),
+                      Text(
+                        "COMPANIONS:",
+                        style: GoogleFonts.grenze(
+                          color: textColor,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      LinearProgressIndicator(
-                        value: corruption,
-                        backgroundColor: Colors.black12,
-                        color: displayColor,
-                        minHeight: 8,
-                      ),
+                      const SizedBox(height: 8),
+                      Builder(builder: (context) {
+                        final companions = List<String>.from(progress.mechanicsState['companions'] ?? []);
+                        final descriptions = Map<String, String>.from(progress.mechanicsState['companion_descriptions'] ?? {});
+
+                        if (companions.isEmpty) {
+                          return Text(
+                            "Bhaal travels alone.",
+                            style: GoogleFonts.crimsonPro(color: textColor.withValues(alpha: 0.6), fontStyle: FontStyle.italic),
+                          );
+                        }
+
+                        return Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: companions.map((name) {
+                            return ActionChip(
+                              label: Text(name.toUpperCase(), style: GoogleFonts.grenze(color: primaryColor, fontWeight: FontWeight.bold)),
+                              backgroundColor: primaryColor.withValues(alpha: 0.05),
+                              side: BorderSide(color: primaryColor.withValues(alpha: 0.2)),
+                              onPressed: () {
+                                _showCompanionDialog(context, name, descriptions[name] ?? "A mysterious companion.", isDarkTheme, primaryColor, textColor);
+                              },
+                            );
+                          }).toList(),
+                        );
+                      }),
                       const SizedBox(height: 16),
                     ],
-                  );
-                }),
-              ],
-              if (saga.id == 'night_of_the_full_moon') ...[
-                Row(
-                  children: [
-                    _buildStatChip(Icons.shield, "COURAGE", progress.mechanicsState['courage'] ?? 0, Colors.blueGrey),
-                    const SizedBox(width: 12),
-                    _buildStatChip(Icons.favorite, "REPUTATION", progress.mechanicsState['reputation'] ?? 0, Colors.teal),
                   ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  "MOON PHASE: ${(progress.mechanicsState['moon_phase'] ?? 'Crescent').toString().toUpperCase()}",
-                  style: GoogleFonts.grenze(
-                    color: textColor,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              if (saga.id == 'throne_of_bhaal') ...[
-                _buildStatChip(
-                  Icons.local_fire_department,
-                  "INFAMY",
-                  progress.mechanicsState['infamy'] ?? 0,
-                  Colors.deepOrange,
-                ),
-                const SizedBox(height: 16),
-              ],
-              Text(
-                "WITNESSED ANCHORS:",
-                style: GoogleFonts.grenze(
-                  color: textColor,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: progress.witnessedAnchors.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      leading: Icon(Icons.bookmark, color: primaryColor),
-                      title: Text(
-                        progress.witnessedAnchors[index],
-                        style: GoogleFonts.crimsonPro(color: textColor),
-                      ),
-                    );
-                  },
                 ),
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  void _showCompanionDialog(BuildContext context, String name, String description, bool isDarkTheme, Color primaryColor, Color textColor) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDarkTheme ? const Color(0xFF1A1A1A) : const Color(0xFFE5D3B3),
+        title: Text(name.toUpperCase(), style: GoogleFonts.grenze(color: primaryColor, letterSpacing: 2)),
+        content: Text(description, style: GoogleFonts.crimsonPro(color: textColor, fontSize: 18)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("CLOSE", style: GoogleFonts.grenze(color: primaryColor, fontWeight: FontWeight.bold)),
+          ),
+        ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: primaryColor.withValues(alpha: 0.3)),
+        ),
+      ),
     );
   }
 }

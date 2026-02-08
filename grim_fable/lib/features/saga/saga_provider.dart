@@ -268,7 +268,7 @@ Current Companions: $companions.
 STORY GUIDELINES:
 - TONE: Maintain a 'tragicomic', 'dark slapstick', and 'absurd' tone. Bhaal is a god, but currently a confused and amnesiac one.
 - AMNESIA: Do NOT hint that the player is important or divine early on. Let the mystery build naturally through the world's reaction to his accidents.
-- COMPANIONS: Only present companions ($companions) can speak. If a companion joins or leaves Bhaal's company, you MUST use [COMPANION_JOINED: Name] or [COMPANION_LEFT: Name].
+- COMPANIONS: Only present companions ($companions) can speak. If a companion joins Bhaal's company, you MUST use [COMPANION_JOINED: Name | Description], where Description is a short, factual blurb about them based on known facts. If they leave, use [COMPANION_LEFT: Name].
 - ANIMALS: Animals (like the Litigious Crab) do NOT speak. Instead, narrate Bhaal's informal interpretation of what he believes the animal is saying within the narrative text. Do NOT use dialogue formatting for animals.
 - SPEECH FORMATTING: When Bhaal, a companion, or an NPC speaks, you MUST use a line break, then the name in bold followed by a colon and the dialogue in quotes, then another line break.
   Example:
@@ -308,7 +308,7 @@ Witnessed Plot Anchors:
 
     if (saga.id == 'throne_of_bhaal') {
       choiceCount = 5;
-      sentenceConstraint = "2-3 concise sentences";
+      sentenceConstraint = "exactly 2-3 concise sentences. DO NOT use multiple paragraphs. DO NOT exceed 3 sentences under any circumstances.";
     }
 
     final choicesExample = List.generate(choiceCount, (i) => "Choice ${i + 1}").join(" | ");
@@ -611,8 +611,8 @@ ${saga.id == 'night_of_the_full_moon' ? "IMPORTANT: If the player meets the Trav
     }
 
     // Process Companion tags
-    final joinedRegex = RegExp(r"\[COMPANION_JOINED:\s*(.+?)\]");
-    final leftRegex = RegExp(r"\[COMPANION_LEFT:\s*(.+?)\]");
+    final joinedRegex = RegExp(r"\[COMPANION_JOINED:\s*([^\]|]+)(?:\|([^\]]+))?\]");
+    final leftRegex = RegExp(r"\[COMPANION_LEFT:\s*([^\]]+)\]");
 
     final joinedMatches = joinedRegex.allMatches(response);
     final leftMatches = leftRegex.allMatches(response);
@@ -622,17 +622,25 @@ ${saga.id == 'night_of_the_full_moon' ? "IMPORTANT: If the player meets the Trav
       if (progress != null) {
         final newState = Map<String, dynamic>.from(progress.mechanicsState);
         final List<String> companions = List<String>.from(newState['companions'] ?? []);
+        final Map<String, String> descriptions = Map<String, String>.from(newState['companion_descriptions'] ?? {});
 
         for (final m in joinedMatches) {
-          final name = m.group(1)!;
-          if (!companions.contains(name)) companions.add(name);
+          final name = m.group(1)!.trim();
+          final description = m.group(2)?.trim();
+          if (!companions.contains(name)) {
+            companions.add(name);
+          }
+          if (description != null) {
+            descriptions[name] = description;
+          }
         }
         for (final m in leftMatches) {
-          final name = m.group(1)!;
+          final name = m.group(1)!.trim();
           companions.removeWhere((c) => c == name);
         }
 
         newState['companions'] = companions;
+        newState['companion_descriptions'] = descriptions;
         final updatedProgress = progress.copyWith(mechanicsState: newState);
         await _repository.saveProgress(updatedProgress);
         _ref.read(sagaProgressProvider.notifier).state = updatedProgress;
