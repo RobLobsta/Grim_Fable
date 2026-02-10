@@ -19,14 +19,12 @@
       "chapterArtUrl": "assets/sagas/throne_of_bhaal_ch1.webp",
       "startingPrompt": "You wake up face-down in a bed of damp seaweed. Your head feels like a practice dummy for a giant. A few yards away, a group of particularly aggressive seagulls is fighting over a blood-stained boot that looks remarkably like yours. A small, tough-looking crab watches you from a nearby rock, clicking its claws in a rhythmic, menacing way that suggests you've just wandered into the wrong neighborhood and it's about to collect a 'tide-pool tax'.",
       "loreContext": "The beach is just south of Baldur's Gate. The local seagulls are notorious for their organized theft and surprisingly high tactical awareness.",
-      "hiddenKnowledge": "The seagulls are led by an 'Alpha' wearing a tiny, scavenged captain's hat. Mortimer the Unlucky is NOT here yet, but he left a trail of dropped sandwiches leading toward the city.",
+      "hiddenKnowledge": "The seagulls are led by an 'Alpha' wearing a tiny, scavenged captain's hat. A faint trail of mud and discarded trinkets leads away from the beach toward the city.",
       "plotAnchors": [
         "Defeat the 'Alpha Seagull' (who wears a tiny captain's hat) to reclaim your boot.",
-        "Pay the 'protection fee' to the Crab or face the wrath of its undersea syndicate.",
-        "Get accidentally launched toward the city by a malfunctioning gnome-designed 'Trash Catapult' hidden in the dunes.",
-        "Convince a group of seagulls to carry you to the city gates in exchange for a 'mythical' giant sandwich.",
-        "Ride a very confused sea turtle that believes Bhaal is its long-lost deity.",
-        "Reach the outer gates of Baldur's Gate through a series of increasingly absurd accidents."
+        "Negotiate with the Crab to pass through its territory without losing more than your dignity.",
+        "Follow the coastal path or find a ride on a passing merchant cart toward the city.",
+        "Reach the outer gates of Baldur's Gate through a series of fortunate, if somewhat undignified, coincidences."
       ],
       "importantNouns": ["Bhaal", "Alpha Seagull", "Crab", "Baldur's Gate"],
       "hiddenGoal": "Find a clue about your identity and reach the city gates by any means necessary.",
