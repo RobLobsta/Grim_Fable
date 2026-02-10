@@ -111,9 +111,12 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
     final choices = List<String>.from(recommendedChoices ?? []);
     final wasContinue = lastInput.trim().toUpperCase() == "CONTINUE";
 
-    if (isBhaal && !wasContinue) {
-      if (!choices.any((c) => c.trim().toUpperCase() == "CONTINUE")) {
-        choices.add("CONTINUE");
+    if (isBhaal) {
+      final hasContinue = choices.any((c) => c.trim().toUpperCase() == "CONTINUE");
+      if (!hasContinue) {
+        if (choices.isEmpty || !wasContinue) {
+          choices.add("CONTINUE");
+        }
       }
     }
 
@@ -363,9 +366,12 @@ class _SagaAdventureScreenState extends ConsumerState<SagaAdventureScreen> with 
                   final lastInput = segment.playerInput;
                   final wasContinue = lastInput.trim().toUpperCase() == "CONTINUE";
 
-                  if (isBhaal && !wasContinue) {
-                    if (!choices.any((c) => c.trim().toUpperCase() == "CONTINUE")) {
-                      choices.add("CONTINUE");
+                  if (isBhaal) {
+                    final hasContinue = choices.any((c) => c.trim().toUpperCase() == "CONTINUE");
+                    if (!hasContinue) {
+                      if (choices.isEmpty || !wasContinue) {
+                        choices.add("CONTINUE");
+                      }
                     }
                   }
 
