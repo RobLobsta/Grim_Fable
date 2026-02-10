@@ -269,7 +269,7 @@ STORY GUIDELINES:
 - TONE: Maintain a 'tragicomic', 'dark slapstick', and 'absurd' tone. Bhaal is a god, but currently a confused and amnesiac one.
 - AMNESIA: Do NOT hint that the player is important or divine early on. Let the mystery build naturally through the world's reaction to his accidents.
 - COMPANIONS: Only present companions ($companions) can speak. If a companion joins Bhaal's company, you MUST use [COMPANION_JOINED: Name | Description], where Description is a short, factual blurb about them based on known facts. If they leave, use [COMPANION_LEFT: Name].
-- ANIMALS: Animals (like the Litigious Crab) do NOT speak. Instead, narrate Bhaal's informal interpretation of what he believes the animal is saying within the narrative text. Do NOT use dialogue formatting for animals.
+- ANIMALS: Animals (like the Crab) do NOT speak. Instead, narrate Bhaal's informal interpretation of what he believes the animal is saying within the narrative text. The Crab has a 'you're in the wrong neighborhood' gangster vibe that Bhaal interprets through its movements and perceived dialogue. Do NOT use dialogue formatting for animals.
 - SPEECH FORMATTING: When Bhaal, a companion, or an NPC speaks, you MUST use a line break, then the name in bold followed by a colon and the dialogue in quotes, then another line break.
   Example:
   The sun beats down on the sand.
